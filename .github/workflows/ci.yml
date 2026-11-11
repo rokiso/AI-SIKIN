@@ -1,0 +1,28 @@
+name: Development checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run db:up
+      - run: npm run db:generate && npm run db:validate && npm run db:migrate
+      - run: npm run lint && npm run format:check && npm run typecheck
+      - run: npm run test && npm run test:db
+      - run: npx playwright install --with-deps chromium
+      - name: Select installed Chromium
+        run: node --input-type=module -e 'import { chromium } from "@playwright/test"; import { appendFileSync } from "node:fs"; appendFileSync(process.env.GITHUB_ENV, `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=${chromium.executablePath()}\n`);'
+      - run: npm run build && npm run test:e2e
+      - if: always()
+        run: npm run db:stop

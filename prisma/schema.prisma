@@ -1,0 +1,274 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+// -----------------------------------------------------------------------------
+// 1. 사용자 및 인증 도메인 (소유: OAuth 2.0 PKCE 기반 소셜 간편 로그인...)
+// -----------------------------------------------------------------------------
+
+enum UserRole {
+  GUEST
+  USER
+  ADMIN
+}
+
+enum AuthProvider {
+  KAKAO
+  GOOGLE
+}
+
+model User {
+  id                 String               @id @default(uuid())
+  email              String?              @unique
+  nickname           String
+  role               UserRole             @default(USER)
+  imageUploads       ImageUploadSession[]
+  accounts           UserAccount[]
+  sessions           AuthSession[]
+  diagnosticSessions DiagnosticSession[]
+  dailySnapshots     DailySnapshot[]
+  consentHistory     UserConsentHistory?
+  createdAt          DateTime             @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt          DateTime             @updatedAt @db.Timestamptz @map("updated_at")
+
+  @@map("users")
+}
+
+model UserAccount {
+  id                String       @id @default(uuid())
+  userId            String       @map("user_id")
+  provider          AuthProvider
+  providerAccountId String       @map("provider_account_id")
+  createdAt         DateTime     @default(now()) @db.Timestamptz @map("created_at")
+
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId], name: "uq_provider_account")
+  @@index([userId])
+  @@map("user_accounts")
+}
+
+model AuthSession {
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  sessionToken String    @unique @map("session_token")
+  expiresAt    DateTime  @db.Timestamptz @map("expires_at")
+  ipAddress    String?   @map("ip_address")
+  userAgent    String?   @map("user_agent")
+  createdAt    DateTime  @default(now()) @db.Timestamptz @map("created_at")
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@map("auth_sessions")
+}
+
+model UserConsentHistory {
+  id              String   @id @default(uuid())
+  userId          String   @unique @map("user_id")
+  sensitiveAgreed Boolean  @map("sensitive_agreed")
+  termsVersion    String   @map("terms_version")
+  ipAddress       String?  @map("ip_address")
+  agreedAt        DateTime @default(now()) @db.Timestamptz @map("agreed_at")
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_consent_histories")
+}
+
+// -----------------------------------------------------------------------------
+// 2. 이미지 및 진단 세션 도메인 (소유: 의도: 서버 부하를 방지..., 바우만 12문항...)
+// -----------------------------------------------------------------------------
+
+enum UploadStatus {
+  PENDING
+  UPLOADED
+  EXPIRED
+  FAILED
+}
+
+model ImageUploadSession {
+  id              String        @id @default(uuid())
+  guestDeviceId   String?       @map("guest_device_id")
+  userId          String?       @map("user_id")
+  s3Key           String        @unique @map("s3_key")
+  mimeType        String        @map("mime_type")
+  fileSizeBytes   Int           @map("file_size_bytes")
+  etag            String?       @map("etag")
+  status          UploadStatus  @default(PENDING)
+  expiresAt       DateTime      @db.Timestamptz @map("expires_at")
+  createdAt       DateTime      @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt       DateTime      @updatedAt @db.Timestamptz @map("updated_at")
+
+  user               User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  diagnosticSessions DiagnosticSession[]
+
+  @@index([guestDeviceId])
+  @@index([userId])
+  @@index([status, expiresAt])
+  @@map("image_upload_sessions")
+}
+
+enum DiagnosticSessionStatus {
+  SURVEY_COMPLETED
+  ANALYSIS_PENDING
+  COMPLETED
+  FAILED
+}
+
+model DiagnosticSession {
+  id              String                  @id @default(uuid())
+  guestDeviceId   String?                 @map("guest_device_id")
+  userId          String?                 @map("user_id")
+  uploadSessionId String?                 @map("upload_session_id")
+  status          DiagnosticSessionStatus @default(SURVEY_COMPLETED)
+  surveyAnswers   Json                    @map("survey_answers")
+  axisScores      Json                    @map("axis_scores")
+  createdAt       DateTime                @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt       DateTime                @updatedAt @db.Timestamptz @map("updated_at")
+
+  user            User?                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  report          DiagnosticReport?
+  uploadSession   ImageUploadSession?     @relation(fields: [uploadSessionId], references: [id], onDelete: SetNull)
+
+  @@index([guestDeviceId])
+  @@index([userId])
+  @@index([status])
+  @@index([uploadSessionId])
+  @@map("diagnostic_sessions")
+}
+
+model DiagnosticReport {
+  id                      String                  @id @default(uuid())
+  sessionId               String                  @unique @map("session_id")
+  baumannType             String                  @map("baumann_type") // 16가지 표준 코드 (OSNW 등)
+  oilinessScore           Int                     @map("oiliness_score")
+  sensitivityScore        Int                     @map("sensitivity_score")
+  pigmentationScore       Int                     @map("pigmentation_score")
+  elasticityScore         Int                     @map("elasticity_score")
+  summaryText             String                  @db.Text @map("summary_text")
+  recommendedIngredients  String[]                @default([]) @map("recommended_ingredients")
+  cautionIngredients      String[]                @default([]) @map("caution_ingredients")
+  aiAuditMetadata         Json                    @map("ai_audit_metadata")
+  createdAt               DateTime                @default(now()) @db.Timestamptz @map("created_at")
+
+  session                 DiagnosticSession       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  productRecommendations  ProductRecommendation[]
+  procedureGuideMappings  ProcedureGuideMapping[]
+
+  @@index([baumannType])
+  @@map("diagnostic_reports")
+}
+
+// -----------------------------------------------------------------------------
+// 3. 카탈로그 및 추천 도메인 (본 작업이 테이블 스키마 소유)
+// -----------------------------------------------------------------------------
+
+enum ProductCategory {
+  TONER
+  SERUM
+  CREAM
+  SUNCARE
+}
+
+model Product {
+  id              String                  @id @default(uuid())
+  brand           String                  @map("brand")
+  name            String                  @map("name")
+  category        ProductCategory         @map("category")
+  ingredients     String[]                @map("ingredients")
+  targetTypes     String[]                @map("target_types") // 예: ["OSNW", "DSNW"]
+  isPrimary       Boolean                 @default(true) @map("is_primary")
+  affiliateUrl    String                  @map("affiliate_url")
+  isActive        Boolean                 @default(true) @map("is_active")
+  createdAt       DateTime                @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt       DateTime                @updatedAt @db.Timestamptz @map("updated_at")
+
+  recommendations ProductRecommendation[]
+
+  @@index([category, isActive])
+  @@map("products")
+}
+
+model ProductRecommendation {
+  id            String           @id @default(uuid())
+  reportId      String           @map("report_id")
+  productId     String           @map("product_id")
+  category      ProductCategory  @map("category")
+  matchReason   String           @map("match_reason")
+  createdAt     DateTime         @default(now()) @db.Timestamptz @map("created_at")
+
+  report        DiagnosticReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  product       Product          @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([reportId])
+  @@index([productId])
+  @@map("product_recommendations")
+}
+
+model MedicalProcedure {
+  id              String                  @id @default(uuid())
+  nameKo          String                  @map("name_ko")
+  principleText   String                  @db.Text @map("principle_text")
+  recommendedInterval String              @map("recommended_interval")
+  sideEffects     String[]                @map("side_effects")
+  minPriceKrw     Int                     @map("min_price_krw")
+  maxPriceKrw     Int                     @map("max_price_krw")
+  isActive        Boolean                 @default(true) @map("is_active")
+  createdAt       DateTime                @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt       DateTime                @updatedAt @db.Timestamptz @map("updated_at")
+
+  mappings        ProcedureGuideMapping[]
+
+  @@map("medical_procedures")
+}
+
+model ProcedureGuideMapping {
+  id          String           @id @default(uuid())
+  reportId    String           @map("report_id")
+  procedureId String           @map("procedure_id")
+  concernType String           @map("concern_type") // 예: "PIGMENTATION", "TROUBLE", "WRINKLE"
+  createdAt   DateTime         @default(now()) @db.Timestamptz @map("created_at")
+
+  report      DiagnosticReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  procedure   MedicalProcedure @relation(fields: [procedureId], references: [id], onDelete: Restrict)
+
+  @@index([reportId])
+  @@index([procedureId])
+  @@map("procedure_guide_mappings")
+}
+
+// -----------------------------------------------------------------------------
+// 4. 데일리 스냅샷 도메인 (소유: 1일 1회 안면 스냅샷 업로드...)
+// -----------------------------------------------------------------------------
+
+enum SkinConditionLevel {
+  LOW
+  BALANCED
+  HIGH
+}
+
+model DailySnapshot {
+  id              String             @id @default(uuid())
+  userId          String             @map("user_id")
+  s3Key           String             @map("s3_key")
+  recordDate      DateTime           @db.Date @map("record_date")
+  feedbackComment String             @db.Text @map("feedback_comment")
+  hydrationLevel  SkinConditionLevel @default(BALANCED) @map("hydration_level")
+  soothingLevel   SkinConditionLevel @default(BALANCED) @map("soothing_level")
+  sebumLevel      SkinConditionLevel @default(BALANCED) @map("sebum_level")
+  createdAt       DateTime           @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt       DateTime           @updatedAt @db.Timestamptz @map("updated_at")
+
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, recordDate], name: "uq_user_daily_snapshot")
+  @@index([userId, recordDate])
+  @@map("daily_snapshots")
+}
