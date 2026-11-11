@@ -5,6 +5,7 @@ export default {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     colors: {
+      brand: { kakao: "#fee500", "kakao-text": "#191919" },
       transparent: "transparent",
       current: "currentColor",
       primary: {

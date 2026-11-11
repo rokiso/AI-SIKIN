@@ -58,3 +58,41 @@ export function getVaultConfiguration() {
   if (!result.success) throw new Error("Image storage configuration is missing or invalid");
   return result.data;
 }
+
+export function getOAuthConfiguration(provider: "google" | "kakao") {
+  const prefix = provider === "google" ? "GOOGLE" : "KAKAO";
+  const schema = z.object({
+    clientId: z
+      .string()
+      .min(1)
+      .refine((value) => !value.startsWith("replace-with-")),
+    clientSecret: z
+      .string()
+      .min(1)
+      .refine((value) => !value.startsWith("replace-with-")),
+    appUrl: z.url().refine((value) => {
+      const url = new URL(value);
+      return (
+        !url.username &&
+        !url.password &&
+        url.pathname === "/" &&
+        !url.search &&
+        !url.hash &&
+        (url.protocol === "https:" ||
+          (process.env.NODE_ENV !== "production" &&
+            url.protocol === "http:" &&
+            ["localhost", "127.0.0.1"].includes(url.hostname)))
+      );
+    }),
+  });
+  const result = schema.safeParse({
+    clientId: process.env[`${prefix}_CLIENT_ID`],
+    clientSecret: process.env[`${prefix}_CLIENT_SECRET`],
+    appUrl: process.env.NEXT_PUBLIC_APP_URL,
+  });
+  if (!result.success) throw new Error("OAuth configuration is missing or invalid");
+  return {
+    ...result.data,
+    callbackUrl: new URL(`/auth/callback/${provider}`, result.data.appUrl).href,
+  };
+}

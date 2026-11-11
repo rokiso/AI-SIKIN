@@ -272,3 +272,14 @@ model DailySnapshot {
   @@index([userId, recordDate])
   @@map("daily_snapshots")
 }
+
+// Short-lived one-use OAuth flow identifier; no provider token or profile is stored.
+model OAuthAttempt {
+  ownerHash String? @map("owner_hash")
+  stateHash String   @id @map("state_hash")
+  expiresAt DateTime @db.Timestamptz @map("expires_at")
+
+  @@index([expiresAt])
+  @@index([ownerHash, expiresAt])
+  @@map("oauth_attempts")
+}

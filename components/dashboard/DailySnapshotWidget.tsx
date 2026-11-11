@@ -10,7 +10,7 @@ export function DailySnapshotWidget({ snapshot, isAuthenticated }: { snapshot: T
       <aside className="space-y-3 break-keep rounded-2xl border border-neutral-200 p-5">
         <CalendarDays aria-hidden="true" size={22} strokeWidth={1.75} className="text-primary-700" />
         <h2 className="text-base font-semibold text-neutral-900">일상의 피부 변화도 기록해요</h2>
-        <p className="text-sm leading-relaxed text-neutral-600">데일리 기록은 로그인 후 저장할 수 있어요. 로그인과 스냅샷 기능을 준비하고 있어요.</p>
+        <p className="text-sm leading-relaxed text-neutral-600">데일리 기록은 로그인 후 저장할 수 있어요. 마이페이지에서 로그인할 수 있으며, 스냅샷 기능은 준비하고 있어요.</p>
         <Link href="/snapshot" className="button-secondary flex justify-between">데일리 기록 안내<ArrowRight aria-hidden="true" size={18} strokeWidth={1.75} /></Link>
       </aside>
     );
