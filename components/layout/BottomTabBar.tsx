@@ -12,14 +12,14 @@ const tabs = [
   { href: "/mypage", label: "마이", accessibleLabel: "마이 페이지", icon: UserRound },
 ];
 
-export function BottomTabBar() {
+export function BottomTabBar({ navigationDisabled = false }: { navigationDisabled?: boolean }) {
   const pathname = usePathname();
   return (
     <nav aria-label="주요 메뉴" className="fixed bottom-0 left-1/2 z-50 grid w-full max-w-[430px] -translate-x-1/2 grid-cols-5 border-t border-neutral-200 bg-surface px-2 pb-[env(safe-area-inset-bottom)]">
       {tabs.map(({ href, label, accessibleLabel, icon: Icon }) => {
         const active = href === "/" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
         return (
-          <Link key={href} href={href} aria-label={accessibleLabel} aria-current={active ? "page" : undefined}
+          <Link key={href} href={href} aria-disabled={navigationDisabled} tabIndex={navigationDisabled ? -1 : undefined} onClick={(event) => { if (navigationDisabled) event.preventDefault(); }} aria-label={accessibleLabel} aria-current={active ? "page" : undefined}
             className={`relative mx-1 my-2 flex min-h-14 min-w-11 flex-col items-center justify-center gap-1 break-keep rounded-xl text-xs font-medium ${active ? "bg-primary-50 text-primary-700" : "text-neutral-600 hover:bg-neutral-100"}`}>
             <Icon aria-hidden="true" size={22} strokeWidth={1.75} />
             <span>{label}</span>

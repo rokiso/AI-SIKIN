@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { ArrowLeft, Leaf } from "lucide-react";
 
-export function GlobalHeader() {
+export function GlobalHeader({ navigationDisabled = false }: { navigationDisabled?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   const navigation = useRef({ path: pathname, index: 0 });
@@ -43,11 +43,11 @@ export function GlobalHeader() {
     <header className="sticky top-0 z-40 flex min-h-20 items-center justify-between border-b border-neutral-200 bg-surface px-4 pt-[env(safe-area-inset-top)]">
       <div className="flex min-w-0 items-center gap-1">
         {pathname !== "/" && (
-          <button type="button" onClick={goBack} aria-label="이전 페이지로 이동" className="icon-button -ml-2">
+          <button type="button" disabled={navigationDisabled} onClick={goBack} aria-label="이전 페이지로 이동" className="icon-button -ml-2">
             <ArrowLeft aria-hidden="true" size={22} strokeWidth={1.75} />
           </button>
         )}
-        <Link href="/" aria-label="SIKIN 홈으로 이동" className="flex min-h-11 min-w-11 items-center gap-2 break-keep rounded-xl pr-2 font-semibold tracking-widest text-primary-800">
+        <Link href="/" aria-disabled={navigationDisabled} tabIndex={navigationDisabled ? -1 : undefined} onClick={(event) => { if (navigationDisabled) event.preventDefault(); }} aria-label="SIKIN 홈으로 이동" className="flex min-h-11 min-w-11 items-center gap-2 break-keep rounded-xl pr-2 font-semibold tracking-widest text-primary-800">
           <Leaf aria-hidden="true" size={23} strokeWidth={1.75} />
           <span className="text-lg">SIKIN</span>
         </Link>

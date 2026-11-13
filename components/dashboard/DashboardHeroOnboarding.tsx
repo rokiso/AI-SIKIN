@@ -20,7 +20,7 @@ export function DashboardHeroOnboarding() {
           무료 AI 피부 진단 시작하기
           <ArrowRight aria-hidden="true" size={20} strokeWidth={1.75} className="shrink-0" />
         </Link>
-        <p className="mt-3 text-xs leading-relaxed text-neutral-600">촬영과 문진 기능은 준비 중이에요. 지금은 진단 전 안내를 확인할 수 있어요.</p>
+        <p className="mt-3 text-xs leading-relaxed text-neutral-600">카메라 촬영과 문진은 준비 중이며, 지금은 앨범 사진을 등록할 수 있어요.</p>
       </section>
       <section aria-labelledby="dashboard-process-heading">
         <h2 id="dashboard-process-heading" className="text-base font-semibold text-neutral-900">진단은 이렇게 진행돼요</h2>
