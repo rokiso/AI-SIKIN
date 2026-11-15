@@ -32,6 +32,7 @@ beforeAll(() => {
   assertLocalDevelopmentDatabase(getDatabaseUrl());
 });
 beforeEach(() => {
+  vi.stubEnv("CATALOG_LIVE_ENABLED", "1");
   vi.stubEnv("CATALOG_AFFILIATE_HOSTS", "shop.example.com");
   invalidateProductCache();
   jar.clear();
@@ -112,6 +113,15 @@ const redirectRequest = (productId: string, reportId?: string) =>
     { headers: { "user-agent": "catalog-test" } },
   );
 describe("catalog APIs against local PostgreSQL", () => {
+  it("blocks live catalog APIs by default without authorizing or reading new tables", async () => {
+    vi.stubEnv("CATALOG_LIVE_ENABLED", "");
+    const response = await recommendations(recRequest(randomUUID()));
+    expect(response.status).toBe(503);
+    expect((await response.json()).error.code).toBe("CATALOG_PREVIEW_ONLY");
+    const redirected = await redirect(redirectRequest(randomUUID()));
+    expect(redirected.status).toBe(302);
+    expect(redirected.headers.get("location")).toBe("/catalog/redirect/error");
+  });
   it("creates eight consistent mappings, enforces owner access and validates selectors", async () => {
     const f = await fixture();
     expect(await getLatestCatalogReportId(f.identity)).toBe(f.reportId);

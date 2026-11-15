@@ -10,10 +10,13 @@ export default defineConfig({
     baseURL: "http://127.0.0.1:3000",
     headless: true,
     trace: "retain-on-failure",
-    launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || "/usr/bin/chromium" },
+    launchOptions: {
+      executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || "/usr/bin/chromium",
+    },
   },
   webServer: {
     command: "npm run start",
+    env: { CATALOG_LIVE_ENABLED: process.env.CATALOG_LIVE_ENABLED ?? "1" },
     url: "http://127.0.0.1:3000/",
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,

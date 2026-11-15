@@ -1,3 +1,4 @@
+import { isCatalogPreviewOnly } from "@/lib/server-env";
 import { catalogIdentity } from "@/lib/catalog/http";
 import { getLatestCatalogReportId } from "@/lib/catalog/curationService";
 import { SkinShop } from "@/components/catalog/SkinShop";
@@ -12,8 +13,9 @@ export default async function ProductsPage({
   searchParams: Promise<{ reportId?: string | string[] }>;
 }) {
   const params = await searchParams;
-  const reportId =
-    params.reportId === undefined
+  const reportId = isCatalogPreviewOnly()
+    ? null
+    : params.reportId === undefined
       ? await getLatestCatalogReportId(await catalogIdentity())
       : params.reportId;
   return (

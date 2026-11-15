@@ -123,3 +123,8 @@ export function getAffiliateHosts(): Set<string> {
       .filter(Boolean),
   );
 }
+
+// Explicit opt-in after production migrations and real seller data are ready.
+export function isCatalogPreviewOnly(): boolean {
+  return process.env.CATALOG_LIVE_ENABLED !== "1";
+}

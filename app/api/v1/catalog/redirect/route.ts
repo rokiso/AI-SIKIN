@@ -1,3 +1,4 @@
+import { isCatalogPreviewOnly } from "@/lib/server-env";
 import { NextResponse } from "next/server";
 import { unstable_rethrow } from "next/navigation";
 import { AuthError, privateHeaders } from "@/lib/auth/response";
@@ -7,6 +8,8 @@ import { redirectQuerySchema } from "@/lib/catalog/types";
 export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   try {
+    if (isCatalogPreviewOnly())
+      throw new AuthError(503, "CATALOG_PREVIEW_ONLY", "구매처 연결을 준비하고 있습니다.");
     const input = parseCatalogQuery(request, redirectQuerySchema, "INVALID_REDIRECT");
     const url = await recordAffiliateRedirect(
       input,
