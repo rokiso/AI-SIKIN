@@ -31,8 +31,7 @@ export function SkinSummaryCard({ diagnostic }: { diagnostic: LatestDiagnostic }
         <time dateTime={diagnostic.diagnosedAt} className="text-xs text-neutral-600">{diagnosedDate} · 한국 시간</time>
       </div>
       <div>
-        <span className="inline-flex rounded-xl bg-surface px-3 py-2 text-2xl font-bold tracking-wider text-primary-800">{diagnostic.baumannType}</span>
-        <p className="mt-3 text-base font-semibold leading-relaxed text-neutral-900">{diagnostic.baumannNameKo}</p>
+        <p className="text-base font-semibold leading-relaxed text-neutral-900">{diagnostic.baumannNameKo}</p>
         <p className="mt-2 text-sm leading-relaxed text-neutral-700">{diagnostic.summary || "아직 피부 상태 설명이 등록되지 않았어요."}</p>
       </div>
       <div className="border-y border-primary-100 py-5">

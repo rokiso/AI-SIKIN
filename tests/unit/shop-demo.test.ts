@@ -42,6 +42,8 @@ describe("clearly fictional shopping catalog", () => {
       }
   });
   it("filters pigment and pore interests by ingredient tags without making efficacy claims", () => {
+    expect(matchesShoppingConcerns(["판테놀"], ["TROUBLE"])).toBe(true);
+    expect(matchesShoppingConcerns(["세라마이드"], ["TROUBLE"])).toBe(false);
     expect(matchesShoppingConcerns(["세라마이드"], [])).toBe(true);
     expect(matchesShoppingConcerns(["세라마이드"], ["PORES"])).toBe(false);
     expect(matchesShoppingConcerns(["나이아신아마이드"], ["PORES", "PIGMENTATION"])).toBe(true);

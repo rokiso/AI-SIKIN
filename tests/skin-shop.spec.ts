@@ -10,6 +10,7 @@ for (const width of [320, 1280])
     await page.goto("/catalog/products");
     await expect(page.getByRole("heading", { name: "피부로 고르는 뷰티 스토어" })).toBeVisible();
     await expect(page.getByLabel("예시 피부 타입")).toBeVisible();
+    await expect(page.getByLabel("예시 피부 타입")).not.toContainText(/\b[OD][SR][PN][WT]\b/);
     await expect(page.locator("article")).toHaveCount(8);
     await expect(page.getByRole("link", { name: "구매처 확인" })).toHaveCount(0);
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
@@ -34,6 +35,15 @@ for (const width of [320, 1280])
       path: test.info().outputPath(`skin-shop-combination-${width}.png`),
       fullPage: true,
     });
+    const trouble = page.getByRole("button", { name: "트러블", exact: true });
+    await trouble.click();
+    await expect(trouble).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("article")).toHaveCount(2);
+    await page.screenshot({
+      path: test.info().outputPath(`skin-shop-trouble-${width}.png`),
+      fullPage: true,
+    });
+    await trouble.click();
     await pores.click();
     await pigmentation.click();
     await expect(page.locator("article")).toHaveCount(8);

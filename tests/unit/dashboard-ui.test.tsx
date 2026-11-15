@@ -39,7 +39,8 @@ describe("dashboard screen states", () => {
 
   it("renders only the supplied report values and a member's unrecorded snapshot action", () => {
     render(<DashboardView summary={returningSummary} />);
-    expect(screen.getByText("OSNW")).toBeDefined();
+    expect(screen.queryByText("OSNW")).toBeNull();
+    expect(screen.getByText("지성 민감 색소침착 고민 적음 주름 피부")).toBeDefined();
     expect(screen.getByText("저장된 권장 성분")).toBeDefined();
     expect(screen.getByText("저장된 주의 성분")).toBeDefined();
     expect(screen.getAllByRole("meter")).toHaveLength(4);

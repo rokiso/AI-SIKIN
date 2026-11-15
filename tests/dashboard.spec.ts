@@ -61,7 +61,7 @@ for (const width of [320, 1280]) {
     await context.clearCookies();
     await setIdentity(context, baseURL ?? "http://127.0.0.1:3000", "guest");
     await page.goto("/");
-    await expect(page.getByText("DSPT", { exact: true })).toBeVisible();
+    await expect(page.getByText("건성 민감 색소침착 고민 탄력 피부", { exact: true })).toBeVisible();
     await expect(page.getByText("병풀추출물", { exact: true })).toBeVisible();
     await expect(page.getByText("서명 게스트 소유 피부 관리 요약입니다.", { exact: true })).toBeVisible();
     await expect(page.getByText("다른 사용자에게 귀속된 비공개 요약입니다.", { exact: true })).toHaveCount(0);
@@ -75,7 +75,7 @@ test("members see only their own report and a fresh snapshot after returning to 
   await page.setViewportSize({ width: 320, height: 900 });
   await setIdentity(context, baseURL ?? "http://127.0.0.1:3000", "member");
   await page.goto("/");
-  await expect(page.getByText("OSNW", { exact: true })).toBeVisible();
+  await expect(page.getByText("지성 민감 색소침착 고민 적음 주름 피부", { exact: true })).toBeVisible();
   await expect(page.getByText("판테놀", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "오늘 스냅샷 남기기", exact: true })).toBeVisible();
   await expectLayout(page);

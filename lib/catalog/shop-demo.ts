@@ -17,7 +17,7 @@ export function describeSkinType(code: string): string {
   ].join(" · ");
 }
 export type ShoppingSkinType = "DRY" | "OILY" | "COMBINATION";
-export type ShoppingConcern = "PIGMENTATION" | "PORES";
+export type ShoppingConcern = "PIGMENTATION" | "PORES" | "TROUBLE";
 export const shoppingConcerns = [
   {
     value: "PIGMENTATION",
@@ -25,6 +25,7 @@ export const shoppingConcerns = [
     ingredients: ["나이아신아마이드", "비타민C", "알부틴"],
   },
   { value: "PORES", label: "모공", ingredients: ["나이아신아마이드", "살리실릭애씨드"] },
+  { value: "TROUBLE", label: "트러블", ingredients: ["판테놀", "병풀추출물", "살리실릭애씨드"] },
 ] as const;
 export function matchesShoppingConcerns(
   ingredients: string[],

@@ -153,14 +153,14 @@ export function SkinShop({ data }: { data?: ProductRecommendationResponse }) {
             >
               {skinTypeOptions.map((code) => (
                 <option key={code} value={code}>
-                  {code} · {describeSkinType(code)}
+                  {describeSkinType(code)}
                 </option>
               ))}
             </select>
           </label>
         ) : !demo ? (
           <p className="rounded-xl bg-surface p-3 text-sm font-medium text-primary-800">
-            {catalog.baumannType} · {describeSkinType(catalog.baumannType)}
+            {describeSkinType(catalog.baumannType)}
           </p>
         ) : null}
         <div>
