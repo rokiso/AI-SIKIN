@@ -16,6 +16,7 @@ import { createGuestSession } from "../../lib/session/guest-proof";
 import { sampleCatalogProducts } from "../../lib/catalog/sample-data";
 import {
   getProductRecommendations,
+  getLatestCatalogReportId,
   invalidateProductCache,
   recordAffiliateRedirect,
 } from "../../lib/catalog/curationService";
@@ -113,6 +114,8 @@ const redirectRequest = (productId: string, reportId?: string) =>
 describe("catalog APIs against local PostgreSQL", () => {
   it("creates eight consistent mappings, enforces owner access and validates selectors", async () => {
     const f = await fixture();
+    expect(await getLatestCatalogReportId(f.identity)).toBe(f.reportId);
+    expect(await getLatestCatalogReportId({ kind: "anonymous" })).toBeNull();
     const response = await recommendations(recRequest(f.reportId));
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("private, no-store");

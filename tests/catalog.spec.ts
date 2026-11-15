@@ -39,13 +39,18 @@ test.beforeEach(async ({ context }) => {
 for (const width of [320, 1280])
   test(`four categories, alternate cards and safe purchase at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 });
+    if (width === 320) {
+      await page.goto("/catalog/products");
+      await expect(page.getByText("내 리포트 기반", { exact: true })).toBeVisible();
+      await expect(page.getByLabel("예시 피부 타입")).toHaveCount(0);
+    }
     await page.goto(`/catalog/products?reportId=${state.reportId}`);
     const tabs = page.getByRole("tab");
-    await expect(tabs).toHaveCount(4);
-    for (let i = 0; i < 4; i++) {
+    await expect(tabs).toHaveCount(5);
+    for (let i = 1; i < 5; i++) {
       await tabs.nth(i).click();
       await expect(tabs.nth(i)).toHaveAttribute("aria-selected", "true");
-      await page.getByText("대체 상품 보기", { exact: true }).click();
+      await expect(page.locator("article")).toHaveCount(2);
       await expect(page.getByRole("link", { name: "구매처 확인" })).toHaveCount(2);
       for (const link of await page.getByRole("link", { name: "구매처 확인" }).all()) {
         const box = await link.boundingBox();
@@ -70,6 +75,7 @@ for (const width of [320, 1280])
     await page.route("https://shop.example.com/**", (route) =>
       route.fulfill({ contentType: "text/html; charset=utf-8", body: "<h1>모의 판매처</h1>" }),
     );
+    await tabs.nth(1).click();
     fixture("stockout");
     const response = page.waitForResponse((r) => r.url().includes("/api/v1/catalog/redirect?"));
     await page.getByRole("link", { name: "구매처 확인" }).first().click();
@@ -86,7 +92,7 @@ test("network failure retries, empty catalog retains guide and bad redirect reco
   await expect(page.getByRole("alert", { name: "추천 상품 오류" })).toBeVisible();
   await page.unroute("**/api/v1/catalog/products/recommendations?**");
   await page.getByRole("button", { name: "다시 시도" }).click();
-  await expect(page.getByRole("tab")).toHaveCount(4);
+  await expect(page.getByRole("tab")).toHaveCount(5);
   await page.route("**/api/v1/catalog/products/recommendations?**", async (route) => {
     const response = await route.fetch();
     const body = await response.json();

@@ -205,3 +205,20 @@ export async function recordAffiliateRedirect(
     return targetUrl;
   });
 }
+
+export async function getLatestCatalogReportId(identity: VerifiedIdentity): Promise<string | null> {
+  if (identity.kind === "anonymous") return null;
+  const report = await getPrisma().diagnosticReport.findFirst({
+    where: {
+      session: {
+        status: "COMPLETED",
+        ...(identity.kind === "member"
+          ? { userId: identity.userId }
+          : { userId: null, guestDeviceId: identity.guestDeviceId }),
+      },
+    },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    select: { id: true },
+  });
+  return report?.id ?? null;
+}
