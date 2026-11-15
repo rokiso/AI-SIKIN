@@ -20,7 +20,7 @@ const returningSummary: DashboardSummary = {
   hasDiagnosticHistory: true,
   user: { isAuthenticated: true, nickname: "검증 사용자" },
   latestDiagnostic: {
-    reportId: "report-test", baumannType: "OSNW", baumannNameKo: "지성 민감 비색소성 주름 피부",
+    reportId: "report-test", baumannType: "OSNW", baumannNameKo: "지성 민감 색소침착 고민 적음 주름 피부",
     diagnosedAt: "2026-11-09T16:00:00.000Z", summary: "저장된 피부 상태 설명",
     recommendedIngredients: ["저장된 권장 성분"], cautionIngredients: ["저장된 주의 성분"],
     axisScores: { oiliness: 65, sensitivity: 40, pigmentation: 20, elasticity: 35 },

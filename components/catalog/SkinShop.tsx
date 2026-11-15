@@ -18,13 +18,23 @@ import {
   type ProductRecommendationResponse,
   type ProductView,
 } from "@/lib/catalog/types";
-import { getShopDemo, describeSkinType, skinTypeOptions } from "@/lib/catalog/shop-demo";
+import {
+  getShopDemo,
+  describeSkinType,
+  skinTypeOptions,
+  shoppingConcerns,
+  matchesShoppingConcerns,
+  type ShoppingSkinType,
+  type ShoppingConcern,
+} from "@/lib/catalog/shop-demo";
 import { ProductIllustration } from "./ProductIllustration";
 import { ProductDetailDialog } from "./ProductDetailDialog";
 const icons = [LayoutGrid, Droplets, FlaskConical, Layers3, Sun];
 const filters = [{ category: "ALL", categoryNameKo: "전체" }, ...categories];
 export function SkinShop({ data }: { data?: ProductRecommendationResponse }) {
   const [exampleType, setExampleType] = useState("DSNW");
+  const [skinType, setSkinType] = useState<ShoppingSkinType>("DRY");
+  const [concerns, setConcerns] = useState<ShoppingConcern[]>([]);
   const [category, setCategory] = useState("ALL");
   const [query, setQuery] = useState("");
   const [ingredient, setIngredient] = useState("");
@@ -33,7 +43,7 @@ export function SkinShop({ data }: { data?: ProductRecommendationResponse }) {
     null,
   );
   const demo = !data;
-  const catalog = data ?? getShopDemo(exampleType);
+  const catalog = data ?? getShopDemo(exampleType, skinType);
   const products = catalog.categories.flatMap((c) => [
     ...(c.primaryProduct
       ? [
@@ -64,6 +74,7 @@ export function SkinShop({ data }: { data?: ProductRecommendationResponse }) {
     .filter(
       (p) =>
         (category === "ALL" || p.category === category) &&
+        matchesShoppingConcerns(p.product.keyIngredients, concerns) &&
         (!ingredient || p.product.keyIngredients.includes(ingredient)) &&
         (!searched ||
           [p.product.productName, p.product.brandName, ...p.product.keyIngredients]
@@ -84,6 +95,7 @@ export function SkinShop({ data }: { data?: ProductRecommendationResponse }) {
     setQuery("");
     setIngredient("");
     setSort("recommended");
+    setConcerns([]);
   }
   return (
     <section className="space-y-6" aria-label="피부 타입 맞춤 쇼핑">
@@ -99,7 +111,34 @@ export function SkinShop({ data }: { data?: ProductRecommendationResponse }) {
             ? "예시 타입으로 둘러보세요. 가상 상품이며 실제 진단·구매 결과가 아닙니다."
             : "본인 리포트로 고른 제품입니다. 성분을 비교하고 판매처를 확인하세요."}
         </p>
-        {demo ? (
+        {demo && (
+          <label className="block text-xs font-medium text-primary-800">
+            피부 특성
+            <select
+              aria-label="피부 특성"
+              value={skinType}
+              className="mt-2 min-h-12 w-full rounded-xl border border-primary-200 bg-surface p-3 text-sm text-neutral-900"
+              onChange={(event) => {
+                const value = event.target.value;
+                if (value !== "DRY" && value !== "OILY" && value !== "COMBINATION") return;
+                setSkinType(value);
+                setIngredient("");
+                if (value !== "COMBINATION")
+                  setExampleType((old) => (value === "DRY" ? "D" : "O") + old.slice(1));
+              }}
+            >
+              <option value="DRY">건성</option>
+              <option value="OILY">지성</option>
+              <option value="COMBINATION">복합성</option>
+            </select>
+          </label>
+        )}
+        {demo && skinType === "COMBINATION" && (
+          <p className="text-xs leading-relaxed text-neutral-600">
+            복합성 조건으로 예시 상품을 둘러보고 있어요. 실제 피부 진단 결과가 아닙니다.
+          </p>
+        )}
+        {demo && skinType !== "COMBINATION" ? (
           <label className="block text-xs font-medium text-primary-800">
             예시 피부 타입
             <select
@@ -108,6 +147,7 @@ export function SkinShop({ data }: { data?: ProductRecommendationResponse }) {
               className="mt-2 min-h-12 w-full rounded-xl border border-primary-200 bg-surface p-3 text-sm text-neutral-900"
               onChange={(e) => {
                 setExampleType(e.target.value);
+                setSkinType(e.target.value[0] === "D" ? "DRY" : "OILY");
                 setIngredient("");
               }}
             >
@@ -118,11 +158,11 @@ export function SkinShop({ data }: { data?: ProductRecommendationResponse }) {
               ))}
             </select>
           </label>
-        ) : (
+        ) : !demo ? (
           <p className="rounded-xl bg-surface p-3 text-sm font-medium text-primary-800">
             {catalog.baumannType} · {describeSkinType(catalog.baumannType)}
           </p>
-        )}
+        ) : null}
         <div>
           <p className="mb-2 text-xs text-neutral-600">
             {demo ? "탐색 성분 예시" : "내 리포트의 추천 성분"}
@@ -139,6 +179,32 @@ export function SkinShop({ data }: { data?: ProductRecommendationResponse }) {
           </ul>
         </div>
       </div>
+      <fieldset className="space-y-2">
+        <legend className="text-sm font-semibold text-neutral-900">관심 고민</legend>
+        <div className="flex flex-wrap gap-2">
+          {shoppingConcerns.map((concern) => (
+            <button
+              key={concern.value}
+              type="button"
+              aria-pressed={concerns.includes(concern.value)}
+              className={concerns.includes(concern.value) ? "button-primary" : "button-secondary"}
+              onClick={() =>
+                setConcerns((old) =>
+                  old.includes(concern.value)
+                    ? old.filter((value) => value !== concern.value)
+                    : [...old, concern.value],
+                )
+              }
+            >
+              {concern.label}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs leading-relaxed text-neutral-600">
+          선택한 고민의 탐색 성분 태그로 상품을 좁혀봅니다. 색소침착·모공 상태를 진단하거나 개선
+          효과를 보장하는 기능은 아닙니다.
+        </p>
+      </fieldset>
       <div className="relative">
         <Search
           aria-hidden="true"

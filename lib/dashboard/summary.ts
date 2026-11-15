@@ -17,7 +17,7 @@ function describeBaumannType(type: BaumannType): string {
   return [
     type[0] === "O" ? "지성" : "건성",
     type[1] === "S" ? "민감" : "저항성",
-    type[2] === "P" ? "색소성" : "비색소성",
+    type[2] === "P" ? "색소침착 고민" : "색소침착 고민 적음",
     type[3] === "W" ? "주름" : "탄력",
     "피부",
   ].join(" ");

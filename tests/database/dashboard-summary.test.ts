@@ -142,7 +142,7 @@ describe("authorized dashboard read projection", () => {
     expect(summary.latestDiagnostic).toMatchObject({
       reportId: latest.report?.id,
       baumannType: "OSNW",
-      baumannNameKo: "지성 민감 비색소성 주름 피부",
+      baumannNameKo: "지성 민감 색소침착 고민 적음 주름 피부",
       summary: "게스트 본인의 최신 완료 기록",
       recommendedIngredients: ["검증용 권장 성분"],
       cautionIngredients: ["검증용 주의 성분"],

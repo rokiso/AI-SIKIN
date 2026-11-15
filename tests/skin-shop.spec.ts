@@ -17,6 +17,27 @@ for (const width of [320, 1280])
       path: test.info().outputPath(`skin-shop-${width}.png`),
       fullPage: true,
     });
+    await expect(page.locator("main")).not.toContainText("비색소성");
+    await page.getByLabel("피부 특성", { exact: true }).selectOption("COMBINATION");
+    await expect(page.getByLabel("예시 피부 타입")).toHaveCount(0);
+    await expect(page.locator("article")).toHaveCount(8);
+    const pores = page.getByRole("button", { name: "모공", exact: true });
+    const pigmentation = page.getByRole("button", { name: "색소침착", exact: true });
+    await pores.click();
+    await expect(pores).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("article")).toHaveCount(4);
+    await pigmentation.click();
+    await expect(pigmentation).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("article")).toHaveCount(4);
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    await page.screenshot({
+      path: test.info().outputPath(`skin-shop-combination-${width}.png`),
+      fullPage: true,
+    });
+    await pores.click();
+    await pigmentation.click();
+    await expect(page.locator("article")).toHaveCount(8);
+    await page.getByLabel("피부 특성", { exact: true }).selectOption("OILY");
     await page.getByLabel("예시 피부 타입").selectOption("OSNW");
     await expect(page.getByLabel("성분 필터")).toContainText("병풀추출물");
     await page.getByRole("tab", { name: "토너", exact: true }).click();
