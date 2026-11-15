@@ -113,3 +113,13 @@ export function getSnapshotAiConfiguration(): { apiKey: string; model: string } 
   if (!parsed.success) throw new Error("Snapshot AI configuration is incomplete");
   return parsed.data;
 }
+
+export function getAffiliateHosts(): Set<string> {
+  const value = process.env.CATALOG_AFFILIATE_HOSTS ?? "";
+  return new Set(
+    value
+      .split(",")
+      .map((host) => host.trim().toLowerCase())
+      .filter(Boolean),
+  );
+}

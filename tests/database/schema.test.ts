@@ -121,7 +121,7 @@ describe("initial PostgreSQL migration", () => {
   it("validates file sizes, product type tags and procedure price ranges", async () => {
     const user = await createUser();
     await expect(prisma.imageUploadSession.create({ data: { userId: user.id, s3Key: randomUUID(), mimeType: "image/jpeg", fileSizeBytes: 0, expiresAt: new Date(Date.now() + 300_000) } })).rejects.toThrow(/constraint/i);
-    await expect(prisma.product.create({ data: { brand: "test", name: "invalid", category: "TONER", ingredients: [], targetTypes: ["UNKNOWN"], affiliateUrl: "https://example.invalid", isActive: false } })).rejects.toThrow(/constraint/i);
+    await expect(prisma.product.create({ data: { brandName: "test", productName: "invalid", category: "TONER", ingredients: [], suitableBaumannTypes: ["UNKNOWN"], affiliateBaseUrl: "https://example.invalid", isActive: false } })).rejects.toThrow(/constraint/i);
     await expect(prisma.medicalProcedure.create({ data: { nameKo: "검증용", principleText: "검증용", recommendedInterval: "검증용", sideEffects: [], minPriceKrw: 200, maxPriceKrw: 100, isActive: false } })).rejects.toThrow(/constraint/i);
   });
 
@@ -141,17 +141,17 @@ describe("initial PostgreSQL migration", () => {
     expect(await prisma.userConsentHistory.count({ where: { userId: user.id } })).toBe(0);
   });
 
-  it("seeds ten inactive procedure and four category fixtures idempotently", async () => {
+  it("seeds ten inactive procedure and 32 category fixtures idempotently", async () => {
     await seedSampleCatalog(prisma);
     await seedSampleCatalog(prisma);
     const products = await prisma.product.findMany({ where: { id: { in: SAMPLE_PRODUCT_IDS } } });
     const procedures = await prisma.medicalProcedure.findMany({ where: { id: { in: SAMPLE_PROCEDURE_IDS } } });
-    expect(products).toHaveLength(4);
+    expect(products).toHaveLength(32);
     expect(procedures).toHaveLength(10);
-    expect(products.map((product) => product.category).sort()).toEqual(["CREAM", "SERUM", "SUNCARE", "TONER"]);
+    expect([...new Set(products.map((product) => product.category))].sort()).toEqual(["CREAM", "SERUM", "SUNCARE", "TONER"]);
     for (const product of products) {
       expect(product.isActive).toBe(false);
-      expect(new URL(product.affiliateUrl).hostname).toBe("example.invalid");
+      expect(new URL(product.affiliateBaseUrl).hostname).toBe("example.invalid");
     }
     for (const procedure of procedures) {
       expect(procedure.isActive).toBe(false);

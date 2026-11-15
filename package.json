@@ -23,7 +23,8 @@
     "db:status": "node --conditions=react-server --import tsx scripts/database.ts status",
     "db:seed": "node --conditions=react-server --import tsx scripts/database.ts seed",
     "test:db": "vitest run --config vitest.database.config.ts",
-    "format:check": "prettier --check app/manifest.ts components/pwa components/system lib/server-env.ts lib/prisma.ts lib/database-development.ts scripts prisma.config.ts prisma/seed.ts compose.yaml .prettierrc.json"
+    "format:check": "prettier --check app/manifest.ts components/pwa components/system lib/server-env.ts lib/prisma.ts lib/database-development.ts scripts prisma.config.ts prisma/seed.ts compose.yaml .prettierrc.json",
+    "catalog:check": "node --conditions=react-server --import tsx scripts/catalog-check.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1166.0",

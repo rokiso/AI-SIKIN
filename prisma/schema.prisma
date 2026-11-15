@@ -180,18 +180,25 @@ enum ProductCategory {
 
 model Product {
   id              String                  @id @default(uuid())
-  brand           String                  @map("brand")
-  name            String                  @map("name")
+  brandName       String                  @map("brand")
+  productName     String                  @map("name")
   category        ProductCategory         @map("category")
   ingredients     String[]                @map("ingredients")
-  targetTypes     String[]                @map("target_types") // 예: ["OSNW", "DSNW"]
+  suitableBaumannTypes String[]                @map("target_types") // 예: ["OSNW", "DSNW"]
   isPrimary       Boolean                 @default(true) @map("is_primary")
-  affiliateUrl    String                  @map("affiliate_url")
+  affiliateBaseUrl String                  @map("affiliate_url")
   isActive        Boolean                 @default(true) @map("is_active")
   createdAt       DateTime                @default(now()) @db.Timestamptz @map("created_at")
   updatedAt       DateTime                @updatedAt @db.Timestamptz @map("updated_at")
 
+  keyIngredients String[] @default([]) @map("key_ingredients")
+  fullIngredients String @default("") @map("full_ingredients") @db.Text
+  thumbnailUrl String? @map("thumbnail_url")
+  status ProductStatus @default(ACTIVE)
+  healthCheckFailCount Int @default(0) @map("health_check_fail_count")
+  lastCheckedAt DateTime? @map("last_checked_at") @db.Timestamptz
   recommendations ProductRecommendation[]
+  clickLogs AffiliateClickLog[]
 
   @@index([category, isActive])
   @@map("products")
@@ -202,12 +209,15 @@ model ProductRecommendation {
   reportId      String           @map("report_id")
   productId     String           @map("product_id")
   category      ProductCategory  @map("category")
-  matchReason   String           @map("match_reason")
+  recommendationReason String @map("match_reason")
+  tier RecommendationTier @default(PRIMARY)
+  targetIngredients String[] @default([]) @map("target_ingredients")
   createdAt     DateTime         @default(now()) @db.Timestamptz @map("created_at")
 
   report        DiagnosticReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
   product       Product          @relation(fields: [productId], references: [id], onDelete: Restrict)
 
+  @@unique([reportId, category, tier], name: "uq_report_category_tier")
   @@index([reportId])
   @@index([productId])
   @@map("product_recommendations")
@@ -309,4 +319,32 @@ model SnapshotUploadSession {
   @@index([userId, createdAt])
   @@index([status, expiresAt])
   @@map("snapshot_upload_sessions")
+}
+
+enum ProductStatus {
+  ACTIVE
+  OUT_OF_STOCK
+  DISCONTINUED
+  UNAVAILABLE
+}
+enum RecommendationTier {
+  PRIMARY
+  SECONDARY
+}
+model AffiliateClickLog {
+  id String @id @default(uuid())
+  productId String @map("product_id")
+  reportId String? @map("report_id")
+  userId String? @map("user_id")
+  guestDeviceId String? @map("guest_device_id")
+  tier RecommendationTier @default(PRIMARY)
+  sourceBaumannType String? @map("source_baumann_type") @db.VarChar(4)
+  targetUrl String @map("target_url") @db.Text
+  userAgent String? @map("user_agent") @db.VarChar(512)
+  clickedAt DateTime @default(now()) @map("clicked_at") @db.Timestamptz
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  @@index([productId, clickedAt])
+  @@index([userId])
+  @@index([guestDeviceId])
+  @@map("affiliate_click_logs")
 }

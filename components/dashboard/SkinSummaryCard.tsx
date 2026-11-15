@@ -54,6 +54,7 @@ export function SkinSummaryCard({ diagnostic }: { diagnostic: LatestDiagnostic }
       </div>
       <IngredientList title="권장 성분" ingredients={diagnostic.recommendedIngredients} emptyText="권장 성분 정보가 아직 등록되지 않았어요." />
       <IngredientList title="주의 성분" ingredients={diagnostic.cautionIngredients} emptyText="등록된 주의 성분 정보가 없어요." />
+      <Link href={`/catalog/products?reportId=${encodeURIComponent(diagnostic.reportId)}`} className="button-primary flex justify-between">내 성분에 맞는 화장품 보기<ArrowRight aria-hidden="true" size={18} strokeWidth={1.75} /></Link>
       <Link href="/mypage" className="button-secondary flex justify-between">진단 이력 보러 가기<ArrowRight aria-hidden="true" size={18} strokeWidth={1.75} /></Link>
     </section>
   );
