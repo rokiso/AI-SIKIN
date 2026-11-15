@@ -1,3 +1,4 @@
+import { isPhotoTestMode } from "@/lib/photo-test-mode";
 import "server-only";
 
 import { getPrisma } from "@/lib/prisma";
@@ -84,7 +85,7 @@ export async function getDashboardSummary(
           select: {
             id: true,
             feedbackComment: true,
-            feedbackSource: true,
+            feedbackSource: !isPhotoTestMode(),
             hydrationLevel: true,
             soothingLevel: true,
             sebumLevel: true,
@@ -99,7 +100,7 @@ export async function getDashboardSummary(
         snapshotId: snapshot.id,
         recordDate,
         feedbackComment: snapshot.feedbackComment,
-        conditions: snapshot.feedbackSource === "GENERAL_GUIDANCE" ? null : {
+        conditions: isPhotoTestMode() || snapshot.feedbackSource === "GENERAL_GUIDANCE" ? null : {
           hydrationLevel: snapshot.hydrationLevel,
           soothingLevel: snapshot.soothingLevel,
           sebumLevel: snapshot.sebumLevel,

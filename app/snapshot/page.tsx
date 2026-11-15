@@ -1,3 +1,5 @@
+import { isPhotoTestMode } from "@/lib/photo-test-mode";
+import { LocalPhotoPreview } from "@/components/photo/LocalPhotoPreview";
 import { unstable_rethrow } from "next/navigation";
 import { SocialAuthModal } from "@/components/auth/SocialAuthModal";
 import { DailySnapshotRecorder } from "@/components/snapshot/DailySnapshotRecorder";
@@ -8,6 +10,17 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeading } from "@/components/ui/PageHeading";
 export const dynamic = "force-dynamic";
 export default async function SnapshotPage() {
+  if (isPhotoTestMode())
+    return (
+      <div className="space-y-6 break-keep">
+        <PageHeading
+          eyebrow="사진 테스트"
+          title="사진 선택을 체험해 보세요"
+          description="테스트 모드에서는 사진을 저장하거나 피부를 분석하지 않습니다."
+        />
+        <LocalPhotoPreview />
+      </div>
+    );
   const session = await getAppUserSession();
   let initialSnapshot: SnapshotView | null = null;
   let initialError = false;
