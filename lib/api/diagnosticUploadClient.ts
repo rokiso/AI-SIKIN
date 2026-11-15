@@ -81,7 +81,7 @@ async function post(path: string, body: unknown, signal: AbortSignal, phase: "li
     throw new ImageUploadError(phase, messages[phase]);
   }
 }
-function putImage(
+export function putImage(
   url: string,
   image: ProcessedImageResult,
   signal: AbortSignal,

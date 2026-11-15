@@ -78,7 +78,7 @@ try {
     const recordDate = today();
     await prisma.dailySnapshot.upsert({
       where: { uq_user_daily_snapshot: { userId, recordDate: new Date(`${recordDate}T00:00:00.000Z`) } },
-      create: { userId, recordDate: new Date(`${recordDate}T00:00:00.000Z`), s3Key: "test-only-dashboard-snapshot", feedbackComment: "오늘의 검증용 피부 피드백입니다.", hydrationLevel: "BALANCED", soothingLevel: "HIGH", sebumLevel: "LOW" },
+      create: { userId, recordDate: new Date(`${recordDate}T00:00:00.000Z`), s3Key: "test-only-dashboard-snapshot", feedbackComment: "오늘의 검증용 피부 피드백입니다.", feedbackSource: "AI", hydrationLevel: "BALANCED", soothingLevel: "HIGH", sebumLevel: "LOW" },
       update: {},
     });
     result = { recorded: true, recordDate };

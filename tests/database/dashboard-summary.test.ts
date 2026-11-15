@@ -244,6 +244,7 @@ describe("authorized dashboard read projection", () => {
         s3Key: "today-private-image",
         recordDate: new Date("2026-11-10T00:00:00.000Z"),
         feedbackComment: "한국 날짜 기준 오늘의 기록",
+        feedbackSource: "AI",
         hydrationLevel: "HIGH",
         soothingLevel: "BALANCED",
         sebumLevel: "LOW",

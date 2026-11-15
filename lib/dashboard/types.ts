@@ -60,7 +60,7 @@ export const todaySnapshotSchema = z.discriminatedUnion("isRecorded", [
       hydrationLevel: conditionSchema,
       soothingLevel: conditionSchema,
       sebumLevel: conditionSchema,
-    }),
+    }).nullable(),
   }),
 ]);
 export type TodaySnapshot = z.infer<typeof todaySnapshotSchema>;

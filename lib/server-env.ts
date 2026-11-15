@@ -96,3 +96,20 @@ export function getOAuthConfiguration(provider: "google" | "kakao") {
     callbackUrl: new URL(`/auth/callback/${provider}`, result.data.appUrl).href,
   };
 }
+
+export function getSnapshotAiConfiguration(): { apiKey: string; model: string } | null {
+  const apiKey = process.env.SNAPSHOT_AI_API_KEY;
+  const model = process.env.SNAPSHOT_AI_MODEL;
+  if (!apiKey && !model) return null;
+  const parsed = z
+    .object({
+      apiKey: z
+        .string()
+        .min(1)
+        .refine((value) => !value.startsWith("replace-with-")),
+      model: z.string().min(1).max(100),
+    })
+    .safeParse({ apiKey, model });
+  if (!parsed.success) throw new Error("Snapshot AI configuration is incomplete");
+  return parsed.data;
+}

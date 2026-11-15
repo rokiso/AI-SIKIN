@@ -27,6 +27,7 @@ model User {
   email              String?              @unique
   nickname           String
   role               UserRole             @default(USER)
+  snapshotUploads    SnapshotUploadSession[]
   imageUploads       ImageUploadSession[]
   accounts           UserAccount[]
   sessions           AuthSession[]
@@ -254,7 +255,15 @@ enum SkinConditionLevel {
   HIGH
 }
 
+enum SnapshotFeedbackSource {
+  GENERAL_GUIDANCE
+  AI
+}
+
 model DailySnapshot {
+  idempotencyKey String? @map("idempotency_key")
+  etag String?
+  feedbackSource SnapshotFeedbackSource @default(GENERAL_GUIDANCE) @map("feedback_source")
   id              String             @id @default(uuid())
   userId          String             @map("user_id")
   s3Key           String             @map("s3_key")
@@ -268,6 +277,7 @@ model DailySnapshot {
 
   user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, idempotencyKey], name: "uq_snapshot_idempotency")
   @@unique([userId, recordDate], name: "uq_user_daily_snapshot")
   @@index([userId, recordDate])
   @@map("daily_snapshots")
@@ -282,4 +292,21 @@ model OAuthAttempt {
   @@index([expiresAt])
   @@index([ownerHash, expiresAt])
   @@map("oauth_attempts")
+}
+
+model SnapshotUploadSession {
+  id String @id
+  userId String @map("user_id")
+  s3Key String @unique @map("s3_key")
+  mimeType String @map("mime_type")
+  fileSizeBytes Int @map("file_size_bytes")
+  recordDate DateTime @db.Date @map("record_date")
+  status UploadStatus @default(PENDING)
+  etag String?
+  expiresAt DateTime @db.Timestamptz @map("expires_at")
+  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, createdAt])
+  @@index([status, expiresAt])
+  @@map("snapshot_upload_sessions")
 }

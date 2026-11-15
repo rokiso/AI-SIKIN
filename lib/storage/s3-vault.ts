@@ -1,5 +1,6 @@
 import "server-only";
 import {
+  GetObjectCommand,
   HeadObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -24,7 +25,11 @@ function vault() {
   };
 }
 
-export async function signImageUpload(s3Key: string, file: UploadFile): Promise<string> {
+export async function signImageUpload(
+  s3Key: string,
+  file: UploadFile,
+  expiresIn = 900,
+): Promise<string> {
   const { client, bucket } = vault();
   try {
     return await getSignedUrl(
@@ -37,7 +42,7 @@ export async function signImageUpload(s3Key: string, file: UploadFile): Promise<
         ServerSideEncryption: "AES256",
       }),
       {
-        expiresIn: 900,
+        expiresIn,
         signableHeaders: new Set(["content-type", "content-length"]),
         unhoistableHeaders: new Set(["x-amz-server-side-encryption"]),
       },
@@ -60,6 +65,23 @@ export async function readImageMetadata(s3Key: string) {
   } catch (error) {
     if (error instanceof S3ServiceException && error.$metadata.httpStatusCode === 404) return null;
     throw error;
+  } finally {
+    client.destroy();
+  }
+}
+
+export async function signImageView(s3Key: string): Promise<string> {
+  const { client, bucket } = vault();
+  try {
+    return await getSignedUrl(
+      client,
+      new GetObjectCommand({
+        Bucket: bucket,
+        Key: s3Key,
+        ResponseCacheControl: "private, no-store",
+      }),
+      { expiresIn: 300 },
+    );
   } finally {
     client.destroy();
   }
