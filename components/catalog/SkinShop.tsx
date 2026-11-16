@@ -415,7 +415,7 @@ export function SkinShop({ data }: { data?: ProductRecommendationResponse }) {
         <p className="text-xs leading-relaxed text-neutral-600">
           {demo
             ? "지금은 쇼핑 화면 체험입니다. 실제 판매 상품·가격·평점·제휴 링크는 아직 등록되지 않았어요. 예시 타입 선택은 진단 기록을 변경하지 않습니다."
-            : "판매처로 이동하며, 제휴 링크를 통한 구매 시 SKIN이 수수료를 받을 수 있습니다. 성분 적합성과 사용감은 개인마다 다르며, 구매 전 전성분과 판매 조건을 확인하세요."}
+            : "판매처로 이동하며, 제휴 링크를 통한 구매 시 MIRUVIA이 수수료를 받을 수 있습니다. 성분 적합성과 사용감은 개인마다 다르며, 구매 전 전성분과 판매 조건을 확인하세요."}
         </p>
         {demo && (
           <Link href="/diagnostic" className="button-secondary flex items-center justify-center">

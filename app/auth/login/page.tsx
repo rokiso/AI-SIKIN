@@ -1,7 +1,7 @@
 import { PageHeading } from "@/components/ui/PageHeading";
 import { SocialLoginButtons } from "@/components/auth/SocialAuthModal";
 import { safeReturnPath } from "@/lib/auth/validation";
-export const metadata = { title: "로그인 | SKIN", referrer: "no-referrer" as const };
+export const metadata = { title: "로그인 | MIRUVIA", referrer: "no-referrer" as const };
 export default async function LoginPage({
   searchParams,
 }: {

@@ -8,11 +8,11 @@ import "@fontsource-variable/noto-sans-kr";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "SKIN | 내 피부의 기준", template: "%s | SKIN" },
-  description: "내 피부를 이해하고, 나에게 맞는 일상 스킨케어를 알아보세요.",
-  applicationName: "SKIN",
+  title: { default: "미루비아 MIRUVIA | 내 피부를 비추고 나만의 관리 방향을 찾다", template: "%s | MIRUVIA" },
+  description: "내 피부를 비추고 나만의 관리 방향을 찾다. MIRUVIA — Reflect your skin. Find your way.",
+  applicationName: "MIRUVIA",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, title: "SKIN", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "미루비아", statusBarStyle: "default" },
   // Next.js 16 emits the standard mobile tag; keep the legacy iOS tag too.
   other: { "apple-mobile-web-app-capable": "yes" },
   icons: {

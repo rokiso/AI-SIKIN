@@ -13,8 +13,9 @@ export function DashboardHeroOnboarding() {
   return (
     <div className="space-y-8 break-keep">
       <section className="pt-2">
-        <p className="mb-4 text-sm font-semibold text-primary-700">나를 이해하는 스킨케어</p>
-        <h1 className="text-2xl font-bold leading-snug tracking-tight text-neutral-900">내 피부에 딱 맞는 스킨케어, 3분 만에 찾기</h1>
+        <p className="mb-4 text-sm font-semibold text-primary-700">미루비아 · MIRUVIA</p>
+        <h1 className="text-2xl font-bold leading-snug tracking-tight text-neutral-900">내 피부를 비추고 나만의 관리 방향을 찾다</h1>
+        <p lang="en" className="mt-3 text-sm leading-relaxed text-primary-700">MIRUVIA — Reflect your skin. Find your way.</p>
         <p className="mt-4 text-base leading-relaxed text-neutral-600">회원가입 전에 먼저 내 피부를 살펴보세요. 사진 한 장과 평소의 피부 습관에서 시작해요.</p>
         <Link href="/diagnostic" className="button-primary mt-6 flex w-full justify-between">
           무료 AI 피부 진단 시작하기

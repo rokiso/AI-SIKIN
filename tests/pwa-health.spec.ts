@@ -5,8 +5,8 @@ import { expect, test } from "@playwright/test";
 import { z } from "zod";
 
 const manifestSchema = z.object({
-  name: z.literal("SKIN"),
-  short_name: z.literal("SKIN"),
+  name: z.literal("미루비아 MIRUVIA"),
+  short_name: z.literal("미루비아"),
   display: z.literal("standalone"),
   start_url: z.literal("/"),
   scope: z.literal("/"),
@@ -23,10 +23,10 @@ test("manifest, install icons and Apple metadata form a valid mobile installatio
   expect(manifest.icons.map((icon) => icon.sizes)).toEqual(["192x192", "512x512"]);
 
   await page.goto("/");
-  await expect(page.getByRole("link", { name: "SKIN 홈으로 이동" })).toBeVisible();
-  await expect(page).toHaveTitle("SKIN | 내 피부의 기준");
-  await expect(page.locator('meta[name="application-name"]')).toHaveAttribute("content", "SKIN");
-  await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveAttribute("content", "SKIN");
+  await expect(page.getByRole("link", { name: "미루비아 MIRUVIA 홈으로 이동" })).toBeVisible();
+  await expect(page).toHaveTitle("미루비아 MIRUVIA | 내 피부를 비추고 나만의 관리 방향을 찾다");
+  await expect(page.locator('meta[name="application-name"]')).toHaveAttribute("content", "MIRUVIA");
+  await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveAttribute("content", "미루비아");
   await expect(page.locator('link[rel="manifest"]')).toHaveAttribute("href", "/manifest.webmanifest");
   await expect(page.locator('meta[name="apple-mobile-web-app-capable"]')).toHaveAttribute("content", "yes");
   const viewport = await page.locator('meta[name="viewport"]').getAttribute("content");
