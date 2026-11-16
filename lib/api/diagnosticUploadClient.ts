@@ -49,8 +49,7 @@ export function normalizeETag(value: string | null) {
       "confirm",
       "전송 결과를 확인할 수 없습니다. 사진을 다시 선택해주세요.",
     );
-  const etag = value.startsWith('"') ? value : `"${value}"`;
-  const parsed = uploadCompleteSchema.shape.etag.safeParse(etag);
+  const parsed = uploadCompleteSchema.shape.etag.safeParse(value);
   if (!parsed.success) throw new ImageUploadError("confirm", messages.confirm);
   return parsed.data;
 }

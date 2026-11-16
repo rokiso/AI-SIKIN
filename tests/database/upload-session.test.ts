@@ -91,6 +91,22 @@ describe("private upload lifecycle", () => {
       completeUpload(owner, upload.uploadSessionId, '"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"'),
     ).rejects.toMatchObject({ status: 400 });
   });
+  it("accepts either ETag representation and replays the same confirmation", async () => {
+    const { owner, upload } = await issue();
+    storage.head.mockResolvedValue({
+      etag: etag.slice(1, -1),
+      size: file.fileSizeBytes,
+      mimeType: file.mimeType,
+      encryption: "AES256",
+    });
+    const first = await completeUpload(owner, upload.uploadSessionId, etag.slice(1, -1));
+    expect(await completeUpload(owner, upload.uploadSessionId, etag)).toEqual(first);
+    expect(storage.head).toHaveBeenCalledTimes(1);
+    expect(
+      (await db.imageUploadSession.findUniqueOrThrow({ where: { id: upload.uploadSessionId } }))
+        .etag,
+    ).toBe(etag);
+  });
   it("denies another owner before touching storage, including confirmed sessions", async () => {
     const { owner, upload } = await issue();
     const stranger = guest();

@@ -2,7 +2,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { getPrisma } from "@/lib/prisma";
 import type { VerifiedIdentity } from "@/lib/session/identity-types";
-import { uploadExtensions, type UploadFile } from "./upload-validation";
+import { uploadExtensions, uploadEtagSchema, type UploadFile } from "./upload-validation";
 import { readImageMetadata, signImageUpload } from "@/lib/storage/s3-vault";
 
 export class UploadError extends Error {
@@ -63,6 +63,9 @@ export async function createUpload(owner: UploadOwner, file: UploadFile) {
 }
 
 export async function completeUpload(owner: UploadOwner, id: string, etag: string) {
+  const parsedEtag = uploadEtagSchema.safeParse(etag);
+  if (!parsedEtag.success) missingObject();
+  const canonicalEtag = parsedEtag.data;
   return getPrisma().$transaction(
     async (tx) => {
       // Lock the row so retries cannot overwrite the first confirmed timestamp.
@@ -85,7 +88,7 @@ export async function completeUpload(owner: UploadOwner, id: string, etag: strin
           "해당 업로드 세션에 대한 완료 처리 권한이 없습니다.",
         );
       if (session.status === "UPLOADED") {
-        if (session.etag !== etag) missingObject();
+        if (uploadEtagSchema.safeParse(session.etag).data !== canonicalEtag) missingObject();
         return confirmation(session);
       }
       if (session.expiresAt.getTime() <= Date.now() || session.status === "EXPIRED") {
@@ -99,7 +102,7 @@ export async function completeUpload(owner: UploadOwner, id: string, etag: strin
       const metadata = await readImageMetadata(session.s3Key);
       if (
         !metadata ||
-        metadata.etag !== etag ||
+        uploadEtagSchema.safeParse(metadata.etag).data !== canonicalEtag ||
         metadata.size !== session.fileSizeBytes ||
         metadata.mimeType !== session.mimeType ||
         metadata.encryption !== "AES256"
@@ -113,7 +116,7 @@ export async function completeUpload(owner: UploadOwner, id: string, etag: strin
         );
       const confirmed = await tx.imageUploadSession.update({
         where: { id },
-        data: { status: "UPLOADED", etag },
+        data: { status: "UPLOADED", etag: canonicalEtag },
       });
       return confirmation(confirmed);
     },

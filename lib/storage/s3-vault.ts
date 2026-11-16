@@ -8,7 +8,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { getVaultConfiguration } from "@/lib/server-env";
-import type { UploadFile } from "@/lib/diagnostic/upload-validation";
+import { uploadEtagSchema, type UploadFile } from "@/lib/diagnostic/upload-validation";
 
 function vault() {
   const config = getVaultConfiguration();
@@ -57,7 +57,7 @@ export async function readImageMetadata(s3Key: string) {
   try {
     const object = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: s3Key }));
     return {
-      etag: object.ETag,
+      etag: uploadEtagSchema.safeParse(object.ETag).data,
       size: object.ContentLength,
       mimeType: object.ContentType,
       encryption: object.ServerSideEncryption,
