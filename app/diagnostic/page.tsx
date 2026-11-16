@@ -51,17 +51,6 @@ export default function DiagnosticPage() {
           ))}
         </ul>
       </section>
-      <p id="camera-availability" className="mt-6 text-sm leading-relaxed text-neutral-600">
-        카메라 촬영 기능은 준비 중이에요. 지금은 앨범의 사진을 선택할 수 있어요.
-      </p>
-      <button
-        type="button"
-        disabled
-        aria-describedby="camera-availability"
-        className="button-secondary mt-3 w-full"
-      >
-        카메라로 촬영하기
-      </button>
       <DiagnosticPhotoStep />
     </div>
   );

@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { CameraViewfinder } from "@/components/diagnostic/CameraViewfinder";
 import { preprocessAlbumImage } from "@/lib/image/clientPreprocess";
 
 export function LocalPhotoPreview() {
   const [preview, setPreview] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [camera, setCamera] = useState(false);
   const current = useRef<string | null>(null);
   const controller = useRef<AbortController | null>(null);
   useEffect(
@@ -53,6 +55,7 @@ export function LocalPhotoPreview() {
     }
   }
 
+  if (camera) return <CameraViewfinder previewOnly onAlbum={() => setCamera(false)} />;
   return (
     <section
       className="space-y-4 rounded-2xl border border-primary-200 bg-primary-50 p-5"
@@ -65,6 +68,17 @@ export function LocalPhotoPreview() {
         로그인 없이 사진 선택과 미리보기를 체험해 보세요. 사진은 서버로 전송하지 않으며, 저장·AI
         분석·피부 진단은 진행하지 않습니다. 화면을 떠나거나 새로고침하면 미리보기가 사라져요.
       </p>
+      <button
+        type="button"
+        className="button-secondary w-full"
+        disabled={busy}
+        onClick={() => {
+          clear();
+          setCamera(true);
+        }}
+      >
+        가이드 카메라로 촬영
+      </button>
       <label className="button-primary flex min-h-12 cursor-pointer items-center justify-center">
         앨범에서 사진 선택
         <input

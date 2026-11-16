@@ -1,18 +1,43 @@
 "use client";
 import { useState } from "react";
 import type { OnUploadCompletePayload } from "@/lib/api/diagnosticUploadClient";
+import { CameraViewfinder } from "./CameraViewfinder";
 import { AlbumImageUploader } from "./AlbumImageUploader";
 export function DiagnosticPhotoStep() {
   const [upload, setUpload] = useState<OnUploadCompletePayload | null>(null);
   const [showGuide, setShowGuide] = useState(false);
+  const [mode, setMode] = useState<"album" | "camera">("album");
   return (
     <>
-      <AlbumImageUploader
-        onUploadComplete={(result) => {
-          setUpload(result);
-          if (!result) setShowGuide(false);
-        }}
-      />
+      {mode === "camera" ? (
+        <CameraViewfinder
+          onAlbum={() => setMode("album")}
+          onUploadComplete={(result) => {
+            setUpload(result);
+            if (!result) setShowGuide(false);
+          }}
+        />
+      ) : (
+        <>
+          <button
+            type="button"
+            className="button-secondary mt-5 w-full"
+            onClick={() => {
+              setUpload(null);
+              setShowGuide(false);
+              setMode("camera");
+            }}
+          >
+            카메라로 촬영하기
+          </button>
+          <AlbumImageUploader
+            onUploadComplete={(result) => {
+              setUpload(result);
+              if (!result) setShowGuide(false);
+            }}
+          />
+        </>
+      )}
       {upload && (
         <section
           aria-labelledby="questionnaire-next-heading"

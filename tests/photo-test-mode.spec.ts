@@ -56,3 +56,23 @@ for (const path of ["/diagnostic", "/snapshot"]) {
     expect(writes).toEqual([]);
   });
 }
+
+test("guided camera preview never uploads and releases tracks", async ({ page }) => {
+  const { syntheticCamera, streamsStopped } = await import("./fixtures/camera-browser");
+  await syntheticCamera(page);
+  const writes: string[] = [];
+  page.on("request", (request) => {
+    if (["POST", "PUT", "PATCH"].includes(request.method())) writes.push(request.url());
+  });
+  await page.goto("/diagnostic");
+  await page.getByRole("button", { name: "가이드 카메라로 촬영" }).click();
+  await page.getByRole("button", { name: "카메라 켜기", exact: true }).click();
+  await expect(page.getByRole("button", { name: "촬영", exact: true })).toBeEnabled();
+  await page.getByRole("button", { name: "촬영", exact: true }).click();
+  await page.getByRole("button", { name: "이 사진 미리보기", exact: true }).click();
+  await expect(
+    page.getByText("사진을 이 기기에서만 미리보고 있어요. 저장하거나 분석하지 않았습니다."),
+  ).toBeVisible();
+  expect(await streamsStopped(page)).toBe(true);
+  expect(writes).toEqual([]);
+});
