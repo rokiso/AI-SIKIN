@@ -1,3 +1,4 @@
+import { SurveyEntry } from "@/components/diagnostic/SurveyEntry";
 import { isPhotoTestMode } from "@/lib/photo-test-mode";
 import { LocalPhotoPreview } from "@/components/photo/LocalPhotoPreview";
 import { DiagnosticPhotoStep } from "@/components/diagnostic/DiagnosticPhotoStep";
@@ -21,6 +22,7 @@ export default function DiagnosticPage() {
           description="테스트 모드에서는 사진을 저장하거나 피부를 분석하지 않습니다."
         />
         <LocalPhotoPreview />
+        <SurveyEntry />
       </div>
     );
   return (
@@ -28,7 +30,7 @@ export default function DiagnosticPage() {
       <PageHeading
         eyebrow="피부 진단"
         title="시작하기 전에 살펴봐요"
-        description="정면 사진을 등록하고 피부 관리 가이드를 준비해 보세요. 12문항 문진은 다음 단계로 연결될 예정이에요."
+        description="정면 사진을 등록하고 피부 관리 가이드를 준비해 보세요. 사진 등록 후 12문항 문진으로 이어가거나, 문진부터 시작할 수 있어요."
       />
       <div className="mb-6">
         <MedicalDisclaimerNotice compact />

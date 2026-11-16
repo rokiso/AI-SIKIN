@@ -336,7 +336,7 @@ export function CameraViewfinder({
             <p role="status" className="text-sm text-primary-800">
               {previewOnly
                 ? "사진을 이 기기에서만 미리보고 있어요. 저장하거나 분석하지 않았습니다."
-                : "사진 업로드가 완료되었습니다. 문진 연결은 준비 중입니다."}
+                : "사진 업로드가 완료되었습니다. 아래에서 문진으로 이어가세요."}
             </p>
           )}
         </>

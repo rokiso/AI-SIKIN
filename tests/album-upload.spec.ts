@@ -154,7 +154,7 @@ for (const width of [320, 1280]) {
       fullPage: true,
     });
     await page.getByRole("button", { name: "다음 단계로 이동" }).click();
-    await expect(page.getByRole("heading", { name: "문진 안내", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "세안 후 아무것도 바르지 않으면 피부는 어떤가요?", exact: true })).toBeVisible();
     await expect(
       page
         .getByRole("navigation", { name: "주요 메뉴" })

@@ -91,7 +91,7 @@ for (const width of [320, 1280])
     await expect(page.getByText(/이미지 전송 중 네트워크 오류가 발생했습니다/)).toBeVisible();
     await page.getByRole("button", { name: "다시 시도", exact: true }).click();
     await expect(
-      page.getByText("사진 업로드가 완료되었습니다. 문진 연결은 준비 중입니다."),
+      page.getByText("사진 업로드가 완료되었습니다. 아래에서 문진으로 이어가세요."),
     ).toBeVisible();
     expect(steps).toEqual(["link", "transfer", "link", "transfer", "confirm"]);
     await page.getByRole("button", { name: "앨범에서 사진 선택하기" }).click();

@@ -17,6 +17,12 @@ export async function handleUpload<T>(
   code: string,
   status: number,
   action: (owner: UploadOwner, data: T) => Promise<unknown>,
+  options?: {
+    invalidMessage: string;
+    sessionCode: string;
+    failureCode: string;
+    failureMessage: string;
+  },
 ) {
   try {
     if (
@@ -30,14 +36,15 @@ export async function handleUpload<T>(
       return failure(
         400,
         code,
-        code === "INVALID_FILE_SPEC" ? invalidMessage : "업로드 완료 요청을 확인해 주세요.",
+        options?.invalidMessage ??
+          (code === "INVALID_FILE_SPEC" ? invalidMessage : "업로드 완료 요청을 확인해 주세요."),
       );
     }
     const identity = await resolveRequestIdentity(readSessionCookies(await cookies()));
     if (identity.kind === "anonymous")
       return failure(
         401,
-        "SESSION_REQUIRED",
+        options?.sessionCode ?? "SESSION_REQUIRED",
         "페이지를 새로고침하여 세션을 시작한 뒤 다시 시도해 주세요.",
       );
     // Bound the body even when Content-Length is omitted or forged.
@@ -72,7 +79,8 @@ export async function handleUpload<T>(
       return failure(
         400,
         code,
-        code === "INVALID_FILE_SPEC" ? invalidMessage : "업로드 완료 요청을 확인해 주세요.",
+        options?.invalidMessage ??
+          (code === "INVALID_FILE_SPEC" ? invalidMessage : "업로드 완료 요청을 확인해 주세요."),
       );
     return Response.json(
       { success: true, data: await action(identity, parsed.data) },
@@ -81,11 +89,15 @@ export async function handleUpload<T>(
   } catch (error) {
     unstable_rethrow(error);
     if (error instanceof UploadError) return failure(error.status, error.code, error.message);
-    console.error("[diagnostic-upload] Upload operation failed");
+    console.error(
+      options
+        ? "[diagnostic-survey] Save operation failed"
+        : "[diagnostic-upload] Upload operation failed",
+    );
     return failure(
       503,
-      "UPLOAD_UNAVAILABLE",
-      "사진 업로드를 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+      options?.failureCode ?? "UPLOAD_UNAVAILABLE",
+      options?.failureMessage ?? "사진 업로드를 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.",
     );
   }
 }

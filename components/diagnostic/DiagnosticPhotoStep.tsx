@@ -1,14 +1,31 @@
 "use client";
 import { useState } from "react";
 import type { OnUploadCompletePayload } from "@/lib/api/diagnosticUploadClient";
+import { BaumannQuestionnaire } from "./BaumannQuestionnaire";
 import { CameraViewfinder } from "./CameraViewfinder";
+import { useUploadActivity } from "./UploadActivity";
 import { AlbumImageUploader } from "./AlbumImageUploader";
 export function DiagnosticPhotoStep() {
+  const { busy } = useUploadActivity();
   const [upload, setUpload] = useState<OnUploadCompletePayload | null>(null);
   const [showGuide, setShowGuide] = useState(false);
   const [mode, setMode] = useState<"album" | "camera">("album");
+  if (showGuide)
+    return (
+      <div className="mt-6">
+        <BaumannQuestionnaire uploadSessionId={upload?.uploadSessionId} />
+      </div>
+    );
   return (
     <>
+      <button
+        type="button"
+        className="button-secondary mt-5 w-full"
+        disabled={busy}
+        onClick={() => setShowGuide(true)}
+      >
+        문진 먼저 시작하기
+      </button>
       {mode === "camera" ? (
         <CameraViewfinder
           onAlbum={() => setMode("album")}
@@ -57,15 +74,6 @@ export function DiagnosticPhotoStep() {
           >
             다음 단계로 이동
           </button>
-          {showGuide && (
-            <div role="status" className="space-y-2 text-sm leading-relaxed text-neutral-700">
-              <h3 className="font-semibold">문진 안내</h3>
-              <p>
-                12문항 문진 기능은 준비 중이에요. 등록한 사진 정보는 현재 화면에서 유지되며, 문진이
-                연결되면 이어서 사용할 수 있어요.
-              </p>
-            </div>
-          )}
         </section>
       )}
     </>
