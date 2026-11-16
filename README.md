@@ -1,4 +1,4 @@
-# SIKIN
+# SKIN
 
 AI 피부 분석 및 맞춤 관리 서비스를 위한 모바일 웹/PWA 기반입니다. Next.js 16 App Router, React, TypeScript strict, Tailwind CSS, Prisma 7과 PostgreSQL 17을 사용합니다.
 

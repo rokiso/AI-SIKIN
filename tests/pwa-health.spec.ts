@@ -5,8 +5,8 @@ import { expect, test } from "@playwright/test";
 import { z } from "zod";
 
 const manifestSchema = z.object({
-  name: z.literal("AI 피부 분석 및 맞춤 관리 서비스"),
-  short_name: z.literal("AI피부맞춤"),
+  name: z.literal("SKIN"),
+  short_name: z.literal("SKIN"),
   display: z.literal("standalone"),
   start_url: z.literal("/"),
   scope: z.literal("/"),
@@ -23,6 +23,10 @@ test("manifest, install icons and Apple metadata form a valid mobile installatio
   expect(manifest.icons.map((icon) => icon.sizes)).toEqual(["192x192", "512x512"]);
 
   await page.goto("/");
+  await expect(page.getByRole("link", { name: "SKIN 홈으로 이동" })).toBeVisible();
+  await expect(page).toHaveTitle("SKIN | 내 피부의 기준");
+  await expect(page.locator('meta[name="application-name"]')).toHaveAttribute("content", "SKIN");
+  await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveAttribute("content", "SKIN");
   await expect(page.locator('link[rel="manifest"]')).toHaveAttribute("href", "/manifest.webmanifest");
   await expect(page.locator('meta[name="apple-mobile-web-app-capable"]')).toHaveAttribute("content", "yes");
   const viewport = await page.locator('meta[name="viewport"]').getAttribute("content");
