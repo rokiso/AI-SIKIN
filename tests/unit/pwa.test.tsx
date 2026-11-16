@@ -8,14 +8,14 @@ afterEach(() => { cleanup(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 describe("PWA manifest", () => {
   it("defines a Korean standalone application with in-scope icons and navigation", () => {
     expect(manifest()).toMatchObject({
-      name: "AI 피부 분석 및 맞춤 관리 서비스",
-      short_name: "AI피부맞춤",
+      name: "SKIN",
+      short_name: "SKIN",
       display: "standalone",
       scope: "/",
       start_url: "/",
       icons: [
-        { src: "/icons/sikin-192.png", sizes: "192x192", type: "image/png" },
-        { src: "/icons/sikin-512.png", sizes: "512x512", type: "image/png" },
+        { src: "/icons/skin-192.png", sizes: "192x192", type: "image/png" },
+        { src: "/icons/skin-512.png", sizes: "512x512", type: "image/png" },
       ],
     });
   });

@@ -8,16 +8,16 @@ import "@fontsource-variable/noto-sans-kr";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "SIKIN | 내 피부의 기준", template: "%s | SIKIN" },
+  title: { default: "SKIN | 내 피부의 기준", template: "%s | SKIN" },
   description: "내 피부를 이해하고, 나에게 맞는 일상 스킨케어를 알아보세요.",
-  applicationName: "SIKIN",
+  applicationName: "SKIN",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, title: "AI피부맞춤", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "SKIN", statusBarStyle: "default" },
   // Next.js 16 emits the standard mobile tag; keep the legacy iOS tag too.
   other: { "apple-mobile-web-app-capable": "yes" },
   icons: {
-    icon: [{ url: "/icons/sikin-192.png", sizes: "192x192", type: "image/png" }],
-    apple: [{ url: "/icons/sikin-192.png", sizes: "192x192", type: "image/png" }],
+    icon: [{ url: "/icons/skin-192.png", sizes: "192x192", type: "image/png" }],
+    apple: [{ url: "/icons/skin-192.png", sizes: "192x192", type: "image/png" }],
   },
 };
 

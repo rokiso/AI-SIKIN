@@ -56,7 +56,7 @@ async function checkUrl(
         lookup: publicLookup,
         agent: false,
         headers: {
-          "User-Agent": "SIKIN-Link-Check/1.0",
+          "User-Agent": "SKIN-Link-Check/1.0",
           ...(method === "GET" ? { Range: "bytes=0-0" } : {}),
         },
       },

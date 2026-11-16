@@ -47,9 +47,9 @@ export function GlobalHeader({ navigationDisabled = false }: { navigationDisable
             <ArrowLeft aria-hidden="true" size={22} strokeWidth={1.75} />
           </button>
         )}
-        <Link href="/" aria-disabled={navigationDisabled} tabIndex={navigationDisabled ? -1 : undefined} onClick={(event) => { if (navigationDisabled) event.preventDefault(); }} aria-label="SIKIN 홈으로 이동" className="flex min-h-11 min-w-11 items-center gap-2 break-keep rounded-xl pr-2 font-semibold tracking-widest text-primary-800">
+        <Link href="/" aria-disabled={navigationDisabled} tabIndex={navigationDisabled ? -1 : undefined} onClick={(event) => { if (navigationDisabled) event.preventDefault(); }} aria-label="SKIN 홈으로 이동" className="flex min-h-11 min-w-11 items-center gap-2 break-keep rounded-xl pr-2 font-semibold tracking-widest text-primary-800">
           <Leaf aria-hidden="true" size={23} strokeWidth={1.75} />
-          <span className="text-lg">SIKIN</span>
+          <span className="text-lg">SKIN</span>
         </Link>
       </div>
       <span className="break-keep text-xs font-medium text-neutral-600">내 피부의 기준</span>

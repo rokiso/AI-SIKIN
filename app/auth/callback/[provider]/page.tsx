@@ -1,6 +1,6 @@
 import { OAuthCallback } from "@/components/auth/OAuthCallback";
 export const metadata = {
-  title: "로그인 확인 | SIKIN",
+  title: "로그인 확인 | SKIN",
   referrer: "no-referrer" as const,
   robots: { index: false, follow: false },
 };

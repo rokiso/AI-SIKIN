@@ -61,7 +61,7 @@ export function getShopDemo(
       );
       const products = candidates.map((p, index) => ({
         id: p.id,
-        brandName: "SIKIN CONCEPT · 가상 브랜드",
+        brandName: "SKIN CONCEPT · 가상 브랜드",
         productName: `${index ? "라이트 " : ""}${names[i]}`,
         thumbnailUrl: null,
         keyIngredients: [
