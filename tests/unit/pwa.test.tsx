@@ -8,8 +8,8 @@ afterEach(() => { cleanup(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 describe("PWA manifest", () => {
   it("defines a Korean standalone application with in-scope icons and navigation", () => {
     expect(manifest()).toMatchObject({
-      name: "SKIN",
-      short_name: "SKIN",
+      name: "미루비아 MIRUVIA",
+      short_name: "미루비아",
       display: "standalone",
       scope: "/",
       start_url: "/",

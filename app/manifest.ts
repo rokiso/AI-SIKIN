@@ -3,9 +3,9 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "SKIN",
-    short_name: "SKIN",
-    description: "내 피부를 이해하고 나에게 맞는 일상 스킨케어를 알아보세요.",
+    name: "미루비아 MIRUVIA",
+    short_name: "미루비아",
+    description: "내 피부를 비추고 나만의 관리 방향을 찾다. Reflect your skin. Find your way.",
     lang: "ko-KR",
     start_url: "/",
     scope: "/",

@@ -76,7 +76,7 @@ export function ProductIllustration({
         fontWeight="600"
         fill="currentColor"
       >
-        SKIN
+        MIRUVIA
       </text>
     </svg>
   );

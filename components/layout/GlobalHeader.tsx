@@ -47,12 +47,12 @@ export function GlobalHeader({ navigationDisabled = false }: { navigationDisable
             <ArrowLeft aria-hidden="true" size={22} strokeWidth={1.75} />
           </button>
         )}
-        <Link href="/" aria-disabled={navigationDisabled} tabIndex={navigationDisabled ? -1 : undefined} onClick={(event) => { if (navigationDisabled) event.preventDefault(); }} aria-label="SKIN 홈으로 이동" className="flex min-h-11 min-w-11 items-center gap-2 break-keep rounded-xl pr-2 font-semibold tracking-widest text-primary-800">
+        <Link href="/" aria-disabled={navigationDisabled} tabIndex={navigationDisabled ? -1 : undefined} onClick={(event) => { if (navigationDisabled) event.preventDefault(); }} aria-label="미루비아 MIRUVIA 홈으로 이동" className="flex min-h-11 min-w-11 items-center gap-2 break-keep rounded-xl pr-2 font-semibold tracking-wider text-primary-800">
           <Leaf aria-hidden="true" size={23} strokeWidth={1.75} />
-          <span className="text-lg">SKIN</span>
+          <span className="text-lg">MIRUVIA</span>
         </Link>
       </div>
-      <span className="break-keep text-xs font-medium text-neutral-600">내 피부의 기준</span>
+      <span className="break-keep text-xs font-medium text-neutral-600">미루비아</span>
     </header>
   );
 }
