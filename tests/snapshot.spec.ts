@@ -150,6 +150,9 @@ for (const width of [320, 1280])
         exact: true,
       }),
     ).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "피부 기록 캘린더" }).getByRole("status"),
+    ).toContainText("이번 달 1일 기록");
     await page.reload();
     await expect(page.getByRole("heading", { name: "오늘의 일반 관리 안내" })).toBeVisible();
     await expect(page.getByRole("button", { name: "앨범에서 선택하기" })).toHaveCount(0);
