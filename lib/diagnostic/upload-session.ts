@@ -131,3 +131,13 @@ function confirmation(session: { id: string; s3Key: string; updatedAt: Date }) {
     confirmedAt: session.updatedAt.toISOString(),
   };
 }
+
+// Metadata transition only. Object retention/deletion belongs to storage operations.
+export async function expireStaleSessions(now = new Date()) {
+  if (!Number.isFinite(now.getTime())) throw new RangeError("Invalid expiry cutoff");
+  const result = await getPrisma().imageUploadSession.updateMany({
+    where: { status: "PENDING", expiresAt: { lte: now } },
+    data: { status: "EXPIRED" },
+  });
+  return { expiredCount: result.count };
+}

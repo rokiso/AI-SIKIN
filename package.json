@@ -14,6 +14,7 @@
     "typecheck": "npm run db:generate && next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "uploads:expire": "node --conditions=react-server --import tsx scripts/expire-uploads.ts",
     "db:up": "node scripts/dev-database.mjs up",
     "db:stop": "node scripts/dev-database.mjs stop",
     "db:generate": "node --conditions=react-server --import tsx scripts/database.ts generate",

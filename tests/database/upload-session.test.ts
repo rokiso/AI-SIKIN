@@ -8,7 +8,12 @@ vi.mock("@/lib/storage/s3-vault", () => ({
 import { getPrisma } from "@/lib/prisma";
 import { getDatabaseUrl } from "@/lib/server-env";
 import { assertLocalDevelopmentDatabase } from "@/lib/database-development";
-import { completeUpload, createUpload, type UploadOwner } from "@/lib/diagnostic/upload-session";
+import {
+  completeUpload,
+  createUpload,
+  expireStaleSessions,
+  type UploadOwner,
+} from "@/lib/diagnostic/upload-session";
 
 const db = getPrisma();
 const guests = new Set<string>();
@@ -144,6 +149,48 @@ describe("private upload lifecycle", () => {
       (await db.imageUploadSession.findUniqueOrThrow({ where: { id: upload.uploadSessionId } }))
         .status,
     ).toBe("PENDING");
+  });
+  it("expires only overdue pending rows, without changing completed, failed or future rows", async () => {
+    const owner = guest();
+    const cutoff = new Date("1971-01-01T00:00:00Z");
+    const expiredAt = new Date("1970-12-31T23:59:59Z");
+    const base = {
+      guestDeviceId: owner.kind === "guest" ? owner.guestDeviceId : null,
+      ...file,
+      expiresAt: expiredAt,
+    };
+    const states = ["PENDING", "PENDING", "PENDING", "UPLOADED", "FAILED", "EXPIRED"] as const;
+    const rows = await Promise.all(
+      states.map((status, index) =>
+        db.imageUploadSession.create({
+          data: {
+            ...base,
+            status,
+            s3Key: `expiry-test/${randomUUID()}.jpeg`,
+            expiresAt:
+              index === 1 ? cutoff : index === 2 ? new Date(cutoff.getTime() + 1) : expiredAt,
+          },
+        }),
+      ),
+    );
+    const completedBefore = rows[3].updatedAt;
+    const result = await expireStaleSessions(cutoff);
+    expect(result.expiredCount).toBe(2);
+    const read = await Promise.all(
+      rows.map((row) => db.imageUploadSession.findUniqueOrThrow({ where: { id: row.id } })),
+    );
+    expect(read.map((row) => row.status)).toEqual([
+      "EXPIRED",
+      "EXPIRED",
+      "PENDING",
+      "UPLOADED",
+      "FAILED",
+      "EXPIRED",
+    ]);
+    expect(read[3].updatedAt).toEqual(completedBefore);
+    expect(await expireStaleSessions(cutoff)).toEqual({ expiredCount: 0 });
+    await expect(expireStaleSessions(new Date("invalid"))).rejects.toThrow("Invalid expiry cutoff");
+    expect(storage.head).not.toHaveBeenCalled();
   });
   it("does not consume quota on signing failures and propagates storage outages", async () => {
     const owner = guest();
