@@ -2,6 +2,31 @@ datasource db {
   provider = "postgresql"
 }
 
+enum AiInferenceStatus {
+  SUCCESS
+  TIMEOUT
+  ERROR
+}
+
+model AiInferenceAuditLog {
+  id                 String            @id @default(uuid())
+  sessionId          String?           @map("session_id")
+  provider           String
+  modelName          String            @map("model_name")
+  promptTemplateHash String            @map("prompt_template_hash")
+  latencyMs          Int               @map("latency_ms")
+  promptTokens       Int?              @map("prompt_tokens")
+  completionTokens   Int?              @map("completion_tokens")
+  totalTokens        Int?              @map("total_tokens")
+  status             AiInferenceStatus
+  errorMessage       String?           @map("error_message") @db.Text
+  createdAt          DateTime          @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([sessionId])
+  @@index([status, createdAt])
+  @@map("ai_inference_audit_logs")
+}
+
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"

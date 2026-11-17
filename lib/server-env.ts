@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { AiConfigurationError } from "@/lib/ai/errors";
 
 const databaseUrlSchema = z.url({ protocol: /^postgres(?:ql)?$/ });
 
@@ -127,4 +128,44 @@ export function getAffiliateHosts(): Set<string> {
 // Explicit opt-in after production migrations and real seller data are ready.
 export function isCatalogPreviewOnly(): boolean {
   return process.env.CATALOG_LIVE_ENABLED !== "1";
+}
+
+export function isAiLiveEnabled(): boolean {
+  return process.env.AI_LIVE_ENABLED === "1";
+}
+
+export function getAiClientConfiguration() {
+  const result = z
+    .object({
+      provider: z.enum(["OPENAI", "GEMINI"]),
+      apiKey: z
+        .string()
+        .min(1)
+        .max(4096)
+        .refine((value) => !value.startsWith("replace-with-")),
+      modelName: z
+        .string()
+        .regex(/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,119}$/)
+        .refine((value) => !value.startsWith("replace-with-")),
+      timeoutMs: z.coerce
+        .number()
+        .int()
+        .positive()
+        .transform((value) => Math.min(value, 8000)),
+    })
+    .safeParse({
+      provider: process.env.AI_PROVIDER ?? "OPENAI",
+      apiKey: process.env.AI_API_KEY,
+      modelName: process.env.AI_MODEL_NAME,
+      timeoutMs: process.env.AI_REQUEST_TIMEOUT_MS ?? "8000",
+    });
+  if (!result.success) throw new AiConfigurationError();
+  return { ...result.data, maxRetries: 1 as const };
+}
+
+export function getAiHealthcheckToken(): string | null {
+  const value = process.env.AI_HEALTHCHECK_TOKEN;
+  return value && /^[A-Za-z0-9_-]{32,256}$/.test(value) && !value.startsWith("replace-with-")
+    ? value
+    : null;
 }
