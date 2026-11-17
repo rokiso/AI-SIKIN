@@ -22,12 +22,12 @@ function IngredientList({ title, ingredients, emptyText }: { title: string; ingr
   );
 }
 
-export function SkinSummaryCard({ diagnostic }: { diagnostic: LatestDiagnostic }) {
+export function SkinSummaryCard({ diagnostic, heading = "최근 피부 분석", showHistoryLink = true }: { diagnostic: LatestDiagnostic; heading?: string; showHistoryLink?: boolean }) {
   const diagnosedDate = new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium", timeZone: "Asia/Seoul" }).format(new Date(diagnostic.diagnosedAt));
   return (
     <section aria-labelledby="skin-summary-heading" className="space-y-5 break-keep rounded-2xl border border-primary-100 bg-primary-50 p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="skin-summary-heading" className="text-sm font-semibold text-primary-800">최근 피부 분석</h2>
+        <h2 id="skin-summary-heading" className="text-sm font-semibold text-primary-800">{heading}</h2>
         <time dateTime={diagnostic.diagnosedAt} className="text-xs text-neutral-600">{diagnosedDate} · 한국 시간</time>
       </div>
       <div>
@@ -54,7 +54,7 @@ export function SkinSummaryCard({ diagnostic }: { diagnostic: LatestDiagnostic }
       <IngredientList title="권장 성분" ingredients={diagnostic.recommendedIngredients} emptyText="권장 성분 정보가 아직 등록되지 않았어요." />
       <IngredientList title="주의 성분" ingredients={diagnostic.cautionIngredients} emptyText="등록된 주의 성분 정보가 없어요." />
       <Link href={`/catalog/products?reportId=${encodeURIComponent(diagnostic.reportId)}`} className="button-primary flex justify-between">내 성분에 맞는 화장품 보기<ArrowRight aria-hidden="true" size={18} strokeWidth={1.75} /></Link>
-      <Link href="/mypage" className="button-secondary flex justify-between">진단 이력 보러 가기<ArrowRight aria-hidden="true" size={18} strokeWidth={1.75} /></Link>
+      {showHistoryLink && <Link href="/mypage" className="button-secondary flex justify-between">진단 이력 보러 가기<ArrowRight aria-hidden="true" size={18} strokeWidth={1.75} /></Link>}
     </section>
   );
 }

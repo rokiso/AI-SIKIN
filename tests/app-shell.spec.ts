@@ -98,9 +98,14 @@ test("tab navigation selects the current page and header back returns to the pre
 test("snapshot and mypage provide honest empty states and a diagnosis recovery action", async ({ page }) => {
   for (const route of ["/snapshot", "/mypage"]) {
     await page.goto(route);
-    await expect(page.getByText("아직 기록된 피부 분석 리포트가 없습니다.", { exact: true })).toBeVisible();
-    await expect(page.getByText("지금 3분 피부 진단을 받고 맞춤 케어 가이드를 확인해보세요.", { exact: true })).toBeVisible();
-    await page.getByRole("link", { name: "피부 진단 시작하기", exact: true }).click();
+    if (route === "/mypage") {
+      await expect(page.getByText("아직 완료된 피부 분석 리포트가 없습니다.", { exact: true })).toBeVisible();
+      await page.getByRole("link", { name: "피부 분석 시작하기", exact: true }).click();
+    } else {
+      await expect(page.getByText("아직 기록된 피부 분석 리포트가 없습니다.", { exact: true })).toBeVisible();
+      await expect(page.getByText("지금 3분 피부 진단을 받고 맞춤 케어 가이드를 확인해보세요.", { exact: true })).toBeVisible();
+      await page.getByRole("link", { name: "피부 진단 시작하기", exact: true }).click();
+    }
     await expect(page).toHaveURL(/\/diagnostic$/);
   }
 });

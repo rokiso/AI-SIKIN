@@ -13,7 +13,7 @@ import {
   type TodaySnapshot,
 } from "./types";
 
-function describeBaumannType(type: BaumannType): string {
+export function describeBaumannType(type: BaumannType): string {
   return [
     type[0] === "O" ? "지성" : "건성",
     type[1] === "S" ? "민감" : "저항성",
