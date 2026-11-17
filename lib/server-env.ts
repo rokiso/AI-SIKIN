@@ -31,10 +31,22 @@ export function getAuthCookieSecret(): string {
 
 export function getVaultConfiguration() {
   const schema = z.object({
-    bucket: z.string().min(3),
-    region: z.string().min(1),
-    accessKeyId: z.string().min(1),
-    secretAccessKey: z.string().min(1),
+    bucket: z
+      .string()
+      .min(3)
+      .refine((value) => !value.startsWith("replace-with-")),
+    region: z
+      .string()
+      .min(1)
+      .refine((value) => !value.startsWith("replace-with-")),
+    accessKeyId: z
+      .string()
+      .min(1)
+      .refine((value) => !value.startsWith("replace-with-")),
+    secretAccessKey: z
+      .string()
+      .min(1)
+      .refine((value) => !value.startsWith("replace-with-")),
     endpoint: z
       .url()
       .optional()
@@ -42,10 +54,14 @@ export function getVaultConfiguration() {
         if (!value) return true;
         const url = new URL(value);
         return (
-          url.protocol === "https:" ||
-          (process.env.NODE_ENV !== "production" &&
-            url.protocol === "http:" &&
-            ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname))
+          !url.username &&
+          !url.password &&
+          !url.search &&
+          !url.hash &&
+          (url.protocol === "https:" ||
+            (process.env.NODE_ENV !== "production" &&
+              url.protocol === "http:" &&
+              ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)))
         );
       }),
   });
@@ -56,7 +72,22 @@ export function getVaultConfiguration() {
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     endpoint: process.env.S3_ENDPOINT || undefined,
   });
-  if (!result.success) throw new Error("Image storage configuration is missing or invalid");
+  if (!result.success) {
+    const fields = new Map([
+      ["bucket", "S3_VAULT_BUCKET"],
+      ["region", "S3_VAULT_REGION"],
+      ["accessKeyId", "AWS_ACCESS_KEY_ID"],
+      ["secretAccessKey", "AWS_SECRET_ACCESS_KEY"],
+      ["endpoint", "S3_ENDPOINT"],
+    ]);
+    const invalid = [
+      ...new Set(
+        result.error.issues.map((issue) => fields.get(String(issue.path[0]))).filter(Boolean),
+      ),
+    ];
+    // Report field names only, never Zod input data or credential values.
+    throw new Error(`Image storage configuration is missing or invalid (${invalid.join(", ")})`);
+  }
   return result.data;
 }
 

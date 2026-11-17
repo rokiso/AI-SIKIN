@@ -5,6 +5,8 @@
 
 ## 서버 설정
 
+정확한 버킷·origin에 맞춘 보안 정책 JSON과 오프라인 생성 명령은 [S3 정책 준비 가이드](infra/README.md)를 참고하세요. 정책 생성은 실제 AWS 설정 적용과 구분합니다.
+
 `.env.example`의 S3 변수 이름을 사용해 서버 비밀 저장소에 값을 설정합니다.
 버킷은 개인정보 DB와 분리하고, 기본 암호화를 AES256으로 설정하며 S3 Block Public Access의 네 옵션을 모두 켭니다.
 Object Ownership은 Bucket owner enforced로 설정합니다. 접근 키는 이 버킷의 `raw-faces/*`에 한정된 `s3:PutObject`, `s3:GetObject`만 허용합니다.

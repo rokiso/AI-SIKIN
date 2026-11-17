@@ -1,0 +1,24 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyNonTLSRequests",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": ["arn:aws:s3:::__BUCKET_NAME__", "arn:aws:s3:::__BUCKET_NAME__/*"],
+      "Condition": { "Bool": { "aws:SecureTransport": "false" } }
+    },
+    {
+      "Sid": "DenyUploadsWithoutExplicitAES256",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:PutObject",
+      "Resource": [
+        "arn:aws:s3:::__BUCKET_NAME__/raw-faces/*",
+        "arn:aws:s3:::__BUCKET_NAME__/daily-snapshots/*"
+      ],
+      "Condition": { "StringNotEquals": { "s3:x-amz-server-side-encryption": "AES256" } }
+    }
+  ]
+}
