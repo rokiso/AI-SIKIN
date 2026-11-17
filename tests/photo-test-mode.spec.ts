@@ -1,10 +1,5 @@
 import { expect, test } from "@playwright/test";
 
-test.skip(
-  Boolean(process.env.S3_VAULT_BUCKET) && process.env.PHOTO_TEST_MODE !== "1",
-  "Device-only mode suite",
-);
-
 for (const path of ["/diagnostic", "/snapshot"]) {
   test(`${path} previews locally without upload and forgets on reload`, async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 850 });

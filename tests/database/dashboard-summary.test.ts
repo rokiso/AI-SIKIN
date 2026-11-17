@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { randomBytes } from "node:crypto";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { PrismaClient } from "../../generated/prisma/client";
 import { assertLocalDevelopmentDatabase } from "../../lib/database-development";
 import { getDatabaseUrl } from "../../lib/server-env";
@@ -13,6 +13,12 @@ let prisma: PrismaClient;
 const userIds = new Set<string>();
 const diagnosticSessionIds = new Set<string>();
 
+beforeEach(() => {
+  // Exercise stored-photo reads independently of the developer's local preview mode.
+  vi.stubEnv("PHOTO_TEST_MODE", "0");
+  vi.stubEnv("S3_VAULT_BUCKET", "sikin-database-test.invalid");
+});
+
 beforeAll(async () => {
   assertLocalDevelopmentDatabase(getDatabaseUrl());
   prisma = getPrisma();
@@ -20,6 +26,7 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
+  vi.unstubAllEnvs();
   if (diagnosticSessionIds.size)
     await prisma.diagnosticSession.deleteMany({ where: { id: { in: [...diagnosticSessionIds] } } });
   if (userIds.size) await prisma.user.deleteMany({ where: { id: { in: [...userIds] } } });
@@ -261,6 +268,15 @@ describe("authorized dashboard read projection", () => {
     });
     expect(summary.todaySnapshot.snapshotId).not.toBe(previous.id);
     expect(JSON.stringify(summary)).not.toContain("today-private-image");
+
+    // An unconfigured vault and explicit preview opt-in both suppress AI conditions.
+    vi.stubEnv("S3_VAULT_BUCKET", "");
+    const unconfigured = await getDashboardSummary({ sessionToken: member.sessionToken }, now);
+    expect(unconfigured.todaySnapshot).toEqual({ ...summary.todaySnapshot, conditions: null });
+    vi.stubEnv("S3_VAULT_BUCKET", "sikin-database-test.invalid");
+    vi.stubEnv("PHOTO_TEST_MODE", "1");
+    const preview = await getDashboardSummary({ sessionToken: member.sessionToken }, now);
+    expect(preview.todaySnapshot).toEqual({ ...summary.todaySnapshot, conditions: null });
   });
 
   it("returns a newly created snapshot on the next read rather than caching a prior user result", async () => {

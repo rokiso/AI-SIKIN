@@ -83,6 +83,10 @@ async function mocks(page: Page, image: Buffer) {
     route.fulfill({ status: 200, contentType: "image/jpeg", body: image }),
   );
   await page.route("https://snapshot-vault.invalid/**", async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({ status: 200, contentType: "image/jpeg", body: image });
+      return;
+    }
     if (route.request().method() === "OPTIONS") {
       await route.fulfill({ status: 204, headers: cors });
       return;
