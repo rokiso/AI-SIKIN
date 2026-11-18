@@ -62,7 +62,7 @@ export function ChecklistClipboardButton({ questions }: { questions: string[] })
             ? "복사 중…"
             : "상담 체크리스트 복사"}
       </button>
-      <p ref={notice} role="status" className="text-sm text-neutral-700">
+      <p ref={notice} role="status" className="scroll-mb-4 text-sm text-neutral-700">
         {status === "copied"
           ? "상담 체크리스트 3문항이 복사되었습니다."
           : status === "fallback"

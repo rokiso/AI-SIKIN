@@ -47,6 +47,12 @@ for (const width of [320, 1280]) {
     await dialog.getByRole("button", { name: "상담 체크리스트 복사" }).click();
     await expect(dialog.getByRole("status")).toHaveText("상담 체크리스트 3문항이 복사되었습니다.");
     await expect(dialog.getByRole("status")).toBeInViewport({ ratio: 1 });
+    const statusInset = await dialog.evaluate((node) => {
+      const status = node.querySelector('[role="status"]');
+      if (!status) throw new Error("Copy status missing");
+      return node.getBoundingClientRect().bottom - status.getBoundingClientRect().bottom;
+    });
+    expect(statusInset).toBeGreaterThanOrEqual(12);
     await expect(page.locator("html")).toHaveAttribute(
       "data-copied-checklist",
       questions.join("\n"),
