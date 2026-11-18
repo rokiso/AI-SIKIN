@@ -17,13 +17,13 @@ PKCE 상태·verifier·복귀 경로·검증된 게스트 식별자는 AES-256-G
 Vercel 프로젝트의 환경 변수에 다음 이름을 등록해야 합니다. 비밀 값은 저장소·채팅에 넣지 않습니다.
 
 - `AUTH_COOKIE_SECRET`: 32자 이상의 무작위 세션 서명 키
-- `NEXT_PUBLIC_APP_URL`: 실제 사이트 origin, 예: `https://ai-sikin.vercel.app`
+- `NEXT_PUBLIC_APP_URL`: 실제 사이트 origin, 예: `https://miruvia.vercel.app`
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`: Google OAuth 웹 애플리케이션 클라이언트
 - `KAKAO_CLIENT_ID`, `KAKAO_CLIENT_SECRET`: 카카오 REST API 키와 활성화한 클라이언트 시크릿
 - `DATABASE_URL`: 테이블이 준비된 배포용 PostgreSQL 연결
 
-Google 콘솔에 `https://ai-sikin.vercel.app/auth/callback/google`을 승인된 리디렉션 URI로 등록합니다.
-카카오 콘솔에도 `https://ai-sikin.vercel.app/auth/callback/kakao`를 등록하고 카카오 로그인을 활성화합니다.
+Google 콘솔에 `https://miruvia.vercel.app/auth/callback/google`을 승인된 리디렉션 URI로 등록합니다.
+카카오 콘솔에도 `https://miruvia.vercel.app/auth/callback/kakao`를 등록하고 카카오 로그인을 활성화합니다.
 카카오 scope는 닉네임만 요구하며 이메일 동의를 필수로 요구하지 않습니다.
 실제 origin이 다르면 앱 환경 변수와 양쪽 콜백 주소를 모두 해당 origin으로 일치시킵니다.
 
@@ -53,3 +53,7 @@ Prisma의 `prisma migrate deploy`로 적용합니다. 저장소의 `npm run db:m
 - 320/360/1280px 모달 접근성·포커스 트랩·Esc 닫기·중복 제출 차단·실패 및 재시도, 콜백 URL 쿼리 제거
 
 실제 제공자 로그인을 최종 검증하기 전에는 보드 상태를 review로 유지합니다.
+
+## 설정 사전 검사
+
+`npm run auth:check`는 키 값을 출력하거나 외부에 요청하지 않고 제공자별 환경 설정을 검사합니다. 누락·플레이스홀더·잘못된 콜백 주소는 종료 코드 1로 실패합니다. 콘솔 등록 위치와 실제 사용할 콜백 주소는 [로그인 연결 설정 가이드](oauth-setup-guide.md)에 정리했습니다. 형식 검사 통과와 실제 로그인 성공은 별도입니다.

@@ -74,6 +74,57 @@ describe("OAuth security", () => {
       );
     },
   );
+  it.each(["google", "kakao"] as const)(
+    "sends the exact %s token contract and keeps secrets out of authorization URLs",
+    async (provider) => {
+      const tokens = { google: "test-google-access", kakao: "test-kakao-access" };
+      const profile =
+        provider === "google"
+          ? { sub: "google-id", name: "구글 검증" }
+          : { id: 123, kakao_account: { profile: { nickname: "카카오 검증" } } };
+      const fetcher = vi
+        .fn()
+        .mockResolvedValueOnce(Response.json({ access_token: tokens[provider] }))
+        .mockResolvedValueOnce(Response.json(profile));
+      vi.stubGlobal("fetch", fetcher);
+      const url = new URL(authorizationUrl(provider, flow.state, digest(flow.verifier)));
+      expect(url.searchParams.get("response_type")).toBe("code");
+      expect(url.searchParams.get("client_id")).toBe(
+        provider === "google" ? "test-client" : "test-kakao-client",
+      );
+      expect(url.searchParams.get("scope")).toBe(
+        provider === "google" ? "openid email profile" : "profile_nickname",
+      );
+      expect(url.href).not.toContain("test-secret");
+      expect(url.searchParams.has("client_secret")).toBe(false);
+      const result = await exchangeProfile(provider, "test-code", flow.verifier);
+      expect(result.email).toBeNull();
+      const [tokenUrl, options] = fetcher.mock.calls[0];
+      expect(tokenUrl).toBe(
+        provider === "google"
+          ? "https://oauth2.googleapis.com/token"
+          : "https://kauth.kakao.com/oauth/token",
+      );
+      expect(options.method).toBe("POST");
+      expect(options.headers["Content-Type"]).toBe("application/x-www-form-urlencoded");
+      expect(Object.fromEntries(new URLSearchParams(String(options.body)))).toEqual({
+        grant_type: "authorization_code",
+        client_id: provider === "google" ? "test-client" : "test-kakao-client",
+        client_secret: provider === "google" ? "test-secret" : "test-kakao-secret",
+        redirect_uri: url.searchParams.get("redirect_uri"),
+        code: "test-code",
+        code_verifier: flow.verifier,
+      });
+      expect(options.redirect).toBe("error");
+      expect(options.cache).toBe("no-store");
+      expect(fetcher.mock.calls[1][0]).toBe(
+        provider === "google"
+          ? "https://openidconnect.googleapis.com/v1/userinfo"
+          : "https://kapi.kakao.com/v2/user/me",
+      );
+      expect(fetcher.mock.calls[1][1].headers.Authorization).toBe(`Bearer ${tokens[provider]}`);
+    },
+  );
   it("exchanges Google code with verifier and validates a verified provider identity", async () => {
     const fetcher = vi
       .fn()

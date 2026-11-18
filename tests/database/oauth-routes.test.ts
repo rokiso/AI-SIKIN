@@ -30,6 +30,10 @@ beforeAll(() => assertLocalDevelopmentDatabase(getDatabaseUrl()));
 beforeEach(() => {
   vi.stubEnv("GOOGLE_CLIENT_ID", "test-client");
   vi.stubEnv("GOOGLE_CLIENT_SECRET", "test-secret");
+  vi.stubEnv("KAKAO_CLIENT_ID", "test-kakao-client");
+  vi.stubEnv("KAKAO_CLIENT_SECRET", "test-kakao-secret");
+  vi.stubEnv("GOOGLE_REDIRECT_URI", "");
+  vi.stubEnv("KAKAO_REDIRECT_URI", "");
   vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://sikin.test");
   const guest = createGuestSession();
   jar.set("x-guest-session-id", guest.guestDeviceId);
@@ -110,6 +114,53 @@ describe("OAuth API integration", () => {
     expect(await (await me()).json()).toMatchObject({
       data: { isAuthenticated: false, user: null },
     });
+  });
+  it.each(["google", "kakao"] as const)(
+    "returns safe 502 for %s rejected credentials without issuing a member session",
+    async (provider) => {
+      const ctx = { params: Promise.resolve({ provider }) };
+      const started = await authorize(
+        new Request(`https://sikin.test/api/v1/auth/authorize/${provider}`),
+        ctx,
+      );
+      expect(started.status).toBe(200);
+      const url = new URL((await started.json()).data.authorizationUrl);
+      const state = url.searchParams.get("state")!;
+      states.add(digest(state));
+      jar.set("oauth_pkce_payload", started.cookies.get("oauth_pkce_payload")!.value);
+      const fetcher = vi
+        .fn()
+        .mockResolvedValue(
+          Response.json(
+            { error: "invalid_client", error_description: "private-provider-marker" },
+            { status: 401 },
+          ),
+        );
+      vi.stubGlobal("fetch", fetcher);
+      const response = await callback(
+        request(`/api/v1/auth/callback/${provider}`, { code: "test-code", state }),
+        ctx,
+      );
+      expect(response.status).toBe(502);
+      const body = await response.json();
+      expect(body).toMatchObject({ success: false, error: { code: "OAUTH_PROVIDER_ERROR" } });
+      expect(JSON.stringify(body)).not.toContain("private-provider-marker");
+      expect(JSON.stringify(body)).not.toContain("test-secret");
+      expect(response.cookies.get("app_session_token")).toBeUndefined();
+      expect(fetcher).toHaveBeenCalledOnce();
+    },
+  );
+  it("fails a misconfigured redirect before consuming an OAuth allowance", async () => {
+    vi.stubEnv("GOOGLE_REDIRECT_URI", "https://wrong.test/auth/callback/google");
+    const response = await authorize(
+      new Request("https://sikin.test/api/v1/auth/authorize/google"),
+      context,
+    );
+    expect(response.status).toBe(503);
+    expect(
+      await db.oAuthAttempt.count({ where: { ownerHash: digest(jar.get("x-guest-session-id")!) } }),
+    ).toBe(0);
+    expect(JSON.stringify(await response.json())).not.toContain("wrong.test");
   });
   it("rejects mismatched state and provider before any provider call", async () => {
     await start();

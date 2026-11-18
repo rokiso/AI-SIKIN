@@ -91,18 +91,39 @@ export function getVaultConfiguration() {
   return result.data;
 }
 
+export type OAuthConfigurationField =
+  | "NEXT_PUBLIC_APP_URL"
+  | "GOOGLE_CLIENT_ID"
+  | "GOOGLE_CLIENT_SECRET"
+  | "GOOGLE_REDIRECT_URI"
+  | "KAKAO_CLIENT_ID"
+  | "KAKAO_CLIENT_SECRET"
+  | "KAKAO_REDIRECT_URI";
+
+export class OAuthConfigurationError extends Error {
+  constructor(public readonly invalidFields: OAuthConfigurationField[]) {
+    // Do not retain Zod errors or input values: URLs and credentials may contain secrets.
+    super(`OAuth configuration is missing or invalid (${invalidFields.join(", ")})`);
+    this.name = "OAuthConfigurationError";
+  }
+}
+
 export function getOAuthConfiguration(provider: "google" | "kakao") {
   const prefix = provider === "google" ? "GOOGLE" : "KAKAO";
+  const credential = z
+    .string()
+    .min(1)
+    .max(4096)
+    .refine(
+      (value) =>
+        value === value.trim() &&
+        !/^(replace-with-|your_|change[-_]?me$|undefined$|null$)/i.test(value),
+    );
   const schema = z.object({
-    clientId: z
-      .string()
-      .min(1)
-      .refine((value) => !value.startsWith("replace-with-")),
-    clientSecret: z
-      .string()
-      .min(1)
-      .refine((value) => !value.startsWith("replace-with-")),
+    clientId: credential,
+    clientSecret: credential,
     appUrl: z.url().refine((value) => {
+      if (!URL.canParse(value)) return false;
       const url = new URL(value);
       return (
         !url.username &&
@@ -110,10 +131,11 @@ export function getOAuthConfiguration(provider: "google" | "kakao") {
         url.pathname === "/" &&
         !url.search &&
         !url.hash &&
+        !/^(your-app|example)\./i.test(url.hostname) &&
         (url.protocol === "https:" ||
           (process.env.NODE_ENV !== "production" &&
             url.protocol === "http:" &&
-            ["localhost", "127.0.0.1"].includes(url.hostname)))
+            ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)))
       );
     }),
   });
@@ -122,11 +144,24 @@ export function getOAuthConfiguration(provider: "google" | "kakao") {
     clientSecret: process.env[`${prefix}_CLIENT_SECRET`],
     appUrl: process.env.NEXT_PUBLIC_APP_URL,
   });
-  if (!result.success) throw new Error("OAuth configuration is missing or invalid");
-  return {
-    ...result.data,
-    callbackUrl: new URL(`/auth/callback/${provider}`, result.data.appUrl).href,
-  };
+  if (!result.success) {
+    const fields: Record<string, OAuthConfigurationField> = {
+      clientId: `${prefix}_CLIENT_ID`,
+      clientSecret: `${prefix}_CLIENT_SECRET`,
+      appUrl: "NEXT_PUBLIC_APP_URL",
+    };
+    throw new OAuthConfigurationError([
+      ...new Set(result.error.issues.map((issue) => fields[String(issue.path[0])])),
+    ]);
+  }
+  const appUrl = new URL(result.data.appUrl).origin;
+  const callbackUrl = new URL(`/auth/callback/${provider}`, appUrl).href;
+  // An explicit override must match the callback actually consumed by the browser.
+  // The API callback is a POST JSON endpoint, not an OAuth redirect destination.
+  const redirect = process.env[`${prefix}_REDIRECT_URI`];
+  if (redirect && redirect !== callbackUrl)
+    throw new OAuthConfigurationError([`${prefix}_REDIRECT_URI`]);
+  return { ...result.data, appUrl, callbackUrl };
 }
 
 export function getSnapshotAiConfiguration(): { apiKey: string; model: string } | null {
