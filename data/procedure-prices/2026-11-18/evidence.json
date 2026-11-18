@@ -1,8 +1,8 @@
 {
   "observedOn": "2026-11-18",
-  "coverage": "YEOSHIN_ONLY_PARTIAL",
-  "otherSourcesPending": ["GANGNAMUNNI", "BABITALK"],
-  "selection": "Convenience sample of opened public detail options; not a nationwide estimate. Unknown scope, anesthesia and extra charges require separate confirmation.",
+  "coverage": "THREE_PLATFORMS_UNIT_PRICE_SAMPLE",
+  "otherSourcesPending": [],
+  "selection": "Convenience sample of public offers grouped by the stated treatment/device and dose or shot unit, before personal coupons/points. Session count is nullable when not explicit; never a nationwide or guaranteed total-payment estimate.",
   "observations": [
     {
       "code": "P-PICO",
@@ -15,7 +15,8 @@
       "treatmentCount": 1,
       "listedIncludedFees": "VAT",
       "sourceHtmlSha256": "6e828d899b0991648db723d610c2158037a78909acc4c56daec2728e60708f21",
-      "retrievedAt": "2026-11-18T13:17:12.599599+00:00"
+      "retrievedAt": "2026-11-18T13:17:12.599599+00:00",
+      "sourcePriceField": "detail.salesProducts[].price"
     },
     {
       "code": "P-FRACTIONAL",
@@ -28,7 +29,8 @@
       "treatmentCount": 1,
       "listedIncludedFees": "VAT",
       "sourceHtmlSha256": "cf25eab9e702c3098fcb9d10c12ae51842a14c84aa7d2916c30c34cafbf8f156",
-      "retrievedAt": "2026-11-18T13:17:25.144435+00:00"
+      "retrievedAt": "2026-11-18T13:17:25.144435+00:00",
+      "sourcePriceField": "detail.salesProducts[].price"
     },
     {
       "code": "P-LDM",
@@ -41,7 +43,8 @@
       "treatmentCount": 1,
       "listedIncludedFees": "VAT",
       "sourceHtmlSha256": "a3a4a00bad2e080d833f62c0b00a90e8b312f7fc488089d0dc5b9ab03aec9996",
-      "retrievedAt": "2026-11-18T13:16:35.449756+00:00"
+      "retrievedAt": "2026-11-18T13:16:35.449756+00:00",
+      "sourcePriceField": "detail.salesProducts[].price"
     },
     {
       "code": "P-LDM",
@@ -54,7 +57,8 @@
       "treatmentCount": 1,
       "listedIncludedFees": "VAT",
       "sourceHtmlSha256": "c62267587ead9116e107a0c53a4eb3746c5cba1dfd467d53da67cb6d09295856",
-      "retrievedAt": "2026-11-18T13:16:42.436737+00:00"
+      "retrievedAt": "2026-11-18T13:16:42.436737+00:00",
+      "sourcePriceField": "detail.salesProducts[].price"
     },
     {
       "code": "P-AQUAPEEL",
@@ -67,7 +71,8 @@
       "treatmentCount": 1,
       "listedIncludedFees": "VAT",
       "sourceHtmlSha256": "1989ab716fc6871d75377833e3c1c052748ffd7dd59772fc3a66a942c01c7ec7",
-      "retrievedAt": "2026-11-18T13:16:55.243478+00:00"
+      "retrievedAt": "2026-11-18T13:16:55.243478+00:00",
+      "sourcePriceField": "detail.salesProducts[].price"
     },
     {
       "code": "P-AQUAPEEL",
@@ -80,7 +85,8 @@
       "treatmentCount": 1,
       "listedIncludedFees": "VAT",
       "sourceHtmlSha256": "ce408b16364299eff13c8c2df4cf583081d0bd7e0daf0d1b39c55f2e7c6ef656",
-      "retrievedAt": "2026-11-18T13:17:01.152431+00:00"
+      "retrievedAt": "2026-11-18T13:17:01.152431+00:00",
+      "sourcePriceField": "detail.salesProducts[].price"
     },
     {
       "code": "P-HIFU",
@@ -93,7 +99,8 @@
       "treatmentCount": 1,
       "listedIncludedFees": "VAT",
       "sourceHtmlSha256": "ea83e80f9f0600deab0a7f597c425a8108079b1e884da73940bf5ef2af4ed4d8",
-      "retrievedAt": "2026-11-18T13:14:44.836173+00:00"
+      "retrievedAt": "2026-11-18T13:14:44.836173+00:00",
+      "sourcePriceField": "detail.salesProducts[].price"
     },
     {
       "code": "P-HIFU",
@@ -106,7 +113,8 @@
       "treatmentCount": 1,
       "listedIncludedFees": "VAT",
       "sourceHtmlSha256": "a1a582a20afda626045a4bd888fe97335ae96a30a751fd94ccba35e2027d58ac",
-      "retrievedAt": "2026-11-18T13:14:57.338231+00:00"
+      "retrievedAt": "2026-11-18T13:14:57.338231+00:00",
+      "sourcePriceField": "detail.salesProducts[].price"
     },
     {
       "code": "P-RF",
@@ -119,7 +127,8 @@
       "treatmentCount": 1,
       "listedIncludedFees": "VAT",
       "sourceHtmlSha256": "d6566f5e449a891f0ca1d31777c2156b3e9821cba715c623a3cc9067b363df54",
-      "retrievedAt": "2026-11-18T13:14:25.255658+00:00"
+      "retrievedAt": "2026-11-18T13:14:25.255658+00:00",
+      "sourcePriceField": "detail.salesProducts[].price"
     },
     {
       "code": "P-RF",
@@ -132,7 +141,8 @@
       "treatmentCount": 1,
       "listedIncludedFees": "VAT",
       "sourceHtmlSha256": "8b6da35505688ab29cfd0cc47583b4c12655a6ecdf4fddb2dda228b4ad6a63e6",
-      "retrievedAt": "2026-11-18T13:14:39.044254+00:00"
+      "retrievedAt": "2026-11-18T13:14:39.044254+00:00",
+      "sourcePriceField": "detail.salesProducts[].price"
     },
     {
       "code": "P-PN",
@@ -145,7 +155,8 @@
       "treatmentCount": 1,
       "listedIncludedFees": "VAT",
       "sourceHtmlSha256": "7d0622e7ce9fddc2241a394f7c36514141296ad7d75e6052cd33849fc437d27e",
-      "retrievedAt": "2026-11-18T13:15:14.889874+00:00"
+      "retrievedAt": "2026-11-18T13:15:14.889874+00:00",
+      "sourcePriceField": "detail.salesProducts[].price"
     },
     {
       "code": "P-PN",
@@ -158,7 +169,8 @@
       "treatmentCount": 1,
       "listedIncludedFees": "VAT",
       "sourceHtmlSha256": "b347899ce701c3a9ecc27a4286a41e952c35dfc33425e1ad835a4b26c467675e",
-      "retrievedAt": "2026-11-18T13:18:00.108417+00:00"
+      "retrievedAt": "2026-11-18T13:18:00.108417+00:00",
+      "sourcePriceField": "detail.salesProducts[].price"
     },
     {
       "code": "P-HA",
@@ -171,7 +183,8 @@
       "treatmentCount": 1,
       "listedIncludedFees": "VAT",
       "sourceHtmlSha256": "b764e8d14d1a1fd1a0d28d065739c21eb5afa402cbb8dfc27a0d5796706003d3",
-      "retrievedAt": "2026-11-18T13:17:43.140402+00:00"
+      "retrievedAt": "2026-11-18T13:17:43.140402+00:00",
+      "sourcePriceField": "detail.salesProducts[].price"
     },
     {
       "code": "P-PEEL",
@@ -184,7 +197,8 @@
       "treatmentCount": 1,
       "listedIncludedFees": "VAT",
       "sourceHtmlSha256": "eca64cf869c5dcb8fb2627a4045ecfcde0629c9e28f24a9338c4c7fe58b599b2",
-      "retrievedAt": "2026-11-18T13:19:55.922007+00:00"
+      "retrievedAt": "2026-11-18T13:19:55.922007+00:00",
+      "sourcePriceField": "detail.salesProducts[].price"
     },
     {
       "code": "P-PDL",
@@ -197,7 +211,128 @@
       "treatmentCount": 1,
       "listedIncludedFees": "VAT",
       "sourceHtmlSha256": "355f04eca4c7256b3de18ed82f064b91b4cc82b496535921fa7e348ba335fc45",
-      "retrievedAt": "2026-11-18T13:17:49.072504+00:00"
+      "retrievedAt": "2026-11-18T13:17:49.072504+00:00",
+      "sourcePriceField": "detail.salesProducts[].price"
+    },
+    {
+      "code": "P-PN",
+      "sourceUrl": "https://unni.app/events/23228?optionId=61b05e86-7dfc-4300-9809-62cffbc19075",
+      "optionId": "61b05e86-7dfc-4300-9809-62cffbc19075",
+      "optionLabel": "리쥬란 힐러 2cc",
+      "priceKrw": 319000,
+      "priceSelection": "PUBLIC_BEFORE_COUPON_POINTS",
+      "currency": "KRW",
+      "treatmentCount": 1,
+      "listedIncludedFees": "VAT; anesthesia/aftercare listed as no charge",
+      "sourcePriceField": "serviceOffer.options[].price.discountedAmount",
+      "sourceHtmlSha256": "cdbdf94499ef004d9f5ad8b9bb1ff7156e8b1aa14fe3f3d200afb1564a849460",
+      "retrievedAt": "2026-11-18T13:35:41.960935+00:00"
+    },
+    {
+      "code": "P-PN",
+      "sourceUrl": "https://babitalk.com/events/57104",
+      "sourceOfferId": 57104,
+      "optionId": null,
+      "optionLabel": "리쥬란 힐러 2cc",
+      "priceKrw": 251900,
+      "priceSelection": "PUBLIC_BEFORE_COUPON_POINTS",
+      "currency": "KRW",
+      "treatmentCount": null,
+      "listedIncludedFees": "VAT; other fees not specified",
+      "limitations": "공개 이벤트 제목의 용량/샷 수 금액. 옵션 ID·횟수는 공개 응답에서 확인되지 않아 1회 가격으로 단정하지 않음.",
+      "sourcePriceField": "eventData.discount_price",
+      "sourceHtmlSha256": "8facbe1d8f9b5503275399dba5c96c095f3b2279cc051741a48f3fc384d0c3fc",
+      "retrievedAt": "2026-11-18T13:36:52.616040+00:00"
+    },
+    {
+      "code": "P-PN",
+      "sourceUrl": "https://babitalk.com/events/75627",
+      "sourceOfferId": 75627,
+      "optionId": null,
+      "optionLabel": "리쥬란 힐러 2cc",
+      "priceKrw": 275000,
+      "priceSelection": "PUBLIC_BEFORE_COUPON_POINTS",
+      "currency": "KRW",
+      "treatmentCount": null,
+      "listedIncludedFees": "VAT; other fees not specified",
+      "limitations": "공개 이벤트 제목의 용량/샷 수 금액. 옵션 ID·횟수는 공개 응답에서 확인되지 않아 1회 가격으로 단정하지 않음.",
+      "sourcePriceField": "eventData.discount_price",
+      "sourceHtmlSha256": "ead0ca2ff8ea3181eacb80e513cb7e41aa5a8e6ea29835076e0adbd5e760af4d",
+      "retrievedAt": "2026-11-18T13:36:55.603700+00:00"
+    },
+    {
+      "code": "P-PN",
+      "sourceUrl": "https://babitalk.com/events/66253",
+      "sourceOfferId": 66253,
+      "optionId": null,
+      "optionLabel": "리쥬란 힐러 2cc",
+      "priceKrw": 275000,
+      "priceSelection": "PUBLIC_BEFORE_COUPON_POINTS",
+      "currency": "KRW",
+      "treatmentCount": null,
+      "listedIncludedFees": "VAT; other fees not specified",
+      "limitations": "공개 이벤트 제목의 용량/샷 수 금액. 옵션 ID·횟수는 공개 응답에서 확인되지 않아 1회 가격으로 단정하지 않음.",
+      "sourcePriceField": "eventData.discount_price",
+      "sourceHtmlSha256": "a7592ecb5c3c80df9515ce078119090e8142fe63d1d80963246c900f1b433a9d",
+      "retrievedAt": "2026-11-18T13:36:57.959449+00:00"
+    },
+    {
+      "code": "P-RF",
+      "sourceUrl": "https://babitalk.com/events/57163",
+      "sourceOfferId": 57163,
+      "optionId": null,
+      "optionLabel": "올리지오 300샷",
+      "priceKrw": 275100,
+      "priceSelection": "PUBLIC_BEFORE_COUPON_POINTS",
+      "currency": "KRW",
+      "treatmentCount": null,
+      "listedIncludedFees": "VAT; other fees not specified",
+      "limitations": "공개 이벤트 제목의 용량/샷 수 금액. 옵션 ID·횟수는 공개 응답에서 확인되지 않아 1회 가격으로 단정하지 않음.",
+      "sourcePriceField": "eventData.discount_price",
+      "sourceHtmlSha256": "37a32057639862a28016565aebeb7756370b96867d5f7a4289c28746622348af",
+      "retrievedAt": "2026-11-18T13:33:42.459567+00:00"
+    },
+    {
+      "code": "P-RF",
+      "sourceUrl": "https://babitalk.com/events/78479",
+      "sourceOfferId": 78479,
+      "optionId": null,
+      "optionLabel": "올리지오 300샷",
+      "priceKrw": 275000,
+      "priceSelection": "PUBLIC_BEFORE_COUPON_POINTS",
+      "currency": "KRW",
+      "treatmentCount": null,
+      "listedIncludedFees": "VAT; other fees not specified",
+      "limitations": "공개 이벤트 제목의 용량/샷 수 금액. 옵션 ID·횟수는 공개 응답에서 확인되지 않아 1회 가격으로 단정하지 않음.",
+      "sourcePriceField": "eventData.discount_price",
+      "sourceHtmlSha256": "a6ba52c075fc8d030b76bd111f63b3d40d0c4a12c29da1dfbcc941a1b9ecf94a",
+      "retrievedAt": "2026-11-18T13:37:00.403906+00:00"
+    }
+  ],
+  "exclusions": [
+    {
+      "sourceUrl": "https://unni.app/events/43414",
+      "reason": "첫 방문 또는 재방문 한정 옵션, 일반 조건과 혼합하지 않음"
+    },
+    {
+      "sourceUrl": "https://unni.app/events/49845",
+      "reason": "첫 방문 또는 특정 요일·1인1회 한정"
+    },
+    {
+      "sourceUrl": "https://unni.app/events/81128",
+      "reason": "첫 방문 한정 및 마취·사후관리 포함 조건 차이"
+    },
+    {
+      "sourceUrl": "https://unni.app/events/168823",
+      "reason": "마취비 포함 조건이 기존 VAT만 명시된 표본과 다름"
+    },
+    {
+      "sourceUrl": "https://babitalk.com/events/79289",
+      "reason": "1회 체험가로 명시"
+    },
+    {
+      "sourceUrl": "https://babitalk.com/events/76235",
+      "reason": "1회 체험가로 명시"
     }
   ]
 }

@@ -1,6 +1,10 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { formatProcedurePrice, procedureListResponseSchema } from "../lib/catalog/procedures";
+import {
+  formatPriceMean,
+  formatProcedurePrice,
+  procedureListResponseSchema,
+} from "../lib/catalog/procedures";
 
 for (const width of [320, 1280]) {
   test(`procedure guide and dialog reflow, keyboard focus, and clipboard at ${width}px`, async ({
@@ -158,6 +162,31 @@ test("detail loading and failure remain visible and retry recovers", async ({ pa
   await dialog.getByRole("button", { name: "다시 시도" }).click();
   await expect(dialog.getByRole("heading", { name: "피코레이저 토닝" })).toBeVisible();
 });
+test("collected PN unit prices show all three sources and disclose unconfirmed session counts", async ({
+  page,
+}, info) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  const response = await page.request.get("/api/v1/catalog/procedures?concern=ELASTICITY");
+  const procedure = procedureListResponseSchema
+    .parse(await response.json())
+    .data.procedures.find((item) => item.code === "P-PN");
+  if (!procedure || procedure.priceSummary.meanKrw === null)
+    throw new Error("Import the committed PN price dataset before this integration check");
+  expect(procedure.priceSummary.platforms).toEqual(["강남언니", "바비톡", "여신티켓"]);
+  await page.goto("/catalog/procedures?concern=ELASTICITY");
+  await page.getByRole("button", { name: `${procedure.nameKo} 상세 보기` }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(
+    dialog.getByText(
+      `수집 표본 평균 ${formatPriceMean(procedure.priceSummary.meanKrw)} · ${procedure.priceSummary.sampleCount}건`,
+    ),
+  ).toBeVisible();
+  await expect(dialog.getByText(/강남언니·바비톡·여신티켓 공개 자료/)).toBeVisible();
+  await expect(dialog.getByText(/횟수·주입 방식·추가비용 별도 확인/)).toBeVisible();
+  await page.screenshot({ path: info.outputPath("pn-three-platforms-320.png") });
+  expect(await dialog.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+});
+
 test("public endpoints filter and reject writes and unknown inputs", async ({ request }) => {
   const response = await request.get("/api/v1/catalog/procedures");
   expect(response.status()).toBe(200);

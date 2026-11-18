@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { ProcedureView } from "./procedures";
 
 const platformHosts = {
-  GANGNAMUNNI: ["gangnamunni.com", "www.gangnamunni.com"],
+  GANGNAMUNNI: ["gangnamunni.com", "www.gangnamunni.com", "unni.app"],
   YEOSHIN: ["yeoshin.co.kr", "www.yeoshin.co.kr"],
   BABITALK: ["babitalk.com", "www.babitalk.com"],
 };

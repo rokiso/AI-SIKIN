@@ -1,6 +1,6 @@
 {
   "code": "P-RF",
-  "basis": "올리지오 300샷 1회 · 쿠폰·포인트 차감 전 공개 표시가 · VAT 외 추가비용 별도 확인",
+  "basis": "올리지오 300샷 공개 상품 금액 · 횟수·부위·추가비용 별도 확인 · 쿠폰·포인트 차감 전",
   "observations": [
     {
       "platform": "YEOSHIN",
@@ -9,7 +9,7 @@
       "amountKrw": 264000,
       "vatIncluded": true,
       "observedOn": "2026-11-18",
-      "basis": "올리지오 300샷 1회 · 쿠폰·포인트 차감 전 공개 표시가 · VAT 외 추가비용 별도 확인"
+      "basis": "올리지오 300샷 공개 상품 금액 · 횟수·부위·추가비용 별도 확인 · 쿠폰·포인트 차감 전"
     },
     {
       "platform": "YEOSHIN",
@@ -18,7 +18,25 @@
       "amountKrw": 297000,
       "vatIncluded": true,
       "observedOn": "2026-11-18",
-      "basis": "올리지오 300샷 1회 · 쿠폰·포인트 차감 전 공개 표시가 · VAT 외 추가비용 별도 확인"
+      "basis": "올리지오 300샷 공개 상품 금액 · 횟수·부위·추가비용 별도 확인 · 쿠폰·포인트 차감 전"
+    },
+    {
+      "platform": "BABITALK",
+      "sourceUrl": "https://babitalk.com/events/57163",
+      "sampleKey": "46008d8a01158341b347205af3c9bcff7aa9690304c23cf31f1603b790df577d",
+      "amountKrw": 275100,
+      "vatIncluded": true,
+      "observedOn": "2026-11-18",
+      "basis": "올리지오 300샷 공개 상품 금액 · 횟수·부위·추가비용 별도 확인 · 쿠폰·포인트 차감 전"
+    },
+    {
+      "platform": "BABITALK",
+      "sourceUrl": "https://babitalk.com/events/78479",
+      "sampleKey": "159f702d7e3fa4d6da0abbc2ed659b1afd63b74e0478f6f11f41650171408f3a",
+      "amountKrw": 275000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-18",
+      "basis": "올리지오 300샷 공개 상품 금액 · 횟수·부위·추가비용 별도 확인 · 쿠폰·포인트 차감 전"
     }
   ]
 }

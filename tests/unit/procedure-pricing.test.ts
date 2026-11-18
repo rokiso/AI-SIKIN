@@ -14,6 +14,12 @@ const sample: PriceObservation = {
 };
 const summary = (rows: unknown) => summarizeProcedurePrices(rows, sample.basis, "2026-11-18");
 describe("procedure observation statistics", () => {
+  it("accepts the observed canonical Unni domain after the platform redirect", () => {
+    expect(
+      summary([{ ...sample, sourceUrl: "https://unni.app/events/test-fixture" }]).priceSummary
+        .status,
+    ).toBe("AVAILABLE");
+  });
   it("normalizes VAT, deduplicates a provider across platforms, and reports a sample mean", () => {
     const data = summary([
       sample,
@@ -49,6 +55,7 @@ describe("procedure observation statistics", () => {
     { ...sample, observedOn: "2026-11-19" },
     { ...sample, observedOn: "2026-02-30" },
     { ...sample, sourceUrl: "https://www.gangnamunni.com.attacker.invalid/event" },
+    { ...sample, sourceUrl: "https://unni.app.attacker.invalid/event" },
     { ...sample, sourceUrl: "https://secret@www.gangnamunni.com/event" },
     { ...sample, sourceUrl: "http://www.gangnamunni.com/event" },
     { ...sample, platform: "YEOSHIN" },
