@@ -1,3 +1,4 @@
+import { consentFixture } from "../fixtures/consent-data";
 import { randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 const storage = vi.hoisted(() => ({ sign: vi.fn(), head: vi.fn() }));
@@ -16,6 +17,7 @@ import {
 } from "@/lib/diagnostic/upload-session";
 
 const db = getPrisma();
+let consents: Awaited<ReturnType<typeof consentFixture>>;
 const guests = new Set<string>();
 const users = new Set<string>();
 const file = { mimeType: "image/jpeg" as const, fileSizeBytes: 10_240 };
@@ -27,6 +29,7 @@ function guest(): UploadOwner {
 }
 beforeAll(async () => {
   assertLocalDevelopmentDatabase(getDatabaseUrl());
+  consents = await consentFixture();
   await db.$queryRaw`SELECT 1`;
 });
 afterEach(async () => {
@@ -38,8 +41,12 @@ afterEach(async () => {
   users.clear();
   vi.resetAllMocks();
 });
-afterAll(async () => db.$disconnect());
+afterAll(async () => {
+  await consents.cleanup();
+  await db.$disconnect();
+});
 async function issue(owner = guest()) {
+  await consents.allowFor(owner);
   storage.sign.mockResolvedValue("https://private-vault.invalid/signed");
   storage.head.mockResolvedValue({
     etag,
@@ -74,6 +81,7 @@ describe("private upload lifecycle", () => {
     };
     storage.sign.mockResolvedValue("https://private-vault.invalid/signed");
     for (const owner of [guest(), member]) {
+      await consents.allowFor(owner);
       const results = await Promise.allSettled(
         Array.from({ length: 5 }, () => createUpload(owner, file)),
       );
@@ -195,6 +203,7 @@ describe("private upload lifecycle", () => {
   it("does not consume quota on signing failures and propagates storage outages", async () => {
     const owner = guest();
     storage.sign.mockRejectedValueOnce(new Error("storage unavailable"));
+    await consents.allowFor(owner);
     await expect(createUpload(owner, file)).rejects.toThrow("storage unavailable");
     const { upload } = await issue(owner);
     storage.head.mockRejectedValueOnce(new Error("storage unavailable"));

@@ -1,3 +1,4 @@
+import { consentFixture } from "../fixtures/consent-data";
 import { randomBytes, randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
@@ -27,6 +28,7 @@ import { getDatabaseUrl } from "@/lib/server-env";
 import { createGuestSession } from "@/lib/session/guest-proof";
 import { baumannQuestions } from "@/lib/diagnostic/baumannData";
 const db = getPrisma();
+let consents: Awaited<ReturnType<typeof consentFixture>>;
 const guests = new Set<string>();
 const users = new Set<string>();
 const answers = baumannQuestions.map((q) => ({ questionId: q.id, selectedChoice: 2 }));
@@ -59,6 +61,7 @@ function request(body: unknown, headers = {}) {
   });
 }
 async function createSession(photo = false) {
+  if (photo) await consents.allowFor({ guestDeviceId: guestId });
   const upload = photo
     ? await db.imageUploadSession.create({
         data: {
@@ -110,7 +113,10 @@ function mockProvider(
     }),
   );
 }
-beforeAll(() => assertLocalDevelopmentDatabase(getDatabaseUrl()));
+beforeAll(async () => {
+  assertLocalDevelopmentDatabase(getDatabaseUrl());
+  consents = await consentFixture();
+});
 beforeEach(() => {
   guestId = guest();
   vi.stubEnv("AI_LIVE_ENABLED", "0");
@@ -138,7 +144,10 @@ afterEach(async () => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
 });
-afterAll(() => db.$disconnect());
+afterAll(async () => {
+  await consents.cleanup();
+  await db.$disconnect();
+});
 describe("local diagnostic orchestrator and protected report API", () => {
   it("recomputes immutable answers, atomically saves one report and replays the same projection", async () => {
     const session = await createSession();

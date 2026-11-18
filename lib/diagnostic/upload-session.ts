@@ -1,20 +1,12 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { getPrisma } from "@/lib/prisma";
-import type { VerifiedIdentity } from "@/lib/session/identity-types";
+import { UploadError, type UploadOwner } from "./upload-types";
+export { UploadError, type UploadOwner } from "./upload-types";
+import { requireBiometricConsent } from "@/lib/consent/service";
 import { uploadExtensions, uploadEtagSchema, type UploadFile } from "./upload-validation";
 import { readImageMetadata, signImageUpload } from "@/lib/storage/s3-vault";
 
-export class UploadError extends Error {
-  constructor(
-    public status: number,
-    public code: string,
-    message: string,
-  ) {
-    super(message);
-  }
-}
-export type UploadOwner = Exclude<VerifiedIdentity, { kind: "anonymous" }>;
 function ownerWhere(owner: UploadOwner) {
   return owner.kind === "member"
     ? { userId: owner.userId }
@@ -31,14 +23,14 @@ function missingObject(): never {
 export async function createUpload(owner: UploadOwner, file: UploadFile) {
   const id = randomUUID();
   const s3Key = `raw-faces/${id}.${uploadExtensions[file.mimeType]}`;
-  // Sign first: configuration failures must not consume an upload allowance.
-  const uploadUrl = await signImageUpload(s3Key, file);
+  let uploadUrl = "";
   const database = getPrisma();
   await database.$transaction(async (tx) => {
     const ownerKey =
       owner.kind === "member" ? `member:${owner.userId}` : `guest:${owner.guestDeviceId}`;
     // Serialize issuance per verified owner across processes; count and create share a transaction.
     await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${ownerKey}, 0))::text`;
+    await requireBiometricConsent(owner, tx);
     const now = new Date();
     const count = await tx.imageUploadSession.count({
       where: { ...ownerWhere(owner), createdAt: { gt: new Date(now.getTime() - 3_600_000) } },
@@ -49,6 +41,7 @@ export async function createUpload(owner: UploadOwner, file: UploadFile) {
         "RATE_LIMIT_EXCEEDED",
         "진단 이미지 업로드 요청 한도를 초과했습니다. 1시간 후 다시 시도해주세요.",
       );
+    uploadUrl = await signImageUpload(s3Key, file);
     await tx.imageUploadSession.create({
       data: {
         id,
@@ -87,6 +80,7 @@ export async function completeUpload(owner: UploadOwner, id: string, etag: strin
           "FORBIDDEN_UPLOAD_SESSION",
           "해당 업로드 세션에 대한 완료 처리 권한이 없습니다.",
         );
+      await requireBiometricConsent(owner, tx);
       if (session.status === "UPLOADED") {
         if (uploadEtagSchema.safeParse(session.etag).data !== canonicalEtag) missingObject();
         return confirmation(session);

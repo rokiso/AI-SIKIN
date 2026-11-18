@@ -235,3 +235,12 @@ export function getAiHealthcheckToken(): string | null {
     ? value
     : null;
 }
+
+export function getConsentTrustedIpHeader() {
+  const result = z
+    .enum(["x-forwarded-for", "x-real-ip", "x-vercel-forwarded-for"])
+    .optional()
+    .safeParse(process.env.CONSENT_TRUSTED_IP_HEADER || undefined);
+  if (!result.success) throw new Error("CONSENT_TRUSTED_IP_HEADER configuration is invalid");
+  return result.data;
+}

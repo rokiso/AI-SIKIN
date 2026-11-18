@@ -1,5 +1,9 @@
+import { consentedPhotoActor } from "./fixtures/consent-browser";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+test.beforeEach(async ({ page }) => {
+  await consentedPhotoActor(page);
+});
 test.use({ trace: "off" });
 const id = "12345678-1234-4234-8234-123456789012";
 const key = `raw-faces/${id}.jpeg`;
@@ -154,7 +158,12 @@ for (const width of [320, 1280]) {
       fullPage: true,
     });
     await page.getByRole("button", { name: "다음 단계로 이동" }).click();
-    await expect(page.getByRole("heading", { name: "세안 후 아무것도 바르지 않으면 피부는 어떤가요?", exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: "세안 후 아무것도 바르지 않으면 피부는 어떤가요?",
+        exact: true,
+      }),
+    ).toBeVisible();
     await expect(
       page
         .getByRole("navigation", { name: "주요 메뉴" })

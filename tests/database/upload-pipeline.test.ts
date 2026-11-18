@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { consentFixture } from "../fixtures/consent-data";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -25,6 +26,7 @@ interface StoredObject {
 }
 const objects = new Map<string, StoredObject>();
 const db = getPrisma();
+let consents: Awaited<ReturnType<typeof consentFixture>>;
 const users = new Set<string>();
 const guests = new Set<string>();
 let endpoint = "";
@@ -147,6 +149,13 @@ async function member() {
   return user;
 }
 async function issueAndPut() {
+  const token = jar.get("app_session_token");
+  const auth = token
+    ? await db.authSession.findUniqueOrThrow({ where: { sessionToken: token } })
+    : null;
+  await consents.allowFor(
+    auth ? { userId: auth.userId } : { guestDeviceId: jar.get(GUEST_COOKIE_NAME)! },
+  );
   const issued = await issue(
     request("upload-url", { mimeType: "image/jpeg", fileSizeBytes: image.length }),
   );
@@ -173,6 +182,7 @@ async function issueAndPut() {
 }
 beforeAll(async () => {
   assertLocalDevelopmentDatabase(getDatabaseUrl());
+  consents = await consentFixture();
   await db.$queryRaw`SELECT 1`;
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
@@ -205,6 +215,7 @@ afterEach(async () => {
   vi.unstubAllEnvs();
 });
 afterAll(async () => {
+  await consents.cleanup();
   await new Promise<void>((resolve, reject) => {
     server.close((error) => (error ? reject(error) : resolve()));
     server.closeAllConnections();

@@ -72,6 +72,11 @@ async function post(path: string, body: unknown, signal: AbortSignal, phase: "li
         phase,
         "진단 이미지 업로드 요청 한도를 초과했습니다. 1시간 후 다시 시도해주세요.",
       );
+    if (
+      response.status === 403 &&
+      failureSchema.safeParse(result).data?.error.code === "CONSENT_REQUIRED"
+    )
+      throw new ImageUploadError(phase, "사진 전송 전에 최신 수집·이용 약관에 다시 동의해 주세요.");
     if (!response.ok) throw new ImageUploadError(phase, messages[phase]);
     return result;
   } catch (error) {

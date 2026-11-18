@@ -25,8 +25,10 @@ const phaseLabels = {
 };
 export function AlbumImageUploader({
   onUploadComplete,
+  requestConsent,
 }: {
   onUploadComplete: (payload: OnUploadCompletePayload | null) => void;
+  requestConsent?: () => Promise<boolean>;
 }) {
   const input = useRef<HTMLInputElement>(null);
   const running = useRef<AbortController | null>(null);
@@ -66,6 +68,12 @@ export function AlbumImageUploader({
     setProgress(0);
     onUploadComplete(null);
     try {
+      if (requestConsent && !(await requestConsent())) {
+        discard();
+        setPhase("idle");
+        return;
+      }
+      if (controller.signal.aborted) return;
       setPhase("prepare");
       let image = processed.current;
       if (!image) {

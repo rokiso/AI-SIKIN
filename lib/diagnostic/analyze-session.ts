@@ -1,6 +1,8 @@
 import "server-only";
 import { after } from "next/server";
 import { publishProgress } from "./progressEmitter";
+import { requireBiometricConsent } from "@/lib/consent/service";
+import { UploadError } from "./upload-types";
 import { getPrisma } from "@/lib/prisma";
 import { AuthError } from "@/lib/auth/response";
 import { isAiLiveEnabled } from "@/lib/server-env";
@@ -76,7 +78,17 @@ export async function analyzeSession(owner: UploadOwner, input: { sessionId: str
   if (claim.kind === "completed") return completed(claim.report);
   if (claim.kind === "pending") return pending(sessionId);
 
-  const usesPhoto = isAiLiveEnabled() && Boolean(claim.upload);
+  let usesPhoto = isAiLiveEnabled() && Boolean(claim.upload);
+  let consentUnavailable = false;
+  if (usesPhoto) {
+    try {
+      await db.$transaction((tx) => requireBiometricConsent(owner, tx));
+    } catch (error) {
+      if (!(error instanceof UploadError)) throw error;
+      usesPhoto = false;
+      consentUnavailable = true;
+    }
+  }
   await publishProgress(sessionId, {
     step: "EXTRACTING_FEATURES",
     stepNumber: 1,
@@ -88,17 +100,18 @@ export async function analyzeSession(owner: UploadOwner, input: { sessionId: str
   });
   let result = ruleBasedEvaluator(claim.scores);
   let source: "QUESTIONNAIRE" | "AI_ASSISTED" = "QUESTIONNAIRE";
-  let reason = "NO_PHOTO";
+  let reason = consentUnavailable ? "CONSENT_REQUIRED" : "NO_PHOTO";
   let auditLogId: string | undefined;
   let visualWeight = 0;
   if (!isAiLiveEnabled()) reason = "AI_DISABLED";
-  else if (claim.upload) {
+  else if (claim.upload && usesPhoto) {
     // Include storage verification in the same eight-second budget as AI inference.
     const started = performance.now();
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 8_000);
     try {
       assertReportOwner(owner, claim.upload);
+      await db.$transaction((tx) => requireBiometricConsent(owner, tx));
       const file = uploadFileSchema.safeParse({
         mimeType: claim.upload.mimeType,
         fileSizeBytes: claim.upload.fileSizeBytes,
@@ -152,7 +165,8 @@ export async function analyzeSession(owner: UploadOwner, input: { sessionId: str
       }
     } catch (error) {
       if (error instanceof AuthError) throw error;
-      if (error instanceof AiGatewayError) {
+      if (error instanceof UploadError) reason = "CONSENT_REQUIRED";
+      else if (error instanceof AiGatewayError) {
         reason = error.code;
         auditLogId = error.auditLogId;
         const write = error.auditWrite;

@@ -1,4 +1,8 @@
+import { consentedPhotoActor } from "./fixtures/consent-browser";
 import { expect, test } from "@playwright/test";
+test.beforeEach(async ({ page }) => {
+  await consentedPhotoActor(page);
+});
 import AxeBuilder from "@axe-core/playwright";
 import { syntheticCamera, streamsStopped } from "./fixtures/camera-browser";
 async function openCamera(page: import("@playwright/test").Page) {
@@ -88,7 +92,7 @@ for (const width of [320, 1280])
       });
     });
     await page.getByRole("button", { name: "이 사진으로 진단 시작" }).click();
-    await expect(page.getByText(/이미지 전송 중 네트워크 오류가 발생했습니다/)).toBeVisible();
+    await expect(page.getByText(/사진 전송 중 네트워크 연결이 끊어졌습니다/)).toBeVisible();
     await page.getByRole("button", { name: "다시 시도", exact: true }).click();
     await expect(
       page.getByText("사진 업로드가 완료되었습니다. 아래에서 문진으로 이어가세요."),

@@ -1,6 +1,7 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
 import { getPrisma } from "@/lib/prisma";
+import { transferConsentOwnership } from "@/lib/consent/service";
 import { verifyGuestProof } from "@/lib/session/guest-proof";
 import type { SessionCookieValues } from "@/lib/session/identity-types";
 import type { SocialProfile } from "./providers";
@@ -67,6 +68,7 @@ export async function provisionSession(
         where: { guestDeviceId: guestId, userId: null },
         data: { userId: account.userId },
       });
+      await transferConsentOwnership(tx, guestId, account.userId);
       migratedSessionsCount = diagnostics.count;
     }
     if (values.sessionToken)

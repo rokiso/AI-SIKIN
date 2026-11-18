@@ -58,7 +58,7 @@ model User {
   sessions           AuthSession[]
   diagnosticSessions DiagnosticSession[]
   dailySnapshots     DailySnapshot[]
-  consentHistory     UserConsentHistory?
+  consentHistory     UserConsentHistory[]
   createdAt          DateTime             @default(now()) @db.Timestamptz @map("created_at")
   updatedAt          DateTime             @updatedAt @db.Timestamptz @map("updated_at")
 
@@ -95,16 +95,45 @@ model AuthSession {
   @@map("auth_sessions")
 }
 
+enum ConsentType {
+  BIOMETRIC_FACE_DATA
+}
+
+model ConsentTermsVersion {
+  id              String @id @default(uuid())
+  consentType     ConsentType @map("consent_type")
+  version         String
+  title           String
+  contentMarkdown String @map("content_markdown") @db.Text
+  isActive        Boolean @default(false) @map("is_active")
+  enactedAt       DateTime @map("enacted_at") @db.Timestamptz
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  consents        UserConsentHistory[]
+
+  @@unique([consentType, version], name: "uq_terms_type_version", map: "uq_terms_type_version")
+  @@index([consentType, isActive])
+  @@map("consent_terms_versions")
+}
+
 model UserConsentHistory {
   id              String   @id @default(uuid())
-  userId          String   @unique @map("user_id")
+  userId          String?  @map("user_id")
+  guestDeviceId   String?  @map("guest_device_id")
+  termsVersionId  String?  @map("terms_version_id")
+  consentType     ConsentType @default(BIOMETRIC_FACE_DATA) @map("consent_type")
   sensitiveAgreed Boolean  @map("sensitive_agreed")
   termsVersion    String   @map("terms_version")
   ipAddress       String?  @map("ip_address")
+  ipSource        String   @default("UNAVAILABLE") @map("ip_source")
+  userAgent       String?  @map("user_agent")
   agreedAt        DateTime @default(now()) @db.Timestamptz @map("agreed_at")
 
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  terms           ConsentTermsVersion? @relation(fields: [termsVersionId], references: [id], onDelete: Restrict)
 
+  @@index([userId, consentType])
+  @@index([guestDeviceId, consentType])
+  @@index([termsVersionId])
   @@map("user_consent_histories")
 }
 

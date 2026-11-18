@@ -9,6 +9,7 @@ import {
 import { uploadFileSchema } from "@/lib/diagnostic/upload-validation";
 import {
   uploadDiagnosticImage,
+  ImageUploadError,
   type OnUploadCompletePayload,
   type UploadPhase,
 } from "@/lib/api/diagnosticUploadClient";
@@ -20,8 +21,10 @@ export function CameraViewfinder({
   onAlbum,
   onUploadComplete,
   onCaptureComplete,
+  requestConsent,
 }: {
   previewOnly?: boolean;
+  requestConsent?: () => Promise<boolean>;
   onAlbum: () => void;
   onUploadComplete?: (payload: OnUploadCompletePayload | null) => void;
   onCaptureComplete?: (payload: OnCameraCaptureCompletePayload) => void;
@@ -79,7 +82,11 @@ export function CameraViewfinder({
     setComplete(false);
     onUploadComplete?.(null);
   }
-  function start(next = facing) {
+  async function start(next = facing) {
+    if (!previewOnly && requestConsent && !(await requestConsent())) {
+      stopCamera();
+      return;
+    }
     discard();
     setReady(false);
     setFacing(next);
@@ -87,6 +94,10 @@ export function CameraViewfinder({
   }
   async function shoot() {
     if (!video.current || capturing || !ready) return;
+    if (!previewOnly && requestConsent && !(await requestConsent())) {
+      stopCamera();
+      return;
+    }
     const token = ++captureToken.current;
     setCapturing(true);
     setError("");
@@ -115,6 +126,7 @@ export function CameraViewfinder({
       setComplete(true);
       return;
     }
+    if (requestConsent && !(await requestConsent())) return;
     if (
       !uploadFileSchema.safeParse({
         mimeType: draft.processedImage.mimeType,
@@ -147,9 +159,13 @@ export function CameraViewfinder({
           s3Key: result.s3Key,
         });
       }
-    } catch {
+    } catch (failure) {
       if (!controller.signal.aborted)
-        setError("이미지 전송 중 네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        setError(
+          failure instanceof ImageUploadError
+            ? failure.message
+            : "이미지 전송 중 네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+        );
     } finally {
       if (running.current === controller) {
         running.current = null;

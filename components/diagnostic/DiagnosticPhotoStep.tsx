@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useBiometricConsent } from "@/components/consent/BiometricConsentModal";
 import type { OnUploadCompletePayload } from "@/lib/api/diagnosticUploadClient";
 import { BaumannQuestionnaire } from "./BaumannQuestionnaire";
 import { CameraViewfinder } from "./CameraViewfinder";
@@ -7,6 +8,7 @@ import { useUploadActivity } from "./UploadActivity";
 import { AlbumImageUploader } from "./AlbumImageUploader";
 export function DiagnosticPhotoStep() {
   const { busy } = useUploadActivity();
+  const consent = useBiometricConsent();
   const [upload, setUpload] = useState<OnUploadCompletePayload | null>(null);
   const [showGuide, setShowGuide] = useState(false);
   const [mode, setMode] = useState<"album" | "camera">("album");
@@ -18,16 +20,18 @@ export function DiagnosticPhotoStep() {
     );
   return (
     <>
+      {consent.modal}
       <button
         type="button"
         className="button-secondary mt-5 w-full"
-        disabled={busy}
+        disabled={busy || consent.checking}
         onClick={() => setShowGuide(true)}
       >
         문진 먼저 시작하기
       </button>
       {mode === "camera" ? (
         <CameraViewfinder
+          requestConsent={consent.requestConsent}
           onAlbum={() => setMode("album")}
           onUploadComplete={(result) => {
             setUpload(result);
@@ -39,6 +43,7 @@ export function DiagnosticPhotoStep() {
           <button
             type="button"
             className="button-secondary mt-5 w-full"
+            disabled={busy || consent.checking}
             onClick={() => {
               setUpload(null);
               setShowGuide(false);
@@ -48,6 +53,7 @@ export function DiagnosticPhotoStep() {
             카메라로 촬영하기
           </button>
           <AlbumImageUploader
+            requestConsent={consent.requestConsent}
             onUploadComplete={(result) => {
               setUpload(result);
               if (!result) setShowGuide(false);
