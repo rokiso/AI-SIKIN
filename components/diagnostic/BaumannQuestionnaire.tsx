@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { z } from "zod";
+import { AnalyzeReportButton } from "./AnalyzeReportButton";
 import { axisLabels, baumannQuestions } from "@/lib/diagnostic/baumannData";
 
 const resultSchema = z.object({
@@ -139,8 +140,10 @@ export function BaumannQuestionnaire({
           문진 응답을 저장했어요
         </h2>
         <p className="text-sm leading-relaxed text-neutral-700">
-          내가 답한 피부 습관을 정리했어요. 사진 분석과 최종 리포트는 아직 연결되지 않았습니다.
+          내가 답한 피부 습관을 정리했어요. 저장된 문진으로 피부 관리 방향과 성분 가이드를 확인해
+          보세요.
         </p>
+        <AnalyzeReportButton sessionId={result.sessionId} />
         <ul className="space-y-3 text-sm text-neutral-700">
           <li>유·수분: {result.axisScores.oiliness >= 50 ? "유분이 많은 편" : "건조한 편"}</li>
           <li>

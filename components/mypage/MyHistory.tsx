@@ -49,6 +49,13 @@ function ReportDialog({ report, close }: { report: HistoryReport; close: () => v
         </button>
       </div>
       <SkinSummaryCard diagnostic={report} heading="저장된 피부 분석" showHistoryLink={false} />
+      <Link
+        href={`/diagnostic/result/${encodeURIComponent(report.reportId)}`}
+        onClick={close}
+        className="button-secondary w-full"
+      >
+        전체 리포트 열기
+      </Link>
       <MedicalDisclaimerNotice compact />
     </dialog>
   );
@@ -235,7 +242,7 @@ export function MyHistory() {
                   </p>
                   {tab === "diagnostics" && (
                     <p className="text-xs leading-relaxed text-neutral-600">
-                      문진 응답만 저장한 경우에는 완료된 분석 리포트가 생성되지 않습니다.
+                      문진을 저장한 뒤 피부 리포트 보기 버튼을 눌러 리포트를 완성해 주세요.
                     </p>
                   )}
                   <Link

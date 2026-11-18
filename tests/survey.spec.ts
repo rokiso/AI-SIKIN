@@ -82,7 +82,7 @@ for (const width of [320, 1280]) {
     release?.();
     await expect(page.getByRole("heading", { name: "문진 응답을 저장했어요" })).toBeVisible();
     await expect(
-      page.getByText("사진 분석과 최종 리포트는 아직 연결되지 않았습니다.", { exact: false }),
+      page.getByRole("button", { name: "피부 리포트 보기" }),
     ).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,

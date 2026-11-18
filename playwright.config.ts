@@ -28,7 +28,7 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: "npm run start",
+      command: "npm run start -- --hostname 127.0.0.1",
       // Reserved .invalid endpoint and dummy signing values for UI tests only.
       // GET/PUT requests are intercepted; this never configures a real AWS account.
       env: {
@@ -47,7 +47,7 @@ export default defineConfig({
       timeout: 30_000,
     },
     {
-      command: "npm run start",
+      command: "npm run start -- --hostname 127.0.0.1",
       env: { PORT: "3001", PHOTO_TEST_MODE: "1", S3_VAULT_BUCKET: "", CATALOG_LIVE_ENABLED: "0" },
       url: "http://127.0.0.1:3001/",
       reuseExistingServer: false,

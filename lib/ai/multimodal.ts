@@ -98,7 +98,7 @@ export async function callMultimodalAiWithTimeout(
     } catch {
       throw new AiGatewayError("AI_INVALID_RESPONSE");
     }
-    if (/완치|처방|항생제|스테로이드|치료하세요/.test(JSON.stringify(features)))
+    if (/완치|처방|항생제|스테로이드|치료|확진/.test(JSON.stringify(features)))
       throw new AiGatewayError("AI_UNSAFE_RESPONSE");
     const latencyMs = Math.round(performance.now() - started);
     const auditWrite = startAiAuditWrite({

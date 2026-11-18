@@ -52,10 +52,12 @@ export async function signImageUpload(
   }
 }
 
-export async function readImageMetadata(s3Key: string) {
+export async function readImageMetadata(s3Key: string, signal?: AbortSignal) {
   const { client, bucket } = vault();
   try {
-    const object = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: s3Key }));
+    const object = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: s3Key }), {
+      abortSignal: signal,
+    });
     return {
       etag: uploadEtagSchema.safeParse(object.ETag).data,
       size: object.ContentLength,
