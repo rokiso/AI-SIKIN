@@ -1,0 +1,24 @@
+{
+  "code": "P-PN",
+  "basis": "리쥬란힐러 2cc 1회 · 주입 방식 별도 확인 · 쿠폰·포인트 차감 전 공개 표시가 · VAT 외 추가비용 별도 확인",
+  "observations": [
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/12615",
+      "sampleKey": "317d2f19314fa9bf5ec8b0449b9567d52f6d4b8a4a32cca423396ced91998bf9",
+      "amountKrw": 162000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-18",
+      "basis": "리쥬란힐러 2cc 1회 · 주입 방식 별도 확인 · 쿠폰·포인트 차감 전 공개 표시가 · VAT 외 추가비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/34304",
+      "sampleKey": "fa47817628a0ab2c134c4b04465907d643e20d3a56f492e331ea7bde1d762cf1",
+      "amountKrw": 198000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-18",
+      "basis": "리쥬란힐러 2cc 1회 · 주입 방식 별도 확인 · 쿠폰·포인트 차감 전 공개 표시가 · VAT 외 추가비용 별도 확인"
+    }
+  ]
+}

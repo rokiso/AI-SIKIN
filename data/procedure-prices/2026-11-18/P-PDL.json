@@ -1,0 +1,15 @@
+{
+  "code": "P-PDL",
+  "basis": "브이빔 얼굴 전체 1회 · 장비 모델 별도 확인 · 쿠폰·포인트 차감 전 공개 표시가 · VAT 외 추가비용 별도 확인",
+  "observations": [
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/29829",
+      "sampleKey": "893ebe1d186db7329ba95e45c0bb3f03b7ee0bcf57c629db192410d6cb0db385",
+      "amountKrw": 220000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-18",
+      "basis": "브이빔 얼굴 전체 1회 · 장비 모델 별도 확인 · 쿠폰·포인트 차감 전 공개 표시가 · VAT 외 추가비용 별도 확인"
+    }
+  ]
+}

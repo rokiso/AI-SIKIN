@@ -1,0 +1,24 @@
+{
+  "code": "P-AQUAPEEL",
+  "basis": "아쿠아필 단독 1회 · 쿠폰·포인트 차감 전 공개 표시가 · VAT 외 추가비용 별도 확인",
+  "observations": [
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/21275",
+      "sampleKey": "fa102a5badebc12457d7752fd59c4b8fbe841eef5b042039396946ddef58a738",
+      "amountKrw": 33000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-18",
+      "basis": "아쿠아필 단독 1회 · 쿠폰·포인트 차감 전 공개 표시가 · VAT 외 추가비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/4867",
+      "sampleKey": "540fbf7f079c40083c3b6a57feeef310cc351481eb0a27a8b58a4527bf6e167e",
+      "amountKrw": 20900,
+      "vatIncluded": true,
+      "observedOn": "2026-11-18",
+      "basis": "아쿠아필 단독 1회 · 쿠폰·포인트 차감 전 공개 표시가 · VAT 외 추가비용 별도 확인"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { formatProcedurePrice, procedureListResponseSchema } from "../lib/catalog/procedures";
 
 for (const width of [320, 1280]) {
   test(`procedure guide and dialog reflow, keyboard focus, and clipboard at ${width}px`, async ({
@@ -18,7 +19,18 @@ for (const width of [320, 1280]) {
     });
     await page.goto("/catalog/procedures");
     await expect(page.getByRole("button", { name: /상세 보기$/ })).toHaveCount(10);
-    await expect(page.getByText("가격 자료 확인 중", { exact: true })).toHaveCount(10);
+    const catalogResponse = await page.request.get("/api/v1/catalog/procedures");
+    expect(catalogResponse.status()).toBe(200);
+    const catalog = procedureListResponseSchema.parse(await catalogResponse.json()).data.procedures;
+    await expect(page.getByText("가격 자료 확인 중", { exact: true })).toHaveCount(
+      catalog.filter((item) => item.priceSummary.status === "UNVERIFIED").length,
+    );
+    for (const procedure of catalog) {
+      const card = page
+        .locator("main li")
+        .filter({ has: page.getByRole("button", { name: `${procedure.nameKo} 상세 보기` }) });
+      await expect(card.getByText(formatProcedurePrice(procedure), { exact: true })).toBeVisible();
+    }
     await expect(page.getByRole("complementary", { name: "진단 전 안내" })).toBeVisible();
     await page.getByRole("button", { name: "색소·잡티", exact: true }).click();
     await expect(page).toHaveURL(/concern=PIGMENTATION$/);
@@ -29,7 +41,8 @@ for (const width of [320, 1280]) {
       "true",
     );
     const open = page.getByRole("button", { name: "피코레이저 토닝 상세 보기" });
-    await page.screenshot({ path: info.outputPath(`procedures-${width}.png`), fullPage: true });
+    await page.locator("main li").filter({ has: open }).scrollIntoViewIfNeeded();
+    await page.screenshot({ path: info.outputPath(`procedures-${width}.png`) });
     expect(
       (
         await new AxeBuilder({ page })
