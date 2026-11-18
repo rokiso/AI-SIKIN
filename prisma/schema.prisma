@@ -277,20 +277,38 @@ model ProductRecommendation {
   @@map("product_recommendations")
 }
 
+enum SkinConcernType {
+  ACNE_SCAR
+  PIGMENTATION
+  PORE_SEBUM
+  ELASTICITY
+  BARRIER_REDNESS
+}
+
 model MedicalProcedure {
   id              String                  @id @default(uuid())
   nameKo          String                  @map("name_ko")
   principleText   String                  @db.Text @map("principle_text")
   recommendedInterval String              @map("recommended_interval")
   sideEffects     String[]                @map("side_effects")
-  minPriceKrw     Int                     @map("min_price_krw")
-  maxPriceKrw     Int                     @map("max_price_krw")
+  minPriceKrw     Int?                    @map("min_price_krw")
+  maxPriceKrw     Int?                    @map("max_price_krw")
+  code            String?                 @unique
+  aliases         String[]                @default([])
+  concernType     SkinConcernType?        @map("concern_type")
+  recoveryPeriod  String?                 @map("recovery_period")
+  checklistQuestions String[]             @default([]) @map("checklist_questions")
+  sortOrder       Int                     @default(0) @map("sort_order")
+  priceBasis      String?                 @map("price_basis")
+  priceObservations Json                  @default("[]") @map("price_observations")
   isActive        Boolean                 @default(true) @map("is_active")
   createdAt       DateTime                @default(now()) @db.Timestamptz @map("created_at")
   updatedAt       DateTime                @updatedAt @db.Timestamptz @map("updated_at")
 
   mappings        ProcedureGuideMapping[]
 
+  @@index([concernType, isActive])
+  @@index([sortOrder])
   @@map("medical_procedures")
 }
 

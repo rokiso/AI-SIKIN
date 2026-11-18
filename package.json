@@ -23,6 +23,8 @@
     "db:migrate": "node --conditions=react-server --import tsx scripts/database.ts migrate",
     "db:status": "node --conditions=react-server --import tsx scripts/database.ts status",
     "db:seed": "node --conditions=react-server --import tsx scripts/database.ts seed",
+    "procedures:seed": "node --conditions=react-server --import tsx scripts/seed-procedures.ts",
+    "procedures:prices": "node --conditions=react-server --import tsx scripts/import-procedure-prices.ts",
     "test:db": "vitest run --config vitest.database.config.ts",
     "format:check": "prettier --check app/manifest.ts components/pwa components/system lib/server-env.ts lib/prisma.ts lib/database-development.ts scripts prisma.config.ts prisma/seed.ts compose.yaml .prettierrc.json",
     "catalog:check": "node --conditions=react-server --import tsx scripts/catalog-check.ts",
