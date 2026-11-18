@@ -1,13 +1,9 @@
 import "server-only";
-import type { MedicalProcedure } from "@/generated/prisma/client";
 import { getPrisma } from "@/lib/prisma";
-import {
-  concernLabels,
-  procedureViewSchema,
-  type ProcedureConcern,
-  type ProcedureView,
-} from "./procedures";
-import { summarizeProcedurePrices } from "./procedure-pricing";
+import type { ProcedureConcern, ProcedureView } from "./procedures";
+import { projectProcedure } from "./procedure-projection";
+import { getPublishedProcedures } from "./procedure-published";
+import { getProcedureCatalogSource } from "@/lib/server-env";
 
 let cached: { rows: ProcedureView[]; expires: number } | null = null;
 let loading: Promise<ProcedureView[]> | null = null;
@@ -17,23 +13,9 @@ export function invalidateProcedureCache() {
   loading = null;
   revision++;
 }
-function project(row: MedicalProcedure): ProcedureView {
-  return procedureViewSchema.parse({
-    id: row.id,
-    code: row.code,
-    nameKo: row.nameKo,
-    aliases: row.aliases,
-    concernType: row.concernType,
-    concernLabelKo: row.concernType ? concernLabels[row.concernType] : "",
-    principleDescription: row.principleText,
-    recommendedInterval: row.recommendedInterval,
-    sideEffectsWarning: row.sideEffects.join(" "),
-    recoveryPeriod: row.recoveryPeriod,
-    checklistQuestions: row.checklistQuestions,
-    ...summarizeProcedurePrices(row.priceObservations, row.priceBasis),
-  });
-}
+
 async function catalog(): Promise<ProcedureView[]> {
+  if (getProcedureCatalogSource() === "published") return getPublishedProcedures();
   if (cached && cached.expires > Date.now()) return cached.rows;
   if (loading) return loading;
   const started = revision;
@@ -44,7 +26,7 @@ async function catalog(): Promise<ProcedureView[]> {
       take: 256,
     })
     .then((rows) => {
-      const result = rows.map(project);
+      const result = rows.map(projectProcedure);
       if (revision === started) cached = { rows: result, expires: Date.now() + 30_000 };
       return result;
     });

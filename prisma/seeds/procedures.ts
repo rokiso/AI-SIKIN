@@ -1,6 +1,9 @@
 import type { PrismaClient } from "../../generated/prisma/client";
 import type { ProcedureConcern } from "../../lib/catalog/procedures";
 
+export const procedureIntervalNote =
+  "피부 상태·장비·시술 강도에 따라 달라집니다. 다음 시술 전 의료진과 회복 상태를 확인해 주세요.";
+
 type Guide = {
   code: string;
   nameKo: string;
@@ -205,8 +208,7 @@ export async function seedProcedureGuides(client: PrismaClient) {
           ...guide,
           sortOrder: index + 1,
           isActive: true,
-          recommendedInterval:
-            "피부 상태·장비·시술 강도에 따라 달라집니다. 다음 시술 전 의료진과 회복 상태를 확인해 주세요.",
+          recommendedInterval: procedureIntervalNote,
           minPriceKrw: null,
           maxPriceKrw: null,
           priceObservations: [],

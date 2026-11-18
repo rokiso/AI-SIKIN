@@ -14,7 +14,7 @@ export default defineConfig({
     },
     {
       name: "preview",
-      testMatch: ["photo-test-mode.spec.ts", "skin-shop.spec.ts"],
+      testMatch: ["photo-test-mode.spec.ts", "skin-shop.spec.ts", "procedures.spec.ts"],
       use: { baseURL: "http://127.0.0.1:3001" },
     },
   ],
@@ -41,6 +41,7 @@ export default defineConfig({
         AWS_SECRET_ACCESS_KEY: "e2e-test-only-not-a-real-credential",
         CATALOG_LIVE_ENABLED: "1",
         CATALOG_AFFILIATE_HOSTS: "shop.example.com",
+        PROCEDURE_CATALOG_SOURCE: "database",
       },
       url: "http://127.0.0.1:3000/",
       reuseExistingServer: false,
@@ -48,7 +49,13 @@ export default defineConfig({
     },
     {
       command: "npm run start -- --hostname 127.0.0.1",
-      env: { PORT: "3001", PHOTO_TEST_MODE: "1", S3_VAULT_BUCKET: "", CATALOG_LIVE_ENABLED: "0" },
+      env: {
+        PORT: "3001",
+        PHOTO_TEST_MODE: "1",
+        S3_VAULT_BUCKET: "",
+        CATALOG_LIVE_ENABLED: "0",
+        PROCEDURE_CATALOG_SOURCE: "published",
+      },
       url: "http://127.0.0.1:3001/",
       reuseExistingServer: false,
       timeout: 30_000,

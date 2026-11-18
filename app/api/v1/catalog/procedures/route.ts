@@ -3,6 +3,7 @@ import { AuthError, privateHeaders } from "@/lib/auth/response";
 import { procedureQuerySchema } from "@/lib/catalog/procedures";
 import { getProcedures } from "@/lib/catalog/procedureService";
 import { procedureFailure } from "@/lib/catalog/procedure-http";
+import { getProcedureCatalogSource } from "@/lib/server-env";
 export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   try {
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
       throw new AuthError(400, "INVALID_PROCEDURE_QUERY", "피부 고민 필터를 확인해 주세요.");
     return NextResponse.json(
       { success: true, data: await getProcedures(parsed.data.concern) },
-      { headers: privateHeaders },
+      { headers: { ...privateHeaders, "X-Procedure-Catalog-Source": getProcedureCatalogSource() } },
     );
   } catch (error) {
     return procedureFailure(error);

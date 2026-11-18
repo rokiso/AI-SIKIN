@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { AuthError, privateHeaders } from "@/lib/auth/response";
 import { getProcedure } from "@/lib/catalog/procedureService";
 import { procedureFailure } from "@/lib/catalog/procedure-http";
+import { getProcedureCatalogSource } from "@/lib/server-env";
 export const dynamic = "force-dynamic";
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
@@ -12,7 +13,10 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     const procedure = parsed.success ? await getProcedure(parsed.data) : null;
     if (!procedure)
       throw new AuthError(404, "PROCEDURE_NOT_FOUND", "해당 시술 정보가 존재하지 않습니다.");
-    return NextResponse.json({ success: true, data: { procedure } }, { headers: privateHeaders });
+    return NextResponse.json(
+      { success: true, data: { procedure } },
+      { headers: { ...privateHeaders, "X-Procedure-Catalog-Source": getProcedureCatalogSource() } },
+    );
   } catch (error) {
     return procedureFailure(error);
   }

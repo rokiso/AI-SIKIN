@@ -4,6 +4,11 @@ import { AiConfigurationError } from "@/lib/ai/errors";
 
 const databaseUrlSchema = z.url({ protocol: /^postgres(?:ql)?$/ });
 
+export function getProcedureCatalogSource(): "published" | "database" {
+  const fallback = process.env.VERCEL === "1" ? "published" : "database";
+  return z.enum(["published", "database"]).parse(process.env.PROCEDURE_CATALOG_SOURCE || fallback);
+}
+
 export function getOptionalDatabaseUrl(): string | undefined {
   const value = process.env.DATABASE_URL;
   if (value === undefined || value === "") return undefined;

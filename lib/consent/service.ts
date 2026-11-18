@@ -137,6 +137,15 @@ export async function transferConsentOwnership(
   guestDeviceId: string,
   userId: string,
 ) {
+  // Before versioned consent existed, no guest consent records could be stored.
+  // Keep existing logins working until the additive production migration is applied.
+  const columns = await tx.$queryRaw<Array<{ ready: boolean }>>`
+    SELECT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = current_schema()
+        AND table_name = 'user_consent_histories' AND column_name = 'guest_device_id'
+    ) AS ready`;
+  if (!columns[0]?.ready) return { count: 0 };
   return tx.userConsentHistory.updateMany({
     where: { guestDeviceId, userId: null },
     data: { userId },
