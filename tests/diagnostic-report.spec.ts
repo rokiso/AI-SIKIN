@@ -160,6 +160,7 @@ test("analysis failure, pending, retry and navigation from saved questionnaire",
       });
     if (calls === 2) {
       await pending;
+      await route.fetch();
       return route.fulfill({
         status: 202,
         json: {
@@ -177,7 +178,7 @@ test("analysis failure, pending, retry and navigation from saved questionnaire",
   await verifyLayout(page);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: info.outputPath("report-retry-320.png"), fullPage: true });
-  await page.getByRole("button", { name: "다시 분석하기" }).click();
+  await page.getByRole("button", { name: "리포트 생성 상태 확인하기" }).click();
   await expect(page.getByRole("button", { name: "리포트 준비 중…" })).toBeDisabled();
   await expect(page.getByRole("status").filter({ hasText: "문진을 정리하고" })).toBeVisible();
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -185,7 +186,7 @@ test("analysis failure, pending, retry and navigation from saved questionnaire",
   release();
   await expect(page).toHaveURL(/\/diagnostic\/result\/[0-9a-f-]+$/);
   await expect(page.getByRole("link", { name: "보관함에서 확인하기" })).toBeVisible();
-  expect(calls).toBe(3);
+  expect(calls).toBe(2);
   await verifyLayout(page);
 });
 test("forbidden and missing reports show recovery without leaking other owners", async ({

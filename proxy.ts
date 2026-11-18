@@ -33,7 +33,12 @@ export function proxy(request: NextRequest) {
     });
   }
   // Session-bearing HTML and health responses must not be shared across visitors.
-  response.headers.set("Cache-Control", "private, no-store");
+  // Proxy response headers override route headers. Preserve SSE's no-transform
+  // directive so intermediaries cannot buffer/compress the progress stream.
+  const progressStream = request.nextUrl.pathname.startsWith("/api/v1/diagnostics/progress/");
+  response.headers.set("Cache-Control", progressStream
+    ? "private, no-cache, no-store, no-transform"
+    : "private, no-store");
   return response;
 }
 

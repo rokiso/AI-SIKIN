@@ -20,6 +20,7 @@ vi.mock("@/lib/storage/s3-vault", () => ({
 vi.mock("@/lib/ai/audit", () => ({ startAiAuditWrite: mocks.audit }));
 import { POST } from "@/app/api/v1/diagnostics/analyze/route";
 import { GET } from "@/app/api/v1/diagnostics/reports/[reportId]/route";
+import { GET as progressStream } from "@/app/api/v1/diagnostics/progress/[sessionId]/route";
 import { getPrisma } from "@/lib/prisma";
 import { assertLocalDevelopmentDatabase } from "@/lib/database-development";
 import { getDatabaseUrl } from "@/lib/server-env";
@@ -381,16 +382,41 @@ describe("local diagnostic orchestrator and protected report API", () => {
       });
     });
     const s = await createSession(true);
-    const started = performance.now();
-    const response = await analyze(s.id);
-    const elapsed = performance.now() - started;
-    const body = await response.json();
-    expect(response.status).toBe(200);
-    expect(body.data).toMatchObject({ source: "QUESTIONNAIRE", isFallback: true });
-    expect(signal?.aborted).toBe(true);
-    expect(elapsed).toBeGreaterThan(7900);
-    expect(elapsed).toBeLessThan(10000);
-    const report = await db.diagnosticReport.findUniqueOrThrow({ where: { sessionId: s.id } });
-    expect(report.aiAuditMetadata).toMatchObject({ reason: "AI_GATEWAY_TIMEOUT" });
+    const stream = await progressStream(
+      new Request(`https://miruvia.test/api/v1/diagnostics/progress/${s.id}`),
+      { params: Promise.resolve({ sessionId: s.id }) },
+    );
+    const reader = stream.body!.getReader();
+    const decoder = new TextDecoder();
+    await reader.read();
+    await reader.read();
+    const reading = (async () => {
+      let text = "";
+      for (;;) {
+        const chunk = await reader.read();
+        if (chunk.done) return text;
+        text += decoder.decode(chunk.value);
+      }
+    })();
+    try {
+      const started = performance.now();
+      const response = await analyze(s.id);
+      const elapsed = performance.now() - started;
+      const body = await response.json();
+      expect(response.status).toBe(200);
+      expect(body.data).toMatchObject({ source: "QUESTIONNAIRE", isFallback: true });
+      expect(signal?.aborted).toBe(true);
+      expect(elapsed).toBeGreaterThan(7900);
+      expect(elapsed).toBeLessThan(10000);
+      const report = await db.diagnosticReport.findUniqueOrThrow({ where: { sessionId: s.id } });
+      expect(report.aiAuditMetadata).toMatchObject({ reason: "AI_GATEWAY_TIMEOUT" });
+      const text = await reading;
+      expect(text).toContain("event: fallback");
+      expect(text).toContain('"reason":"TIMEOUT"');
+      expect(text).toContain(body.data.reportId);
+      expect(performance.now() - started).toBeLessThan(10000);
+    } finally {
+      await reader.cancel();
+    }
   }, 12000);
 });

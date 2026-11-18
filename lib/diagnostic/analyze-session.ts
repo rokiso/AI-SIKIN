@@ -1,5 +1,6 @@
 import "server-only";
 import { after } from "next/server";
+import { publishProgress } from "./progressEmitter";
 import { getPrisma } from "@/lib/prisma";
 import { AuthError } from "@/lib/auth/response";
 import { isAiLiveEnabled } from "@/lib/server-env";
@@ -75,6 +76,16 @@ export async function analyzeSession(owner: UploadOwner, input: { sessionId: str
   if (claim.kind === "completed") return completed(claim.report);
   if (claim.kind === "pending") return pending(sessionId);
 
+  const usesPhoto = isAiLiveEnabled() && Boolean(claim.upload);
+  await publishProgress(sessionId, {
+    step: "EXTRACTING_FEATURES",
+    stepNumber: 1,
+    progressPercent: 35,
+    skipped: !usesPhoto,
+    message: usesPhoto
+      ? "등록된 사진의 외관 참고 정보를 확인하고 있어요."
+      : "사진 AI를 적용하지 않고 문진 응답을 확인해요.",
+  });
   let result = ruleBasedEvaluator(claim.scores);
   let source: "QUESTIONNAIRE" | "AI_ASSISTED" = "QUESTIONNAIRE";
   let reason = "NO_PHOTO";
@@ -160,6 +171,23 @@ export async function analyzeSession(owner: UploadOwner, input: { sessionId: str
     }
   }
 
+  await publishProgress(sessionId, {
+    step: "COMBINING_SURVEY",
+    stepNumber: 2,
+    progressPercent: 70,
+    skipped: false,
+    message:
+      source === "AI_ASSISTED"
+        ? "문진을 최소 60% 반영해 참고 정보를 정리했어요."
+        : "저장된 문진 응답으로 피부 특성을 정리했어요.",
+  });
+  await publishProgress(sessionId, {
+    step: "GENERATING_REPORT",
+    stepNumber: 3,
+    progressPercent: 95,
+    skipped: false,
+    message: "리포트와 성분 안내를 저장하고 있어요.",
+  });
   return db.$transaction(async (tx) => {
     const session = await tx.diagnosticSession.findUniqueOrThrow({
       where: { id: sessionId },
