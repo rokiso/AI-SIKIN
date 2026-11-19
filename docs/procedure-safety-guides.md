@@ -58,3 +58,5 @@
 | [FDA Non-Invasive Body Contouring Technologies](https://www.fda.gov/medical-devices/aesthetic-cosmetic-devices/non-invasive-body-contouring-technologies)                                    | RF의 열 손상 및 이식 기기 확인, 치료용 초음파의 화상·신경 손상 가능성                                                  | 체형 시술 자료이므로 안면 HIFU/LDM의 장비별 허가·정확한 위험 목록·빈도 근거로 직접 전용하지 않는다.                                                                                  |
 
 이번 대조에서 위 자료와 기존의 보수적인 일반 안내 사이에 즉시 수정해야 할 모순은 확인하지 못했다. 프로덕션 코드·시드·DB 내용은 변경하지 않았다. 피코·프락셔널·PDL·PN·LDM·아쿠아필 등 10종 전체의 제품/장비별 원문 검증이나 의료진 검수 완료를 의미하지 않는다. 최초 구현 시점의 자료 한계 기록은 보존하며, 후속 확인한 범위만 위에 추가한다. 원문 HTML과 추출 텍스트는 저장소 밖 백업 증거로 보관한다.
+
+이후 사용자가 의료진을 정하지 않았으며 “검토만 하자”고 범위를 확정했다. [10종 전체 자료 검토표](./procedure-medical-information-review.md)에 각 시술의 대조 결과, 직접 근거가 부족한 부분과 RF 방식별 설명 등 보완 권고를 추가했다. 이 후속 검토도 의료진 검수나 제품별 임상 승인이 아니다.
