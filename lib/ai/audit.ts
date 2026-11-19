@@ -33,6 +33,21 @@ export type CreateAiAuditLogInput = z.input<typeof payloadSchema>;
 
 export async function recordAiAuditLog(payload: CreateAiAuditLogInput): Promise<string> {
   const data = payloadSchema.parse(payload);
+  if (data.sessionId) {
+    const sessionId = data.sessionId;
+    const row = await getPrisma().$transaction(async (tx) => {
+      // Serialize late AI completion with account deletion. Once the diagnostic
+      // is gone, retain only aggregate provider metadata without its old ID.
+      const existing = await tx.$queryRaw<
+        { id: string }[]
+      >`SELECT id FROM diagnostic_sessions WHERE id = ${sessionId} FOR KEY SHARE`;
+      return tx.aiInferenceAuditLog.create({
+        data: { ...data, sessionId: existing.length ? sessionId : null },
+        select: { id: true },
+      });
+    });
+    return row.id;
+  }
   const row = await getPrisma().aiInferenceAuditLog.create({ data, select: { id: true } });
   return row.id;
 }

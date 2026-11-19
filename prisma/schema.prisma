@@ -95,6 +95,19 @@ model AuthSession {
   @@map("auth_sessions")
 }
 
+// No user FK, raw user ID, IP, file key or provider identity is retained.
+// The keyed digest is pseudonymous audit metadata, not a claim of anonymity.
+model DeletionAuditLog {
+  id                  String   @id @default(uuid())
+  userHash            String   @map("user_hash")
+  deletedImagesCount  Int      @map("deleted_images_count")
+  deletedRecordsCount Int      @map("deleted_records_count")
+  completedAt         DateTime @default(now()) @db.Timestamptz @map("completed_at")
+
+  @@index([userHash])
+  @@map("deletion_audit_logs")
+}
+
 enum ConsentType {
   BIOMETRIC_FACE_DATA
 }

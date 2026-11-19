@@ -152,6 +152,14 @@ export async function recordAffiliateRedirect(
     if (!existing) await getProductRecommendations(input.reportId, identity);
   }
   return getPrisma().$transaction(async (tx) => {
+    if (identity.kind === "member") {
+      // Click logs have no user FK. Serialize with account erasure so an
+      // already-authorized request cannot recreate the deleted user identifier.
+      const user = await tx.$queryRaw<
+        { id: string }[]
+      >`SELECT id FROM users WHERE id = ${identity.userId} FOR KEY SHARE`;
+      if (!user.length) throw new AuthError(401, "UNAUTHORIZED", "다시 로그인해 주세요.");
+    }
     let product = await tx.product.findUnique({ where: { id: input.productId } });
     if (!product) throw new AuthError(404, "PRODUCT_NOT_FOUND", "상품을 찾을 수 없습니다.");
     let tier = input.tier;
