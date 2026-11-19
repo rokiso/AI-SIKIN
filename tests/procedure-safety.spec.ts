@@ -27,6 +27,32 @@ function fixture(action: string, path: string) {
   );
 }
 for (const width of [320, 1280]) {
+  test(`RF risk distinguishes microneedling from non-invasive devices at ${width}px`, async ({
+    page,
+  }, info) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/catalog/procedures/rf-tightening");
+    const warning = page.locator("main").getByText(/RF 미세침 방식의 일부 사용에서는/);
+    await expect(warning).toBeVisible();
+    await expect(warning).toContainText("흉터·지방 손실·신경 손상");
+    await expect(warning).toContainText("비침습 RF와 구분");
+    await expect(page.getByRole("complementary", { name: "진단 전 안내" })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    expect(
+      (await new AxeBuilder({ page }).include("main").withTags(["wcag2a", "wcag2aa"]).analyze())
+        .violations,
+    ).toEqual([]);
+    await page.screenshot({ path: info.outputPath(`rf-safety-${width}.png`), fullPage: true });
+    await page.getByRole("link", { name: "시술 목록으로 돌아가기" }).click();
+    await page.getByRole("button", { name: "고주파 타이트닝 상세 보기" }).click();
+    const modalWarning = page.getByRole("dialog").getByText(/RF 미세침 방식의 일부 사용에서는/);
+    await modalWarning.scrollIntoViewIfNeeded();
+    await expect(modalWarning).toBeInViewport();
+    await page.screenshot({ path: info.outputPath(`rf-modal-${width}.png`) });
+  });
+
   test(`loading component remains readable and prevents copying at ${width}px`, async ({
     page,
   }, info) => {

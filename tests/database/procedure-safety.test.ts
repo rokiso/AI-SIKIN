@@ -1,9 +1,10 @@
 import { randomBytes } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import { afterAll, afterEach, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { getPrisma } from "@/lib/prisma";
 import { getDatabaseUrl } from "@/lib/server-env";
 import { assertLocalDevelopmentDatabase } from "@/lib/database-development";
-import { seedProcedureGuides } from "@/prisma/seeds/procedures";
+import { rfMicroneedlingRiskNote, seedProcedureGuides } from "@/prisma/seeds/procedures";
 import { seedProcedureSafetyGuides } from "@/prisma/seeds/procedure-safety";
 import { GET } from "../../app/api/v1/catalog/procedures/[id]/route";
 import { getProcedureSafetyGuide } from "@/lib/catalog/procedure-safety-service";
@@ -85,6 +86,87 @@ it("preserves seeded guides, observations and update times across repeat seeding
       orderBy: { code: "asc" },
     }),
   ).toEqual(prices);
+});
+it("adds the scoped RF warning to existing records without replacing curated data or duplicating it", async () => {
+  const sql = await readFile(
+    new URL(
+      "../../prisma/migrations/20261119030000_rf_microneedling_risk_note/migration.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const rollback = new Error("ROLLBACK_RF_MIGRATION_TEST");
+  await expect(
+    db.$transaction(async (tx) => {
+      // Exercise the actual migration against legacy/custom content; roll back all fixtures.
+      const parent = await tx.medicalProcedure.update({
+        where: { code: "P-RF" },
+        data: { sideEffects: ["기존에 검토한 별도 주의사항"] },
+      });
+      const guide = await tx.procedureSafetyGuide.update({
+        where: { slug: "rf-tightening" },
+        data: { rareRisks: ["기존에 검토한 상세 위험"] },
+      });
+      const others = await tx.medicalProcedure.findMany({
+        where: { code: { not: "P-RF" } },
+        orderBy: { id: "asc" },
+        include: { safetyGuide: true },
+      });
+      await tx.$executeRawUnsafe(sql);
+      const updatedParent = await tx.medicalProcedure.findUniqueOrThrow({
+        where: { id: parent.id },
+      });
+      const updatedGuide = await tx.procedureSafetyGuide.findUniqueOrThrow({
+        where: { id: guide.id },
+      });
+      expect(updatedParent).toEqual({
+        ...parent,
+        sideEffects: [...parent.sideEffects, rfMicroneedlingRiskNote],
+        updatedAt: expect.any(Date),
+      });
+      expect(updatedGuide).toEqual({
+        ...guide,
+        rareRisks: [...guide.rareRisks, rfMicroneedlingRiskNote],
+        updatedAt: expect.any(Date),
+      });
+      expect(
+        await tx.medicalProcedure.findMany({
+          where: { code: { not: "P-RF" } },
+          orderBy: { id: "asc" },
+          include: { safetyGuide: true },
+        }),
+      ).toEqual(others);
+      await tx.$executeRawUnsafe(sql);
+      expect(await tx.medicalProcedure.findUniqueOrThrow({ where: { id: parent.id } })).toEqual(
+        updatedParent,
+      );
+      expect(await tx.procedureSafetyGuide.findUniqueOrThrow({ where: { id: guide.id } })).toEqual(
+        updatedGuide,
+      );
+      throw rollback;
+    }),
+  ).rejects.toBe(rollback);
+});
+it("serves the scoped RF warning from both catalog sources and the legacy UUID contract", async () => {
+  for (const source of ["database", "published"]) {
+    vi.stubEnv("PROCEDURE_CATALOG_SOURCE", source);
+    invalidateProcedureCache();
+    const response = await call("rf-tightening");
+    expect(response.status).toBe(200);
+    const data = safetyResponseSchema.parse(await response.json()).data;
+    expect(data.safetyInfo.rareRisks.filter((r) => r === rfMicroneedlingRiskNote)).toHaveLength(1);
+    const { procedures } = await import("@/lib/catalog/procedureService").then((m) =>
+      m.getProcedures(),
+    );
+    const rf = procedures.find((p) => p.code === "P-RF")!;
+    const legacy = await call(rf.id);
+    expect(legacy.status).toBe(200);
+    expect((await legacy.json()).data.procedure.sideEffectsWarning).toContain(
+      rfMicroneedlingRiskNote,
+    );
+    const pico = safetyResponseSchema.parse(await (await call("pico-toning")).json()).data;
+    expect(pico.safetyInfo.rareRisks).not.toContain(rfMicroneedlingRiskNote);
+  }
 });
 it("enforces 120 requests atomically across concurrent callers with no raw IP retention", async () => {
   const headers = new Headers({ "x-real-ip": ip });

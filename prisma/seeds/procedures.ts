@@ -4,6 +4,11 @@ import type { ProcedureConcern } from "../../lib/catalog/procedures";
 export const procedureIntervalNote =
   "피부 상태·장비·시술 강도에 따라 달라집니다. 다음 시술 전 의료진과 회복 상태를 확인해 주세요.";
 
+// FDA safety communication, 2025-10-15: certain uses of RF microneedling.
+// This warning must not be generalized to all non-invasive RF devices.
+export const rfMicroneedlingRiskNote =
+  "RF 미세침 방식의 일부 사용에서는 흉터·지방 손실·신경 손상 등 중대한 합병증이 보고되었습니다. 비침습 RF와 구분해 사용할 장비·방식의 위험을 의료진에게 확인하세요.";
+
 type Guide = {
   code: string;
   nameKo: string;
@@ -114,6 +119,7 @@ export const procedureGuides: Guide[] = [
       "고주파 전류에 의한 조직의 저항을 이용해 열을 전달하는 방식입니다. 단극성·양극성 등 장비 구조와 바늘 사용 여부에 따라 시술 과정이 다릅니다.",
     sideEffects: [
       "열감, 붉은 기, 부종, 화상 또는 지방 위축이 발생할 수 있습니다. 이식형 전자기기나 금속 삽입 여부를 사전에 알려 주세요.",
+      rfMicroneedlingRiskNote,
     ],
     recoveryPeriod:
       "바늘 사용 여부와 강도에 따라 회복이 다릅니다. 수포·심한 통증·지속적인 붓기는 진료가 필요할 수 있습니다.",

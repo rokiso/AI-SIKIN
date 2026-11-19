@@ -1,5 +1,5 @@
 import type { PrismaClient } from "../../generated/prisma/client";
-import { procedureGuides } from "./procedures";
+import { procedureGuides, rfMicroneedlingRiskNote } from "./procedures";
 import {
   procedureSafetyRoutes,
   safetyContentSchema,
@@ -79,6 +79,7 @@ const details: Record<
     common: ["열감이 생길 수 있습니다.", "붉은 기가 남을 수 있습니다.", "부종이 생길 수 있습니다."],
     risks: [
       "화상이나 지방 위축이 발생할 수 있습니다. 바늘 사용 여부와 열 전달 방식에 따라 위험이 다릅니다.",
+      rfMicroneedlingRiskNote,
     ],
     review: [
       "이식형 전자기기·금속 삽입 여부를 알리고 해당 장비로 진행 가능한지 확인하세요.",
