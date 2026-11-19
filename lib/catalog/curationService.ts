@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import type { Product, Prisma } from "@/generated/prisma/client";
+import type { Product, ProductRecommendation, Prisma } from "@/generated/prisma/client";
 import { getPrisma } from "@/lib/prisma";
 import type { VerifiedIdentity } from "@/lib/session/identity-types";
 import { AuthError } from "@/lib/auth/response";
@@ -12,6 +12,7 @@ import { getIngredientRules } from "./ingredient-repository";
 let cached: { products: Product[]; expires: number } | null = null;
 let loading: Promise<Product[]> | null = null;
 let revision = 0;
+const recommendationLoads = new Map<string, Promise<ProductRecommendationResponse>>();
 export function invalidateProductCache() {
   cached = null;
   loading = null;
@@ -78,13 +79,48 @@ function project(
         : null,
   };
 }
+type RecommendationMapping = Pick<
+  ProductRecommendation,
+  "productId" | "category" | "tier" | "recommendationReason" | "targetIngredients"
+>;
+function mappingFingerprint(rows: RecommendationMapping[]): string {
+  return JSON.stringify(
+    rows
+      .map((r) => [r.productId, r.category, r.tier, r.recommendationReason, r.targetIngredients])
+      .sort(),
+  );
+}
 export async function getProductRecommendations(
   reportId: string,
   identity: VerifiedIdentity,
 ): Promise<ProductRecommendationResponse> {
   // Authorization is never cached, including after login, revocation or guest transfer.
   const report = await authorizedReport(reportId, identity);
-  const matches = matchProducts(await catalogProducts(), report, await getIngredientRules());
+  const key = JSON.stringify([
+    report.id,
+    report.baumannType,
+    report.recommendedIngredients,
+    report.cautionIngredients,
+    revision,
+  ]);
+  const loading = recommendationLoads.get(key);
+  if (loading) return loading;
+  const pending = buildRecommendations(report);
+  recommendationLoads.set(key, pending);
+  try {
+    return await pending;
+  } finally {
+    if (recommendationLoads.get(key) === pending) recommendationLoads.delete(key);
+  }
+}
+async function buildRecommendations(report: Awaited<ReturnType<typeof authorizedReport>>) {
+  const reportId = report.id;
+  const [products, rules, existing] = await Promise.all([
+    catalogProducts(),
+    getIngredientRules(),
+    getPrisma().productRecommendation.findMany({ where: { reportId } }),
+  ]);
+  const matches = matchProducts(products, report, rules);
   const mapped = matches.flatMap((m) =>
     (["PRIMARY", "SECONDARY"] as const).flatMap((tier) => {
       const match = tier === "PRIMARY" ? m.primary : m.secondary;
@@ -102,18 +138,19 @@ export async function getProductRecommendations(
         : [];
     }),
   );
-  // A transaction + per-report lock makes concurrent lazy generation consistent.
-  await getPrisma().$transaction(async (tx) => {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`catalog:${reportId}`}, 0))`;
-    const existing = await tx.productRecommendation.findMany({ where: { reportId } });
-    if (
-      JSON.stringify(existing.map((r) => [r.productId, r.category, r.tier]).sort()) ===
-      JSON.stringify(mapped.map((r) => [r.productId, r.category, r.tier]).sort())
-    )
-      return;
-    await tx.productRecommendation.deleteMany({ where: { reportId } });
-    if (mapped.length) await tx.productRecommendation.createMany({ data: mapped });
-  });
+  const desired = mappingFingerprint(mapped);
+  // A fresh read avoids serializing unchanged warm requests behind a write lock.
+  // Neither report authorization nor persisted mapping state is cached.
+  if (mappingFingerprint(existing) !== desired) {
+    // Recheck after acquiring the lock: another request may have generated them.
+    await getPrisma().$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`catalog:${reportId}`}, 0))`;
+      const current = await tx.productRecommendation.findMany({ where: { reportId } });
+      if (mappingFingerprint(current) === desired) return;
+      await tx.productRecommendation.deleteMany({ where: { reportId } });
+      if (mapped.length) await tx.productRecommendation.createMany({ data: mapped });
+    });
+  }
   return {
     reportId,
     baumannType: report.baumannType,

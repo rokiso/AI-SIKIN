@@ -21,6 +21,7 @@ import {
   recordAffiliateRedirect,
 } from "../../lib/catalog/curationService";
 import { checkProductLinks } from "../../lib/catalog/linkHealthChecker";
+import * as ingredientRepository from "../../lib/catalog/ingredient-repository";
 import { GET as recommendations } from "../../app/api/v1/catalog/products/recommendations/route";
 import { GET as redirect } from "../../app/api/v1/catalog/redirect/route";
 import type { VerifiedIdentity } from "../../lib/session/identity-types";
@@ -38,6 +39,7 @@ beforeEach(() => {
   jar.clear();
 });
 afterEach(async () => {
+  vi.restoreAllMocks();
   await prisma.affiliateClickLog.deleteMany({ where: { productId: { in: products } } });
   await prisma.diagnosticSession.deleteMany({ where: { id: { in: sessions } } });
   await prisma.user.deleteMany({ where: { id: { in: users } } });
@@ -269,6 +271,9 @@ describe("catalog APIs against local PostgreSQL", () => {
       Array.from({ length: 5 }, () => getProductRecommendations(f.reportId, f.identity)),
     );
     expect(await prisma.productRecommendation.count({ where: { reportId: f.reportId } })).toBe(8);
+    const transactions = vi.spyOn(prisma, "$transaction");
+    const sessionReads = vi.spyOn(prisma.authSession, "findFirst");
+    const reportReads = vi.spyOn(prisma.diagnosticReport, "findFirst");
     const timings = await Promise.all(
       Array.from({ length: 50 }, async () => {
         const start = performance.now();
@@ -278,8 +283,86 @@ describe("catalog APIs against local PostgreSQL", () => {
     );
     timings.sort((a, b) => a - b);
     const p95 = timings[Math.ceil(timings.length * 0.95) - 1];
-    console.info(`[catalog-test] local warm API p95 ${p95.toFixed(1)}ms (50 concurrent)`);
+    console.info(
+      `[catalog-test] local warm API p95 ${p95.toFixed(1)}ms (50 concurrent), transactions ${transactions.mock.calls.length}`,
+    );
+    expect(transactions).not.toHaveBeenCalled();
+    expect(sessionReads).toHaveBeenCalledTimes(50);
+    expect(reportReads).toHaveBeenCalledTimes(50);
     expect(p95).toBeLessThan(300);
+  });
+  it("checks foreign ownership and revoked sessions even while a recommendation load is pending", async () => {
+    const f = await fixture();
+    const stranger = await prisma.user.create({ data: { nickname: "별도 사용자" } });
+    users.push(stranger.id);
+    const gate = Promise.withResolvers<void>();
+    const entered = Promise.withResolvers<void>();
+    const original = ingredientRepository.getIngredientRules;
+    vi.spyOn(ingredientRepository, "getIngredientRules").mockImplementationOnce(async () => {
+      entered.resolve();
+      await gate.promise;
+      return original();
+    });
+    const pending = getProductRecommendations(f.reportId, f.identity);
+    try {
+      await entered.promise;
+      await expect(
+        getProductRecommendations(f.reportId, {
+          ...f.identity,
+          kind: "member",
+          userId: stranger.id,
+          nickname: stranger.nickname,
+          role: "USER",
+          guestDeviceId: null,
+        }),
+      ).rejects.toMatchObject({ status: 404 });
+      await prisma.authSession.deleteMany({ where: { userId: f.user.id } });
+      expect((await recommendations(recRequest(f.reportId))).status).toBe(404);
+    } finally {
+      gate.resolve();
+      await pending;
+    }
+  });
+  it("refreshes catalog data and repairs mapping metadata after a completed load", async () => {
+    const f = await fixture();
+    await getProductRecommendations(f.reportId, f.identity);
+    const mapping = await prisma.productRecommendation.findFirstOrThrow({
+      where: { reportId: f.reportId },
+    });
+    await prisma.productRecommendation.update({
+      where: { id: mapping.id },
+      data: { targetIngredients: ["수동 변경"], recommendationReason: "이전 설명" },
+    });
+    await getProductRecommendations(f.reportId, f.identity);
+    const repaired = await prisma.productRecommendation.findFirstOrThrow({
+      where: { reportId: f.reportId, category: mapping.category, tier: mapping.tier },
+    });
+    expect(repaired.targetIngredients).toEqual(mapping.targetIngredients);
+    expect(repaired.recommendationReason).toBe(mapping.recommendationReason);
+    await prisma.product.updateMany({
+      where: { id: { in: f.catalog.map((p) => p.id) } },
+      data: { ingredients: ["판테놀", "향료"], fullIngredients: "판테놀, 향료" },
+    });
+    invalidateProductCache();
+    const changed = await getProductRecommendations(f.reportId, f.identity);
+    expect(changed.categories.every((c) => !c.primaryProduct && !c.secondaryProduct)).toBe(true);
+    expect(await prisma.productRecommendation.count({ where: { reportId: f.reportId } })).toBe(0);
+  });
+  it("does not mix reports or retain a failed shared load for the next request", async () => {
+    const a = await fixture();
+    const b = await fixture();
+    const results = await Promise.all([
+      getProductRecommendations(a.reportId, a.identity),
+      getProductRecommendations(b.reportId, b.identity),
+    ]);
+    expect(results.map((r) => r.reportId)).toEqual([a.reportId, b.reportId]);
+    vi.spyOn(ingredientRepository, "getIngredientRules").mockRejectedValueOnce(
+      new Error("private-rule-store-failure"),
+    );
+    const failed = await recommendations(recRequest(b.reportId));
+    expect(failed.status).toBe(503);
+    expect(JSON.stringify(await failed.json())).not.toContain("private-rule-store-failure");
+    expect((await recommendations(recRequest(b.reportId))).status).toBe(200);
   });
   it("counts consecutive link failures, disables at three, recovers healthy links and preserves stock decisions", async () => {
     const f = await fixture();
