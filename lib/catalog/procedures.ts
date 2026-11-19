@@ -58,11 +58,15 @@ const won = (amount: number) => `${new Intl.NumberFormat("ko-KR").format(amount)
 export function formatProcedurePrice(
   procedure: Pick<ProcedureView, "priceMinKrw" | "priceMaxKrw" | "priceSummary">,
 ) {
-  return procedure.priceSummary.status === "AVAILABLE" &&
-    procedure.priceMinKrw !== null &&
-    procedure.priceMaxKrw !== null
-    ? `${won(procedure.priceMinKrw)} ~ ${won(procedure.priceMaxKrw)}`
-    : "가격 자료 확인 중";
+  if (
+    procedure.priceSummary.status !== "AVAILABLE" ||
+    procedure.priceMinKrw === null ||
+    procedure.priceMaxKrw === null
+  )
+    return "가격 자료 확인 중";
+  if (procedure.priceMinKrw === procedure.priceMaxKrw)
+    return `확인된 가격 ${won(procedure.priceMinKrw)}`;
+  return `${won(procedure.priceMinKrw)} ~ ${won(procedure.priceMaxKrw)}`;
 }
 export function formatChecklist(questions: string[]) {
   return z.array(z.string().trim().min(1)).length(3).parse(questions).join("\n");

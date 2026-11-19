@@ -34,6 +34,26 @@ for (const width of [320, 1280]) {
         .locator("main li")
         .filter({ has: page.getByRole("button", { name: `${procedure.nameKo} 상세 보기` }) });
       await expect(card.getByText(formatProcedurePrice(procedure), { exact: true })).toBeVisible();
+      if (
+        procedure.priceSummary.status === "AVAILABLE" &&
+        procedure.priceSummary.sampleCount === 1
+      ) {
+        await expect(card.getByText("공개 가격 자료 1건", { exact: true })).toBeVisible();
+        await expect(card.getByText(/수집 표본 평균/)).toHaveCount(0);
+        await expect(
+          card.getByText("가격 범위를 판단하기에는 자료가 부족합니다.", { exact: true }),
+        ).toBeVisible();
+      }
+    }
+    const ldm = catalog.find((item) => item.code === "P-LDM");
+    if (ldm?.priceSummary.sampleCount === 1) {
+      await page.getByRole("button", { name: `${ldm.nameKo} 상세 보기` }).click();
+      const detail = page.getByRole("dialog");
+      await expect(detail.getByText("공개 가격 자료 1건", { exact: true })).toBeVisible();
+      await expect(detail.getByText(/수집 표본 평균/)).toHaveCount(0);
+      await detail.getByText("공개 가격 자료 1건", { exact: true }).scrollIntoViewIfNeeded();
+      await page.screenshot({ path: info.outputPath(`ldm-single-price-${width}.png`) });
+      await detail.getByRole("button", { name: "시술 상세 닫기" }).click();
     }
     await expect(page.getByRole("complementary", { name: "진단 전 안내" })).toBeVisible();
     await page.getByRole("button", { name: "색소·잡티", exact: true }).click();

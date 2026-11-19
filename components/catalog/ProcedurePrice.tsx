@@ -7,7 +7,7 @@ export function ProcedurePrice({
   procedure,
   detail = false,
 }: {
-  procedure: ProcedureView;
+  procedure: Pick<ProcedureView, "priceMinKrw" | "priceMaxKrw" | "priceSummary">;
   detail?: boolean;
 }) {
   const summary = procedure.priceSummary;
@@ -16,9 +16,22 @@ export function ProcedurePrice({
       <p className="text-base font-semibold text-neutral-900">{formatProcedurePrice(procedure)}</p>
       {summary.status === "AVAILABLE" && summary.meanKrw !== null ? (
         <>
-          <p className="text-sm text-neutral-700">
-            수집 표본 평균 {formatPriceMean(summary.meanKrw)} · {summary.sampleCount}건
-          </p>
+          {summary.sampleCount === 1 ? (
+            <div className="text-sm leading-relaxed text-neutral-700">
+              <p>공개 가격 자료 1건</p>
+              <p className="text-xs text-neutral-600">
+                가격 범위를 판단하기에는 자료가 부족합니다.
+              </p>
+            </div>
+          ) : procedure.priceMinKrw === procedure.priceMaxKrw ? (
+            <p className="text-sm leading-relaxed text-neutral-700">
+              공개 가격 자료 {summary.sampleCount}건 · 확인한 가격이 모두 같습니다.
+            </p>
+          ) : (
+            <p className="text-sm text-neutral-700">
+              수집 표본 평균 {formatPriceMean(summary.meanKrw)} · {summary.sampleCount}건
+            </p>
+          )}
           <p className="text-xs leading-relaxed text-neutral-600">{summary.basis} · 부가세 포함</p>
           {detail && (
             <p className="text-xs leading-relaxed text-neutral-600">

@@ -40,6 +40,7 @@ describe("procedure observation statistics", () => {
       sampleCount: 1,
       observedFrom: "2026-11-18",
     });
+    expect(formatProcedurePrice(data)).toBe("확인된 가격 22,000원");
   });
   it("does not invent zero prices when observations are absent", () => {
     const data = summary([]);
