@@ -3,14 +3,22 @@ import { useEffect, useRef, useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { formatChecklist } from "@/lib/catalog/procedures";
 
-export function ChecklistClipboardButton({ questions }: { questions: string[] }) {
+export function ChecklistClipboardButton({
+  questions,
+  copyText,
+  variant = "checklist",
+}: {
+  questions: string[];
+  copyText?: string;
+  variant?: "checklist" | "defense";
+}) {
   const [status, setStatus] = useState<"idle" | "busy" | "copied" | "fallback">("idle");
   const lock = useRef(false);
   const mounted = useRef(true);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const field = useRef<HTMLTextAreaElement>(null);
   const notice = useRef<HTMLParagraphElement>(null);
-  const text = formatChecklist(questions);
+  const text = copyText ?? formatChecklist(questions);
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -35,7 +43,7 @@ export function ChecklistClipboardButton({ questions }: { questions: string[] })
       await navigator.clipboard.writeText(text);
       if (mounted.current) {
         setStatus("copied");
-        timer.current = setTimeout(() => setStatus("idle"), 2000);
+        timer.current = setTimeout(() => setStatus("idle"), variant === "defense" ? 3000 : 2000);
       }
     } catch {
       if (mounted.current) setStatus("fallback");
@@ -60,11 +68,15 @@ export function ChecklistClipboardButton({ questions }: { questions: string[] })
           ? "복사 완료"
           : status === "busy"
             ? "복사 중…"
-            : "상담 체크리스트 복사"}
+            : variant === "defense"
+              ? "상담 질문지 복사하기"
+              : "상담 체크리스트 복사"}
       </button>
       <p ref={notice} role="status" className="scroll-mb-4 text-sm text-neutral-700">
         {status === "copied"
-          ? "상담 체크리스트 3문항이 복사되었습니다."
+          ? variant === "defense"
+            ? "상담 체크리스트가 복사되었습니다."
+            : "상담 체크리스트 3문항이 복사되었습니다."
           : status === "fallback"
             ? "자동 복사를 사용할 수 없습니다. 아래 질문을 길게 누르거나 선택해 직접 복사해 주세요."
             : ""}

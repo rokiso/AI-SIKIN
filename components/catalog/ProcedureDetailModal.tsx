@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
+import Link from "next/link";
+import { procedureSafetyRoutes } from "@/lib/catalog/procedure-safety-types";
 import { MedicalDisclaimerNotice } from "@/components/layout/MedicalDisclaimerNotice";
 import {
   procedureDetailResponseSchema,
@@ -88,6 +90,15 @@ export function ProcedureDetailModal({ id, close }: { id: string; close: () => v
         <>
           <p className="text-sm font-medium text-primary-800">{data.concernLabelKo}</p>
           <ProcedurePrice procedure={data} detail />
+          {procedureSafetyRoutes.find((route) => route.code === data.code) && (
+            <Link
+              href={`/catalog/procedures/${procedureSafetyRoutes.find((route) => route.code === data.code)?.slug}`}
+              prefetch={false}
+              className="button-secondary w-full"
+            >
+              부작용·사후 관리와 상담 질문
+            </Link>
+          )}
           {[
             ["작용 원리", data.principleDescription],
             ["권장 간격", data.recommendedInterval],

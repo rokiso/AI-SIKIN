@@ -353,10 +353,38 @@ model MedicalProcedure {
   updatedAt       DateTime                @updatedAt @db.Timestamptz @map("updated_at")
 
   mappings        ProcedureGuideMapping[]
+  safetyGuide     ProcedureSafetyGuide?
 
   @@index([concernType, isActive])
   @@index([sortOrder])
   @@map("medical_procedures")
+}
+
+model ProcedureSafetyGuide {
+  id                   String   @id @default(uuid())
+  procedureId          String   @unique @map("procedure_id")
+  slug                 String   @unique
+  commonSideEffects    String[] @map("common_side_effects")
+  rareRisks            String[] @map("rare_risks")
+  contraindications    String[] @map("contraindications")
+  postCareInstructions String[] @map("post_care_instructions")
+  defenseQuestions     Json     @map("defense_questions")
+  disclaimerText       String   @db.Text @map("disclaimer_text")
+  createdAt            DateTime @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt            DateTime @updatedAt @db.Timestamptz @map("updated_at")
+  procedure            MedicalProcedure @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+
+  @@map("procedure_safety_guides")
+}
+
+// A shared, short-lived request quota. No raw client IP or user identifier.
+model ProcedureSafetyRateLimit {
+  keyHash      String   @id @map("key_hash")
+  requestCount Int      @map("request_count")
+  expiresAt    DateTime @db.Timestamptz @map("expires_at")
+
+  @@index([expiresAt])
+  @@map("procedure_safety_rate_limits")
 }
 
 model ProcedureGuideMapping {

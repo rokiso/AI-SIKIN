@@ -109,7 +109,12 @@ for (const width of [320, 1280]) {
       page.getByText("사진 AI 분석을 적용하지 않았습니다.", { exact: false }),
     ).toBeVisible();
     await expect(page.getByRole("img", { name: /레이더 차트/ })).toBeVisible();
-    await expect(page.getByText("세라마이드", { exact: true })).toBeVisible();
+    await expect(
+      page
+        .getByRole("article")
+        .filter({ has: page.getByRole("heading", { level: 1 }) })
+        .getByText("세라마이드", { exact: true }),
+    ).toBeVisible();
     await expect(page.getByText("DRNT", { exact: false })).toHaveCount(0);
     await expect(page.getByText("종합점수", { exact: false })).toHaveCount(0);
     const disclaimer = page.getByRole("complementary", { name: "진단 전 안내" });

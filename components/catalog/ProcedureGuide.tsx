@@ -2,6 +2,8 @@
 import { useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
+import { procedureSafetyRoutes } from "@/lib/catalog/procedure-safety-types";
 import {
   concernLabels,
   concernSchema,
@@ -138,6 +140,15 @@ export function ProcedureGuide({ initialData }: { initialData: ProcedureView[] |
                 <p className="border-t border-neutral-200 pt-3 text-xs leading-relaxed text-neutral-600">
                   간격은 피부 회복 상태에 따라 상담이 필요해요.
                 </p>
+                {procedureSafetyRoutes.find((route) => route.code === procedure.code) && (
+                  <Link
+                    href={`/catalog/procedures/${procedureSafetyRoutes.find((route) => route.code === procedure.code)?.slug}`}
+                    prefetch={false}
+                    className="button-secondary relative z-10 w-full"
+                  >
+                    부작용·사후 관리와 상담 질문
+                  </Link>
+                )}
               </li>
             ))}
           </ul>

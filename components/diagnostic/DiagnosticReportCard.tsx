@@ -109,6 +109,9 @@ export function DiagnosticReportCard({
         >
           맞춤 화장품 추천 보러가기
         </Link>
+        <Link className="button-secondary w-full" href="/catalog/procedures" prefetch={false}>
+          시술 위험과 상담 질문 보기
+        </Link>
         {isMember ? (
           <Link className="button-secondary w-full" href="/mypage">
             보관함에서 확인하기
