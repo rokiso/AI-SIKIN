@@ -2,7 +2,7 @@ import "server-only";
 import { createHmac } from "node:crypto";
 import { z } from "zod";
 import { getPrisma } from "@/lib/prisma";
-import { getAuthCookieSecret } from "@/lib/server-env";
+import { getAuthCookieSecret, isAccountDeletionEnabled } from "@/lib/server-env";
 import { AuthError } from "@/lib/auth/response";
 import { deleteImageObjects } from "@/lib/storage/s3-vault";
 
@@ -14,6 +14,12 @@ export const deletionConfirmationSchema = z
   .strict();
 
 export async function deleteAccount(userId: string, sessionToken: string) {
+  if (!isAccountDeletionEnabled())
+    throw new AuthError(
+      503,
+      "ACCOUNT_DELETION_UNAVAILABLE",
+      "현재 회원 탈퇴 기능을 사용할 수 없습니다.",
+    );
   return getPrisma().$transaction(
     async (tx) => {
       // Blocks new FK-backed uploads, snapshots, consents, account links and sessions.

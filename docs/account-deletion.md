@@ -51,3 +51,7 @@ S3와 PostgreSQL은 분산 트랜잭션을 공유하지 않는다. S3 다중 삭
 - `npm run lint`, `npm run typecheck`, `npm run build`, 변경 TS/TSX/JSON/Markdown 파일의 Prettier 검사, `git diff --check` 통과. 새 비밀값이나 MCP 키를 저장소에 추가하지 않았다.
 
 외부 AWS 객체 삭제를 위의 mocked SDK/로컬 DB 검증과 혼동하지 않는다. 운영 검증이 남으므로 보드 상태는 `review`다.
+
+## 2026-11-19 공개 배포 가드
+
+공개 배포와 실제 삭제 활성화를 분리했다. 서버 전용 `ACCOUNT_DELETION_ENABLED=1`이 없으면 기본 OFF이며 내부 삭제 서비스·DELETE/요약 API와 회원 UI 진입을 함께 차단한다. `.env.example`은 0으로 둔다. Playwright 저장형 환경과 DB 테스트만 명시적으로 1을 사용한다. 이 가드를 추가했다고 실제 버킷 삭제가 검증된 것은 아니며 review 사유와 운영 확인 항목은 유지한다.

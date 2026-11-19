@@ -1,5 +1,5 @@
 import { randomUUID, randomBytes } from "node:crypto";
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 const jar = vi.hoisted(() => new Map<string, string>());
 const storage = vi.hoisted(() => vi.fn());
 vi.mock("next/headers", () => ({
@@ -23,6 +23,7 @@ const users: string[] = [],
   clicks: string[] = [],
   products: string[] = [];
 beforeAll(() => assertLocalDevelopmentDatabase(getDatabaseUrl()));
+beforeEach(() => vi.stubEnv("ACCOUNT_DELETION_ENABLED", "1"));
 afterEach(async () => {
   vi.restoreAllMocks();
   storage.mockReset();
@@ -33,6 +34,7 @@ afterEach(async () => {
   await db.user.deleteMany({ where: { id: { in: users } } });
   await db.product.deleteMany({ where: { id: { in: products } } });
   users.length = logs.length = audits.length = clicks.length = products.length = 0;
+  vi.unstubAllEnvs();
 });
 afterAll(() => db.$disconnect());
 const body = { confirmationPhrase: "탈퇴합니다", agreedToDataLoss: true };
@@ -155,6 +157,18 @@ async function captureAudit() {
   return a[0];
 }
 describe("authenticated account erasure", () => {
+  it("keeps a disabled rollout unavailable without erasing files or account data", async () => {
+    const f = await fixture();
+    vi.stubEnv("ACCOUNT_DELETION_ENABLED", "0");
+    expect((await GET()).status).toBe(503);
+    const response = await DELETE(request());
+    expect(response.status).toBe(503);
+    expect((await response.json()).error.code).toBe("ACCOUNT_DELETION_UNAVAILABLE");
+    await expect(deleteAccount(f.user.id, f.token)).rejects.toMatchObject({ status: 503 });
+    expect(storage).not.toHaveBeenCalled();
+    expect(await db.user.findUnique({ where: { id: f.user.id } })).not.toBeNull();
+    expect(await db.imageUploadSession.findUnique({ where: { id: f.image.id } })).not.toBeNull();
+  });
   it("deletes owned rows and orphan logs, preserves another user, revokes token and expires cookies", async () => {
     const f = await fixture();
     expect((await (await GET()).json()).data).toEqual({ diagnostics: 1, snapshots: 1 });

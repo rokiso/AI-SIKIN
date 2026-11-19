@@ -20,6 +20,8 @@ const resultSchema = z.object({
 });
 const errorSchema = z.object({ success: z.literal(false), error: z.object({ code: z.string() }) });
 const deletionErrors: Record<string, string> = {
+  ACCOUNT_DELETION_UNAVAILABLE:
+    "현재 회원 탈퇴 기능을 사용할 수 없습니다. 잠시 후 다시 확인해 주세요.",
   UPLOAD_LINK_STILL_VALID:
     "최근 사진 업로드 링크가 아직 유효합니다. 업로드 후 최대 16분이 지난 뒤 다시 탈퇴해 주세요.",
   STORAGE_DELETION_FAILED:

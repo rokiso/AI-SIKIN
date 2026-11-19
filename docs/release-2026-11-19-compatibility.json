@@ -1,0 +1,180 @@
+{
+  "initialMigrations": 4,
+  "checks": [
+    {
+      "kind": "guest",
+      "path": "/api/v1/catalog/products/00000000-0000-4000-8000-000000000201/ingredients",
+      "status": 200
+    },
+    {
+      "kind": "guest",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "kind": "guest",
+      "path": "/diagnostic",
+      "status": 200
+    },
+    {
+      "kind": "guest",
+      "path": "/catalog/products",
+      "status": 200
+    },
+    {
+      "kind": "guest",
+      "path": "/catalog/procedures",
+      "status": 200
+    },
+    {
+      "kind": "guest",
+      "path": "/snapshot",
+      "status": 200
+    },
+    {
+      "kind": "guest",
+      "path": "/mypage",
+      "status": 200
+    },
+    {
+      "kind": "guest",
+      "path": "/api/v1/dashboard/summary",
+      "status": 200
+    },
+    {
+      "kind": "guest",
+      "path": "/api/v1/users/me/history?tab=diagnostics",
+      "status": 200
+    },
+    {
+      "kind": "guest",
+      "path": "/api/v1/catalog/procedures",
+      "status": 200,
+      "total": 10,
+      "source": "published",
+      "pnSources": 3
+    },
+    {
+      "kind": "guest",
+      "path": "disabled-account-deletion",
+      "status": 401
+    },
+    {
+      "kind": "guest",
+      "path": "disabled-deletion-summary",
+      "status": 401
+    },
+    {
+      "kind": "guest",
+      "path": "guest-session",
+      "status": 200
+    },
+    {
+      "kind": "guest",
+      "path": "survey-save",
+      "status": 201
+    },
+    {
+      "kind": "guest",
+      "path": "survey-replay",
+      "status": 201
+    },
+    {
+      "kind": "guest",
+      "path": "questionnaire-analysis",
+      "status": 200
+    },
+    {
+      "kind": "member",
+      "path": "/api/v1/catalog/products/00000000-0000-4000-8000-000000000201/ingredients",
+      "status": 200
+    },
+    {
+      "kind": "member",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "kind": "member",
+      "path": "/diagnostic",
+      "status": 200
+    },
+    {
+      "kind": "member",
+      "path": "/catalog/products",
+      "status": 200
+    },
+    {
+      "kind": "member",
+      "path": "/catalog/procedures",
+      "status": 200
+    },
+    {
+      "kind": "member",
+      "path": "/snapshot",
+      "status": 200
+    },
+    {
+      "kind": "member",
+      "path": "/mypage",
+      "status": 200
+    },
+    {
+      "kind": "member",
+      "path": "/api/v1/dashboard/summary",
+      "status": 200
+    },
+    {
+      "kind": "member",
+      "path": "/api/v1/users/me/history?tab=diagnostics",
+      "status": 200
+    },
+    {
+      "kind": "member",
+      "path": "/api/v1/catalog/procedures",
+      "status": 200,
+      "total": 10,
+      "source": "published",
+      "pnSources": 3
+    },
+    {
+      "kind": "member",
+      "path": "disabled-account-deletion",
+      "status": 503
+    },
+    {
+      "kind": "member",
+      "path": "disabled-deletion-summary",
+      "status": 503
+    },
+    {
+      "kind": "member",
+      "path": "guest-session",
+      "status": 409
+    },
+    {
+      "kind": "member",
+      "path": "survey-save",
+      "status": 201
+    },
+    {
+      "kind": "member",
+      "path": "survey-replay",
+      "status": 201
+    },
+    {
+      "kind": "member",
+      "path": "questionnaire-analysis",
+      "status": 200
+    },
+    {
+      "kind": "guest-to-member",
+      "path": "legacy-consent-transfer",
+      "status": "pass"
+    }
+  ],
+  "productionDatabaseChanged": false,
+  "accountDeletionEnabled": false,
+  "catalogLiveEnabled": false,
+  "passed": true
+}

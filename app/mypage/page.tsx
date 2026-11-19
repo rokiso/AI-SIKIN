@@ -5,6 +5,7 @@ import { MyHistory } from "@/components/mypage/MyHistory";
 import { PageHeading } from "@/components/ui/PageHeading";
 import { getAppUserSession } from "@/lib/session/server";
 import { AccountDeletionModal } from "@/components/mypage/AccountDeletionModal";
+import { isAccountDeletionEnabled } from "@/lib/server-env";
 
 export default async function MyPage() {
   const session = await getAppUserSession();
@@ -38,7 +39,14 @@ export default async function MyPage() {
         데일리 기록 안내
         <ArrowRight aria-hidden="true" strokeWidth={1.75} className="h-4 w-4 shrink-0" />
       </Link>
-      {session.isAuthenticated && <AccountDeletionModal />}
+      {session.isAuthenticated &&
+        (isAccountDeletionEnabled() ? (
+          <AccountDeletionModal />
+        ) : (
+          <p className="text-sm leading-relaxed text-neutral-600">
+            회원 탈퇴 기능은 준비 중입니다.
+          </p>
+        ))}
     </div>
   );
 }

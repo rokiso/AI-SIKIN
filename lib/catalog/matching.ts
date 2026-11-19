@@ -15,6 +15,7 @@ export function matchProducts(
 ) {
   const cautions = report.cautionIngredients.filter((name) => normalize(name));
   const eligible = products.filter((p) => {
+    if (!p.isActive || !p.suitableBaumannTypes.includes(report.baumannType)) return false;
     const ingredients = [
       ...p.ingredients,
       ...parseFullIngredients(p.fullIngredients),
@@ -22,8 +23,6 @@ export function matchProducts(
     ];
     const detected = analyzeIngredients(ingredients, report.baumannType, rules).cautionIngredients;
     return (
-      p.isActive &&
-      p.suitableBaumannTypes.includes(report.baumannType) &&
       !detected.some((rule) => rule.level !== "INFO") &&
       !cautions.some((ingredient) => {
         const rule = rules.find((rule) =>

@@ -19,6 +19,7 @@ import { MIGRATION_NOTICE_COOKIE } from "@/lib/auth/migration-notice";
 import { deleteAccount, deletionConfirmationSchema } from "@/lib/account/deletion";
 import { OAUTH_COOKIE } from "@/lib/auth/pkce";
 import { getPrisma } from "@/lib/prisma";
+import { isAccountDeletionEnabled } from "@/lib/server-env";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -75,6 +76,12 @@ export async function GET() {
     const identity = await resolveRequestIdentity(readSessionCookies(await cookies()));
     if (identity.kind !== "member")
       throw new AuthError(401, "UNAUTHORIZED", "인증 세션이 유효하지 않습니다.");
+    if (!isAccountDeletionEnabled())
+      throw new AuthError(
+        503,
+        "ACCOUNT_DELETION_UNAVAILABLE",
+        "현재 회원 탈퇴 기능을 사용할 수 없습니다.",
+      );
     const [diagnostics, snapshots] = await Promise.all([
       getPrisma().diagnosticSession.count({ where: { userId: identity.userId } }),
       getPrisma().dailySnapshot.count({ where: { userId: identity.userId } }),

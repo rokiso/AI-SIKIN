@@ -205,6 +205,11 @@ export function isAiLiveEnabled(): boolean {
   return process.env.AI_LIVE_ENABLED === "1";
 }
 
+// Enable only after migration, storage erasure and retry/recreation verification.
+export function isAccountDeletionEnabled(): boolean {
+  return process.env.ACCOUNT_DELETION_ENABLED === "1";
+}
+
 export function getAiClientConfiguration() {
   const result = z
     .object({
