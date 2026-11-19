@@ -18,6 +18,8 @@ import { digest } from "@/lib/auth/pkce";
 const db = getPrisma();
 const states = new Set<string>();
 const people = new Set<string>();
+const diagnosticIds = new Set<string>();
+const imageIds = new Set<string>();
 const context = { params: Promise.resolve({ provider: "google" }) };
 function request(path: string, body: unknown) {
   return new Request(`https://sikin.test${path}`, {
@@ -40,6 +42,10 @@ beforeEach(() => {
   jar.set("sikin_guest_proof", guest.proof);
 });
 afterEach(async () => {
+  await db.diagnosticSession.deleteMany({ where: { id: { in: [...diagnosticIds] } } });
+  await db.imageUploadSession.deleteMany({ where: { id: { in: [...imageIds] } } });
+  diagnosticIds.clear();
+  imageIds.clear();
   const accounts = await db.userAccount.findMany({
     where: { providerAccountId: { in: [...people] } },
     select: { userId: true },
@@ -76,6 +82,84 @@ async function start() {
   return state;
 }
 describe("OAuth API integration", () => {
+  it.each(["google", "kakao"] as const)(
+    "%s callback atomically binds guest records and expires both guest cookies",
+    async (provider) => {
+      const guestId = jar.get("x-guest-session-id")!;
+      const session = await db.diagnosticSession.create({
+        data: {
+          guestDeviceId: guestId,
+          surveyAnswers: {},
+          axisScores: {},
+          status: "SURVEY_COMPLETED",
+        },
+      });
+      diagnosticIds.add(session.id);
+      const image = await db.imageUploadSession.create({
+        data: {
+          guestDeviceId: guestId,
+          s3Key: `raw-faces/${randomUUID()}.jpeg`,
+          mimeType: "image/jpeg",
+          fileSizeBytes: 1024,
+          expiresAt: new Date(Date.now() + 60000),
+        },
+      });
+      imageIds.add(image.id);
+      const ctx = { params: Promise.resolve({ provider }) };
+      const started = await authorize(
+        new Request(`https://sikin.test/api/v1/auth/authorize/${provider}?redirect_url=%2Fmypage`),
+        ctx,
+      );
+      expect(started.status).toBe(200);
+      const state = new URL((await started.json()).data.authorizationUrl).searchParams.get(
+        "state",
+      )!;
+      states.add(digest(state));
+      jar.set("oauth_pkce_payload", started.cookies.get("oauth_pkce_payload")!.value);
+      const id =
+        provider === "google"
+          ? randomUUID()
+          : Number.parseInt(randomUUID().replaceAll("-", "").slice(0, 12), 16) + 1;
+      people.add(String(id));
+      vi.stubGlobal(
+        "fetch",
+        vi
+          .fn()
+          .mockResolvedValueOnce(Response.json({ access_token: "test-only-token" }))
+          .mockResolvedValueOnce(
+            Response.json(
+              provider === "google"
+                ? { sub: id, name: "이관 검증 회원" }
+                : { id, kakao_account: { profile: { nickname: "이관 검증 회원" } } },
+            ),
+          ),
+      );
+      const response = await callback(
+        request(`/api/v1/auth/callback/${provider}`, { code: "test-only-code", state }),
+        ctx,
+      );
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body.data).toMatchObject({
+        migratedSessionsCount: 1,
+        migratedDiagnosticSessions: 1,
+        migratedImageSessions: 1,
+        redirectUrl: "/mypage",
+      });
+      expect(
+        (await db.diagnosticSession.findUniqueOrThrow({ where: { id: session.id } })).userId,
+      ).toBe(body.data.user.id);
+      expect(
+        (await db.imageUploadSession.findUniqueOrThrow({ where: { id: image.id } })).userId,
+      ).toBe(body.data.user.id);
+      for (const name of ["x-guest-session-id", "sikin_guest_proof"]) {
+        expect(response.cookies.get(name)?.value).toBe("");
+        expect(response.cookies.get(name)?.maxAge).toBe(0);
+      }
+      expect(response.cookies.get("app_session_token")?.value).toMatch(/^[a-f0-9]{64}$/);
+      expect(response.cookies.get("miruvia_migration_notice")?.value).toBe("1");
+    },
+  );
   it("supports authorize → callback → me → logout with actual DB sessions", async () => {
     const state = await start();
     const id = randomUUID();

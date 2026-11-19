@@ -15,6 +15,7 @@ import {
 } from "@/lib/auth/response";
 import { GUEST_COOKIE_NAME } from "@/lib/session/guest";
 import { GUEST_PROOF_COOKIE_NAME } from "@/lib/session/guest-proof";
+import { MIGRATION_NOTICE_COOKIE } from "@/lib/auth/migration-notice";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export async function POST(request: Request, context: { params: Promise<{ provider: string }> }) {
@@ -48,6 +49,14 @@ export async function POST(request: Request, context: { params: Promise<{ provid
     // Rotate the guest capability after ownership transfer; old guest data is now member-only.
     for (const name of [GUEST_COOKIE_NAME, GUEST_PROOF_COOKIE_NAME])
       response.cookies.set(name, "", { ...sessionCookieOptions, maxAge: 0 });
+    response.cookies.set(
+      MIGRATION_NOTICE_COOKIE,
+      result.migratedDiagnosticSessions + result.migratedImageSessions > 0 ? "1" : "",
+      {
+        ...sessionCookieOptions,
+        maxAge: result.migratedDiagnosticSessions + result.migratedImageSessions > 0 ? 10 : 0,
+      },
+    );
     return response;
   } catch (error) {
     const response = authFailure(error);

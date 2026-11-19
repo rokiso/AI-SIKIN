@@ -8,23 +8,54 @@ import { ConnectivityNotice } from "./ConnectivityNotice";
 import { GlobalHeader } from "./GlobalHeader";
 import { MedicalDisclaimerNotice } from "./MedicalDisclaimerNotice";
 import { SystemReadiness } from "@/components/system/SystemReadiness";
+import { GuestMigrationNotice } from "@/components/auth/GuestMigrationNotice";
 
-function ShellContents({ children }: { children: ReactNode }) {
+function ShellContents({
+  children,
+  migrationComplete,
+}: {
+  children: ReactNode;
+  migrationComplete: boolean;
+}) {
   const { busy } = useUploadActivity();
   const pathname = usePathname();
   const fullscreen = pathname.startsWith("/diagnostic/");
   return (
-    <div id="app-shell" data-testid="app-shell" className={`mx-auto flex min-h-[100dvh] w-full max-w-[430px] flex-col bg-surface shadow-shell ${fullscreen ? "" : "pb-[calc(4.5rem+env(safe-area-inset-bottom))]"}`}>
-      <a href="#main-content" className="skip-link">본문으로 바로가기</a>
+    <div
+      id="app-shell"
+      data-testid="app-shell"
+      className={`mx-auto flex min-h-[100dvh] w-full max-w-[430px] flex-col bg-surface shadow-shell ${fullscreen ? "" : "pb-[calc(4.5rem+env(safe-area-inset-bottom))]"}`}
+    >
+      <a href="#main-content" className="skip-link">
+        본문으로 바로가기
+      </a>
       <GlobalHeader navigationDisabled={busy} />
+      {migrationComplete && <GuestMigrationNotice />}
       <ConnectivityNotice />
-      <main id="main-content" tabIndex={-1} className="flex-1 break-keep px-4 pb-8 pt-7 focus-visible:outline-none"><SystemReadiness />{children}</main>
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex-1 break-keep px-4 pb-8 pt-7 focus-visible:outline-none"
+      >
+        <SystemReadiness />
+        {children}
+      </main>
       <MedicalDisclaimerNotice />
       {!fullscreen && <BottomTabBar navigationDisabled={busy} />}
     </div>
   );
 }
 
-export function AppShell({ children }: { children: ReactNode }) {
-  return <UploadActivityProvider><ShellContents>{children}</ShellContents></UploadActivityProvider>;
+export function AppShell({
+  children,
+  migrationComplete = false,
+}: {
+  children: ReactNode;
+  migrationComplete?: boolean;
+}) {
+  return (
+    <UploadActivityProvider>
+      <ShellContents migrationComplete={migrationComplete}>{children}</ShellContents>
+    </UploadActivityProvider>
+  );
 }

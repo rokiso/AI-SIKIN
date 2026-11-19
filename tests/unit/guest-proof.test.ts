@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
-import { createGuestSession, verifyGuestProof } from "@/lib/session/guest-proof";
+import {
+  createGuestSession,
+  verifyGuestProof,
+  guestSessionMetadata,
+} from "@/lib/session/guest-proof";
 
 const issuedAt = new Date("2026-11-10T00:00:00.000Z");
 
@@ -11,6 +15,13 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllEnvs());
 
 describe("guest ownership proof", () => {
+  it("derives original issuance time and remaining lifetime only from verified proof", () => {
+    const g = createGuestSession(issuedAt);
+    expect(
+      guestSessionMetadata(g.guestDeviceId, g.proof, new Date(issuedAt.getTime() + 10000)),
+    ).toEqual({ createdAt: issuedAt.toISOString(), expiresInSeconds: 2591990 });
+    expect(guestSessionMetadata(g.guestDeviceId, "forged", issuedAt)).toBeNull();
+  });
   it("issues an unpredictable fresh identity bound to a signed proof", () => {
     const first = createGuestSession(issuedAt);
     const second = createGuestSession(issuedAt);
@@ -33,8 +44,20 @@ describe("guest ownership proof", () => {
 
   it("expires the capability after its thirty-day lifetime", () => {
     const session = createGuestSession(issuedAt);
-    expect(verifyGuestProof(session.guestDeviceId, session.proof, new Date(issuedAt.getTime() + 29 * 86_400_000))).toBe(true);
-    expect(verifyGuestProof(session.guestDeviceId, session.proof, new Date(issuedAt.getTime() + 31 * 86_400_000))).toBe(false);
+    expect(
+      verifyGuestProof(
+        session.guestDeviceId,
+        session.proof,
+        new Date(issuedAt.getTime() + 29 * 86_400_000),
+      ),
+    ).toBe(true);
+    expect(
+      verifyGuestProof(
+        session.guestDeviceId,
+        session.proof,
+        new Date(issuedAt.getTime() + 31 * 86_400_000),
+      ),
+    ).toBe(false);
   });
 
   it("does not accept a proof under another server secret", () => {

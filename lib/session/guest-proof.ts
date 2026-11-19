@@ -17,15 +17,43 @@ export function createGuestSession(now = new Date()): { guestDeviceId: string; p
   return { guestDeviceId, proof: `${payload}.${signature(payload).toString("base64url")}` };
 }
 
-export function verifyGuestProof(guestDeviceId: string | undefined, proof: string | undefined, now = new Date()): boolean {
+export function verifyGuestProof(
+  guestDeviceId: string | undefined,
+  proof: string | undefined,
+  now = new Date(),
+): boolean {
   if (!parseGuestId(guestDeviceId) || !proof || proof.length > 160) return false;
   const parts = proof.split(".");
-  if (parts.length !== 4 || parts[0] !== "v1" || parts[1] !== guestDeviceId ||
-      !/^\d{10,13}$/.test(parts[2]) || !/^[A-Za-z0-9_-]{43}$/.test(parts[3])) return false;
+  if (
+    parts.length !== 4 ||
+    parts[0] !== "v1" ||
+    parts[1] !== guestDeviceId ||
+    !/^\d{10,13}$/.test(parts[2]) ||
+    !/^[A-Za-z0-9_-]{43}$/.test(parts[3])
+  )
+    return false;
   const expires = Number(parts[2]);
   const seconds = Math.floor(now.getTime() / 1000);
-  if (!Number.isSafeInteger(expires) || expires <= seconds || expires > seconds + GUEST_COOKIE_MAX_AGE) return false;
+  if (
+    !Number.isSafeInteger(expires) ||
+    expires <= seconds ||
+    expires > seconds + GUEST_COOKIE_MAX_AGE
+  )
+    return false;
   const expected = signature(parts.slice(0, 3).join("."));
   const supplied = Buffer.from(parts[3], "base64url");
   return supplied.length === expected.length && timingSafeEqual(supplied, expected);
+}
+
+export function guestSessionMetadata(
+  guestDeviceId: string | undefined,
+  proof: string | undefined,
+  now = new Date(),
+) {
+  if (!proof || !verifyGuestProof(guestDeviceId, proof, now)) return null;
+  const expires = Number(proof.split(".")[2]);
+  return {
+    createdAt: new Date((expires - GUEST_COOKIE_MAX_AGE) * 1000).toISOString(),
+    expiresInSeconds: expires - Math.floor(now.getTime() / 1000),
+  };
 }

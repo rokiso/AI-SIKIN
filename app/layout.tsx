@@ -6,10 +6,16 @@ import { getAppUserSession } from "@/lib/session/server";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 import "@fontsource-variable/noto-sans-kr";
 import "./globals.css";
+import { cookies } from "next/headers";
+import { MIGRATION_NOTICE_COOKIE } from "@/lib/auth/migration-notice";
 
 export const metadata: Metadata = {
-  title: { default: "미루비아 MIRUVIA | 내 피부를 비추고 나만의 관리 방향을 찾다", template: "%s | MIRUVIA" },
-  description: "내 피부를 비추고 나만의 관리 방향을 찾다. MIRUVIA — Reflect your skin. Find your way.",
+  title: {
+    default: "미루비아 MIRUVIA | 내 피부를 비추고 나만의 관리 방향을 찾다",
+    template: "%s | MIRUVIA",
+  },
+  description:
+    "내 피부를 비추고 나만의 관리 방향을 찾다. MIRUVIA — Reflect your skin. Find your way.",
   applicationName: "MIRUVIA",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "미루비아", statusBarStyle: "default" },
@@ -22,14 +28,26 @@ export const metadata: Metadata = {
 };
 
 // Keep pinch zoom available. Disabling zoom conflicts with WCAG accessibility.
-export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#047857" };
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#047857",
+};
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const session = await getAppUserSession();
+  const migrationComplete =
+    session.isAuthenticated && (await cookies()).get(MIGRATION_NOTICE_COOKIE)?.value === "1";
   return (
     <html lang="ko">
       <body>
-        <SessionProvider session={session}><AppShell><ServiceWorkerRegistration />{children}</AppShell></SessionProvider>
+        <SessionProvider session={session}>
+          <AppShell migrationComplete={migrationComplete}>
+            <ServiceWorkerRegistration />
+            {children}
+          </AppShell>
+        </SessionProvider>
       </body>
     </html>
   );

@@ -50,7 +50,7 @@ export function OAuthCallback({ provider }: { provider: string }) {
       <section role="alert" className="space-y-4">
         <h1 className="text-xl font-semibold">로그인하지 못했어요</h1>
         <p className="text-sm leading-relaxed text-neutral-600">
-          로그인을 취소했거나 인증 시간이 지났습니다. 다시 로그인해 주세요.
+          로그인과 기록 연결을 완료하지 못했습니다. 이전 기록은 유지됩니다. 다시 로그인해 주세요.
         </p>
         <Link className="button-primary" href="/auth/login">
           다시 로그인하기
@@ -60,7 +60,7 @@ export function OAuthCallback({ provider }: { provider: string }) {
   return (
     <div role="status" className="flex items-center gap-3">
       <LoaderCircle aria-hidden="true" className="shrink-0 motion-safe:animate-spin" />
-      <p>안전하게 로그인하고 있어요. 잠시만 기다려 주세요.</p>
+      <p>계정을 연결하고 진단 기록을 불러오는 중입니다...</p>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import type { SocialProfile } from "./providers";
 import type { OAuthPayload } from "./pkce";
 import { digest } from "./pkce";
 import { AuthError } from "./response";
+import { migrateGuestDataToUser } from "./migrationService";
 export const SESSION_SECONDS = 30 * 86400;
 export function invalidState(): never {
   throw new AuthError(
@@ -56,20 +57,13 @@ export async function provisionSession(
         include: { user: true },
       });
     }
-    let migratedSessionsCount = 0;
+    let migrated = { migratedDiagnosticSessions: 0, migratedImageSessions: 0 };
     if (guestId) {
-      const guestLock = `guest:${guestId}`;
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${guestLock}, 0))::text`;
-      const diagnostics = await tx.diagnosticSession.updateMany({
-        where: { guestDeviceId: guestId, userId: null },
-        data: { userId: account.userId },
-      });
-      await tx.imageUploadSession.updateMany({
-        where: { guestDeviceId: guestId, userId: null },
-        data: { userId: account.userId },
+      migrated = await migrateGuestDataToUser(tx, {
+        guestDeviceId: guestId,
+        targetUserId: account.userId,
       });
       await transferConsentOwnership(tx, guestId, account.userId);
-      migratedSessionsCount = diagnostics.count;
     }
     if (values.sessionToken)
       await tx.authSession.deleteMany({ where: { sessionToken: values.sessionToken } });
@@ -84,7 +78,8 @@ export async function provisionSession(
     return {
       token,
       user: { id, nickname, email, role },
-      migratedSessionsCount,
+      migratedSessionsCount: migrated.migratedDiagnosticSessions,
+      ...migrated,
       redirectUrl: flow.returnPath,
     };
   });
