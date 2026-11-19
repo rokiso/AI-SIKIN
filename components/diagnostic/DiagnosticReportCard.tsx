@@ -103,7 +103,10 @@ export function DiagnosticReportCard({
         </div>
       </section>
       <div className="space-y-3">
-        <Link className="button-primary w-full" href="/catalog/products">
+        <Link
+          className="button-primary w-full"
+          href={`/catalog/products?reportId=${encodeURIComponent(report.reportId)}`}
+        >
           맞춤 화장품 추천 보러가기
         </Link>
         {isMember ? (

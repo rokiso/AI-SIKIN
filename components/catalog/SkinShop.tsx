@@ -372,7 +372,7 @@ export function SkinShop({ data }: { data?: ProductRecommendationResponse }) {
                   className="button-secondary min-h-12 w-full px-2 text-xs"
                   onClick={() => setSelected(entry)}
                 >
-                  성분·추천 이유
+                  전성분 &amp; 맞춤 성분 분석
                 </button>
                 {!demo && entry.product.redirectPath && (
                   <a
@@ -428,6 +428,8 @@ export function SkinShop({ data }: { data?: ProductRecommendationResponse }) {
           product={selected.product}
           secondary={selected.secondary}
           demo={demo}
+          baumannType={catalog.baumannType}
+          reportId={demo ? undefined : catalog.reportId}
           onDismiss={() => setSelected(null)}
         />
       )}

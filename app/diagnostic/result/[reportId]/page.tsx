@@ -5,6 +5,8 @@ import { getDiagnosticReport } from "@/lib/diagnostic/report-store";
 import type { DiagnosticReportView } from "@/lib/diagnostic/report-types";
 import { DiagnosticReportCard } from "@/components/diagnostic/DiagnosticReportCard";
 import { MedicalDisclaimerNotice } from "@/components/layout/MedicalDisclaimerNotice";
+import { ProductRecommendationsLoader } from "@/components/catalog/ProductRecommendationsLoader";
+import { isCatalogPreviewOnly } from "@/lib/server-env";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "나의 피부 리포트", robots: { index: false, follow: false } };
 export default async function ResultPage({ params }: { params: Promise<{ reportId: string }> }) {
@@ -39,6 +41,12 @@ export default async function ResultPage({ params }: { params: Promise<{ reportI
   return (
     <div className="space-y-7">
       <DiagnosticReportCard report={state.report} isMember={state.isMember} />
+      {!isCatalogPreviewOnly() && (
+        <section aria-label="이 리포트의 화장품 성분 확인" className="space-y-4">
+          <h2 className="text-lg font-semibold">이 리포트로 살펴보는 화장품</h2>
+          <ProductRecommendationsLoader reportId={state.report.reportId} />
+        </section>
+      )}
       <MedicalDisclaimerNotice compact />
     </div>
   );

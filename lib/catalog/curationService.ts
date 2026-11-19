@@ -7,6 +7,7 @@ import { AuthError } from "@/lib/auth/response";
 import { cosmeticDisclaimer, type ProductRecommendationResponse, type ProductView } from "./types";
 import { matchProducts, recommendationReason, safeIngredientLabels } from "./matching";
 import { isAffiliateUrlAllowed, trackedAffiliateUrl } from "./affiliate-url";
+import { getIngredientRules } from "./ingredient-repository";
 
 let cached: { products: Product[]; expires: number } | null = null;
 let loading: Promise<Product[]> | null = null;
@@ -83,7 +84,7 @@ export async function getProductRecommendations(
 ): Promise<ProductRecommendationResponse> {
   // Authorization is never cached, including after login, revocation or guest transfer.
   const report = await authorizedReport(reportId, identity);
-  const matches = matchProducts(await catalogProducts(), report);
+  const matches = matchProducts(await catalogProducts(), report, await getIngredientRules());
   const mapped = matches.flatMap((m) =>
     (["PRIMARY", "SECONDARY"] as const).flatMap((tier) => {
       const match = tier === "PRIMARY" ? m.primary : m.secondary;

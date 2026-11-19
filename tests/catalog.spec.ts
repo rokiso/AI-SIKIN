@@ -110,3 +110,125 @@ test("network failure retries, empty catalog retains guide and bad redirect reco
   await expect(page).toHaveURL(/\/catalog\/redirect\/error$/);
   await expect(page.getByRole("link", { name: "리포트로 돌아가기" })).toBeVisible();
 });
+
+for (const width of [320, 1280]) {
+  test(`full ingredient warnings, search, sticky notice and keyboard at ${width}px`, async ({
+    page,
+  }, info) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(`/catalog/products?reportId=${state.reportId}`);
+    const opener = page.getByRole("button", { name: "전성분 & 맞춤 성분 분석" }).first();
+    await expect(opener).toBeVisible();
+    // The official list can change after a recommendation was rendered. Fetch
+    // fresh product data for the sheet rather than trusting the card's cached tags.
+    fixture("ingredient-caution");
+    await opener.click();
+    const dialog = page.getByRole("dialog");
+    const sheet = dialog.getByRole("region", { name: "제품 전성분 분석" });
+    await expect(sheet.getByText("민감성 피부 주의 · 변성알코올", { exact: true })).toBeVisible();
+    await expect(sheet.getByText("진단 추천과 일치", { exact: true })).toBeVisible();
+    const list = sheet.getByRole("list", { name: "등록된 전성분 순서" });
+    await expect(list.locator("li")).toHaveText([
+      "정제수",
+      "Panthenol",
+      "Alcohol Denat.",
+      "1,2-Hexanediol",
+    ]);
+    const search = sheet.getByRole("searchbox", { name: "전성분 검색" });
+    await search.fill("alcohol");
+    await expect(list.locator("mark")).toHaveText("Alcohol Denat.");
+    await expect(list.locator("li")).toHaveCount(4);
+    await expect(sheet.getByRole("status")).toContainText("1개 일치");
+    const footer = dialog.locator("footer");
+    await expect(footer).toContainText("원료적 특성에 한하며");
+    const d = await dialog.boundingBox(),
+      f = await footer.boundingBox();
+    expect(f!.y + f!.height).toBeLessThanOrEqual(d!.y + d!.height);
+    expect(await dialog.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+    expect((await search.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    await page.screenshot({ path: info.outputPath(`ingredients-warning-${width}.png`) });
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+    await expect(opener).toBeFocused();
+  });
+}
+
+for (const width of [320, 1280])
+  test(`ingredient loading and failure keep the notice visible and retry into an honest empty state at ${width}px`, async ({
+    page,
+  }, info) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(`/catalog/products?reportId=${state.reportId}`);
+    let release: () => void = () => {};
+    let call = 0;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route("**/api/v1/catalog/products/*/ingredients?**", async (route) => {
+      call++;
+      if (call === 1) {
+        await gate;
+        await route.fulfill({
+          status: 503,
+          contentType: "application/json",
+          body: JSON.stringify({ success: false, error: { code: "UNAVAILABLE" } }),
+        });
+      } else {
+        const upstream = await route.fetch();
+        const body = await upstream.json();
+        body.data.fullIngredients = [];
+        body.data.beneficialIngredients = [];
+        body.data.cautionIngredients = [];
+        body.data.ingredientsSummary = { totalCount: 0, beneficialCount: 0, cautionCount: 0 };
+        await route.fulfill({ response: upstream, json: body });
+      }
+    });
+    await page.getByRole("button", { name: "전성분 & 맞춤 성분 분석" }).first().click();
+    const dialog = page.getByRole("dialog");
+    const status = dialog.getByRole("status", { name: "성분 정보 확인 중" });
+    await expect(status).toHaveAttribute("aria-busy", "true");
+    await expect(dialog.locator("footer")).toBeVisible();
+    await page.screenshot({ path: info.outputPath(`ingredients-loading-${width}.png`) });
+    release();
+    await expect(dialog.getByRole("alert")).toContainText("성분 정보를 불러오지 못했습니다");
+    await page.screenshot({ path: info.outputPath(`ingredients-error-${width}.png`) });
+    await dialog.getByRole("button", { name: "성분 정보 다시 시도" }).click();
+    await expect(dialog).toContainText("전성분 상세 검증 준비 중인 상품입니다");
+    await expect(dialog.getByRole("list", { name: "등록된 전성분 순서" })).toHaveCount(0);
+    await page.screenshot({ path: info.outputPath(`ingredients-empty-${width}.png`) });
+  });
+
+test("public ingredient endpoint rejects invalid inputs and never treats a product ID as report authorization", async ({
+  request,
+}) => {
+  const endpoint = `/api/v1/catalog/products/${state.primaryId}/ingredients`;
+  expect((await request.get(`${endpoint}?baumannType=BAD`)).status()).toBe(400);
+  expect((await request.get(`${endpoint}?baumannType=OSNW&baumannType=ORNT`)).status()).toBe(400);
+  expect(
+    (
+      await request.get(`${endpoint}?reportId=${state.reportId}`, { headers: { cookie: "" } })
+    ).status(),
+  ).toBe(404);
+  expect((await request.get(`/api/v1/catalog/products/${randomUUID()}/ingredients`)).status()).toBe(
+    404,
+  );
+  const body = await (await request.get(`${endpoint}?baumannType=OSNW`)).json();
+  expect(body.success).toBe(true);
+  expect(body.data.targetBaumannType).toBe("OSNW");
+});
+
+test("the owned report opens its own ingredient view without substituting a newer report", async ({
+  page,
+}) => {
+  await page.goto(`/diagnostic/result/${state.reportId}`);
+  const region = page.getByRole("region", { name: "이 리포트의 화장품 성분 확인" });
+  await expect(page.getByRole("link", { name: "맞춤 화장품 추천 보러가기" })).toHaveAttribute(
+    "href",
+    `/catalog/products?reportId=${state.reportId}`,
+  );
+  await region.getByRole("button", { name: "전성분 & 맞춤 성분 분석" }).first().click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toContainText("본인 진단 기준");
+  await expect(dialog.getByText("진단 추천과 일치", { exact: true })).toBeVisible();
+});

@@ -71,9 +71,19 @@ try {
       });
       console.log("{}");
     } else if (action === "restore") {
+      await prisma.product.updateMany({
+        where: { id: { in: state.productIds } },
+        data: { fullIngredients: "판테놀, 세라마이드" },
+      });
       await prisma.product.update({
         where: { id: state.productIds[0] },
         data: { status: "ACTIVE" },
+      });
+      console.log("{}");
+    } else if (action === "ingredient-caution") {
+      await prisma.product.updateMany({
+        where: { id: { in: state.productIds } },
+        data: { fullIngredients: "정제수, Panthenol, Alcohol Denat., 1,2-Hexanediol" },
       });
       console.log("{}");
     } else if (action === "clicks") {

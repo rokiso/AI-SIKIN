@@ -55,7 +55,7 @@ for (const width of [320, 1280])
     await page.getByLabel("성분 필터").selectOption("히알루론산");
     await expect(page.locator("article")).toHaveCount(2);
     await page.getByLabel("상품 정렬").selectOption("name");
-    const opener = page.getByRole("button", { name: "성분·추천 이유" }).first();
+    const opener = page.getByRole("button", { name: "전성분 & 맞춤 성분 분석" }).first();
     await opener.click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();

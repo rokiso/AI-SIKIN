@@ -245,6 +245,40 @@ enum ProductCategory {
   SUNCARE
 }
 
+enum CautionLevel {
+  INFO
+  CAUTION
+  WARNING
+}
+
+enum BaumannAxisTarget {
+  ALL
+  OILY
+  DRY
+  SENSITIVE
+  RESISTANT
+  PIGMENTED
+  NON_PIGMENTED
+  WRINKLED
+  TIGHT
+}
+
+model IngredientCautionRule {
+  id            String            @id @default(uuid())
+  standardName  String            @unique @map("standard_name")
+  inciName      String?           @map("inci_name")
+  aliases       String[]          @default([])
+  targetAxis    BaumannAxisTarget  @map("target_axis")
+  cautionLevel  CautionLevel      @default(CAUTION) @map("caution_level")
+  reasonKo      String            @db.Text @map("reason_ko")
+  descriptionKo String            @db.Text @map("description_ko")
+  createdAt     DateTime          @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt     DateTime          @updatedAt @db.Timestamptz @map("updated_at")
+
+  @@index([targetAxis])
+  @@map("ingredient_caution_rules")
+}
+
 model Product {
   id              String                  @id @default(uuid())
   brandName       String                  @map("brand")

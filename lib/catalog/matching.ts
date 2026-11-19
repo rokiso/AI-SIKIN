@@ -1,19 +1,41 @@
 import type { Product } from "@/generated/prisma/client";
 import { categories } from "./types";
+import {
+  analyzeIngredients,
+  defaultIngredientRules,
+  ingredientMatches,
+  parseFullIngredients,
+  type IngredientRule,
+} from "./ingredient-rules";
 const normalize = (text: string) => text.normalize("NFKC").toLowerCase().replace(/\s+/g, "");
 export function matchProducts(
   products: Product[],
   report: { baumannType: string; recommendedIngredients: string[]; cautionIngredients: string[] },
+  rules: IngredientRule[] = defaultIngredientRules,
 ) {
-  const cautions = report.cautionIngredients.map(normalize).filter(Boolean);
+  const cautions = report.cautionIngredients.filter((name) => normalize(name));
   const eligible = products.filter((p) => {
-    const ingredients = normalize(
-      [...p.ingredients, p.fullIngredients, ...p.keyIngredients].join(","),
-    );
+    const ingredients = [
+      ...p.ingredients,
+      ...parseFullIngredients(p.fullIngredients),
+      ...p.keyIngredients,
+    ];
+    const detected = analyzeIngredients(ingredients, report.baumannType, rules).cautionIngredients;
     return (
       p.isActive &&
       p.suitableBaumannTypes.includes(report.baumannType) &&
-      !cautions.some((ingredient) => ingredients.includes(ingredient))
+      !detected.some((rule) => rule.level !== "INFO") &&
+      !cautions.some((ingredient) => {
+        const rule = rules.find((rule) =>
+          ingredientMatches(ingredient, [rule.standardName, rule.inciName ?? "", ...rule.aliases]),
+        );
+        return ingredients.some((label) =>
+          ingredientMatches(
+            label,
+            rule ? [rule.standardName, rule.inciName ?? "", ...rule.aliases] : [ingredient],
+          ),
+        );
+      })
     );
   });
   return categories.map((category) => {
