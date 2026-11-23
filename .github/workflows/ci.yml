@@ -30,5 +30,16 @@ jobs:
       - name: Select installed Chromium
         run: node --input-type=module -e 'import { chromium } from "@playwright/test"; import { appendFileSync } from "node:fs"; appendFileSync(process.env.GITHUB_ENV, `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=${chromium.executablePath()}\n`);'
       - run: npm run build && npm run test:e2e
+      - name: Verify isolated core journey and strict performance gates
+        run: npm run test:core
+      - name: Save core journey metrics and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-journey-evidence
+          path: |
+            test-results/**/attachments/*.json
+            test-results/**/core-*.png
+          if-no-files-found: ignore
       - if: always()
         run: npm run db:stop

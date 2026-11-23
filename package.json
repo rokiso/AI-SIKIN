@@ -30,7 +30,8 @@
     "catalog:check": "node --conditions=react-server --import tsx scripts/catalog-check.ts",
     "storage:plan": "node --conditions=react-server --import tsx scripts/s3-policy-plan.ts",
     "auth:check": "node --conditions=react-server --import tsx scripts/oauth-check.ts",
-    "ingredients:check": "node --import tsx scripts/check-ingredient-copy.ts"
+    "ingredients:check": "node --import tsx scripts/check-ingredient-copy.ts",
+    "test:core": "playwright test --config playwright.core.config.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1166.0",
@@ -59,6 +60,7 @@
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.5",
     "jsdom": "31.0.0",
+    "nock": "^15.0.6",
     "postcss": "8.5.32",
     "prettier": "3.9.10",
     "prisma": "7.10.1",

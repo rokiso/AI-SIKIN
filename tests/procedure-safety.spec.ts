@@ -138,19 +138,28 @@ for (const width of [320, 1280]) {
     page,
   }, info) => {
     await page.setViewportSize({ width, height: 900 });
-    // All requests target this owned local test server and this test's synthetic IP.
-    for (let i = 0; i < 120; i++) {
+    // Exhaust an actual minute bucket, even if this run crosses a minute boundary.
+    // The deterministic DB test separately checks exactly 120 allowed requests.
+    let limited = false;
+    for (let i = 0; i < 242; i++) {
       const response = await page.request.get("/api/v1/catalog/procedures/pico-toning", {
         headers: { "x-real-ip": clientIp },
       });
-      expect(response.status()).toBe(200);
+      if (response.status() === 200) continue;
+      expect(response.status()).toBe(429);
+      expect(Number(response.headers()["retry-after"])).toBeGreaterThan(0);
+      const detail = await page.goto("/catalog/procedures/pico-toning");
+      if (await page.locator("main").getByRole("alert").count()) {
+        limited = true;
+        break;
+      }
+      // A reset between the denied API request and SSR is valid only when
+      // the server's own Date headers show a new minute, not an app failure.
+      const deniedMinute = Math.floor(Date.parse(response.headers().date) / 60000);
+      const detailMinute = Math.floor(Date.parse(detail!.headers().date) / 60000);
+      expect(detailMinute).toBeGreaterThan(deniedMinute);
     }
-    const denied = await page.request.get("/api/v1/catalog/procedures/pico-toning", {
-      headers: { "x-real-ip": clientIp },
-    });
-    expect(denied.status()).toBe(429);
-    expect(Number(denied.headers()["retry-after"])).toBeGreaterThan(0);
-    await page.goto("/catalog/procedures/pico-toning");
+    expect(limited).toBe(true);
     await expect(page.locator("main").getByRole("alert")).toContainText(
       "시술 정보 요청이 많습니다",
     );

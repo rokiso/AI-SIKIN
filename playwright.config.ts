@@ -9,7 +9,7 @@ export default defineConfig({
   projects: [
     {
       name: "stored-photo",
-      testIgnore: ["photo-test-mode.spec.ts", "skin-shop.spec.ts"],
+      testIgnore: ["photo-test-mode.spec.ts", "skin-shop.spec.ts", "core-diagnostic-ttv.spec.ts"],
       use: { baseURL: "http://127.0.0.1:3000" },
     },
     {
