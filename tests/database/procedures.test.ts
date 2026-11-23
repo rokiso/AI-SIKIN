@@ -67,10 +67,14 @@ describe("public procedure catalog", () => {
   it("keeps seeding idempotent and preserves existing guide data", async () => {
     const before = await db.medicalProcedure.findMany({
       where: { code: { in: procedureGuides.map((p) => p.code) } },
+      orderBy: { id: "asc" },
     });
     await seedProcedureGuides(db);
     expect(
-      await db.medicalProcedure.findMany({ where: { id: { in: before.map((p) => p.id) } } }),
+      await db.medicalProcedure.findMany({
+        where: { id: { in: before.map((p) => p.id) } },
+        orderBy: { id: "asc" },
+      }),
     ).toEqual(before);
   });
   it.each([

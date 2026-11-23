@@ -196,6 +196,44 @@ export function getAffiliateHosts(): Set<string> {
   );
 }
 
+export type AffiliatePartnerField = "AFFILIATE_PARTNER_ID" | "AFFILIATE_DEFAULT_PLATFORM";
+export class AffiliateConfigurationError extends Error {
+  constructor(public readonly invalidFields: AffiliatePartnerField[]) {
+    super("Affiliate partner configuration is incomplete or invalid");
+    this.name = "AffiliateConfigurationError";
+  }
+}
+export function getAffiliatePartnerConfiguration() {
+  const result = z
+    .object({
+      partnerId: z
+        .string()
+        .trim()
+        .min(3)
+        .max(256)
+        .refine(
+          (value) =>
+            !/[\x00-\x1f\x7f]/.test(value) &&
+            !/^(replace-with-|your-|AF1234567$|test$|demo$)/i.test(value),
+        ),
+      platform: z.string().regex(/^[A-Z][A-Z0-9_]{2,63}$/),
+    })
+    .safeParse({
+      partnerId: process.env.AFFILIATE_PARTNER_ID,
+      platform: process.env.AFFILIATE_DEFAULT_PLATFORM,
+    });
+  if (!result.success) {
+    const fields: Record<string, AffiliatePartnerField> = {
+      partnerId: "AFFILIATE_PARTNER_ID",
+      platform: "AFFILIATE_DEFAULT_PLATFORM",
+    };
+    throw new AffiliateConfigurationError([
+      ...new Set(result.error.issues.map((issue) => fields[String(issue.path[0])])),
+    ]);
+  }
+  return result.data;
+}
+
 // Explicit opt-in after production migrations and real seller data are ready.
 export function isCatalogPreviewOnly(): boolean {
   return process.env.CATALOG_LIVE_ENABLED !== "1";

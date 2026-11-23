@@ -31,7 +31,9 @@
     "storage:plan": "node --conditions=react-server --import tsx scripts/s3-policy-plan.ts",
     "auth:check": "node --conditions=react-server --import tsx scripts/oauth-check.ts",
     "ingredients:check": "node --import tsx scripts/check-ingredient-copy.ts",
-    "test:core": "playwright test --config playwright.core.config.ts"
+    "test:core": "playwright test --config playwright.core.config.ts",
+    "affiliate:check": "node --conditions=react-server --import tsx scripts/affiliate-check.ts",
+    "products:import": "node --conditions=react-server --import tsx scripts/import-affiliate-products.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1166.0",
