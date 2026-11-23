@@ -36,6 +36,7 @@ export default defineConfig({
         AWS_SECRET_ACCESS_KEY: "core-e2e-dummy-secret",
         CATALOG_LIVE_ENABLED: "1",
         CATALOG_AFFILIATE_HOSTS: "shop.example.com",
+        PROCEDURE_SAFETY_ENABLED: "1",
         PROCEDURE_CATALOG_SOURCE: "published",
         ACCOUNT_DELETION_ENABLED: "0",
         CONSENT_TRUSTED_IP_HEADER: "x-real-ip",

@@ -149,6 +149,20 @@ for (const width of [320, 1280]) {
       expect(response.status()).toBe(429);
       expect(Number(response.headers()["retry-after"])).toBeGreaterThan(0);
       const detail = await page.goto("/catalog/procedures/pico-toning");
+      // SSR may still be streaming when navigation completes. Wait for the
+      // actual result before deciding whether the minute bucket reset.
+      await expect(
+        page
+          .locator("main")
+          .getByRole("alert")
+          .or(
+            page.locator("main").getByRole("heading", {
+              level: 1,
+              name: "피코레이저 토닝",
+              exact: true,
+            }),
+          ),
+      ).toBeVisible();
       if (await page.locator("main").getByRole("alert").count()) {
         limited = true;
         break;

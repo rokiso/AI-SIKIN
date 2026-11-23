@@ -2,6 +2,7 @@ import "server-only";
 import type { MedicalProcedure } from "@/generated/prisma/client";
 import { concernLabels, procedureViewSchema, type ProcedureView } from "./procedures";
 import { summarizeProcedurePrices } from "./procedure-pricing";
+import { isProcedureSafetyEnabled } from "@/lib/server-env";
 export type ProcedureRecord = Pick<
   MedicalProcedure,
   | "id"
@@ -28,6 +29,7 @@ export function projectProcedure(row: ProcedureRecord): ProcedureView {
     principleDescription: row.principleText,
     recommendedInterval: row.recommendedInterval,
     sideEffectsWarning: row.sideEffects.join(" "),
+    safetyDetailAvailable: isProcedureSafetyEnabled(),
     recoveryPeriod: row.recoveryPeriod,
     checklistQuestions: row.checklistQuestions,
     ...summarizeProcedurePrices(row.priceObservations, row.priceBasis),

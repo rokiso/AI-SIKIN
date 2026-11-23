@@ -8,6 +8,12 @@ export function getProcedureCatalogSource(): "published" | "database" {
   const fallback = process.env.VERCEL === "1" ? "published" : "database";
   return z.enum(["published", "database"]).parse(process.env.PROCEDURE_CATALOG_SOURCE || fallback);
 }
+// Enable in production only after the safety-guide and quota migrations are ready.
+export function isProcedureSafetyEnabled(): boolean {
+  const value = process.env.PROCEDURE_SAFETY_ENABLED;
+  if (value) return value === "1";
+  return process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1";
+}
 
 export function getOptionalDatabaseUrl(): string | undefined {
   const value = process.env.DATABASE_URL;

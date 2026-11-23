@@ -48,6 +48,19 @@ afterEach(async () => {
   invalidateProcedureCache();
 });
 afterAll(() => db.$disconnect());
+it("keeps production detail rollout closed before touching new tables while the legacy guide remains available", async () => {
+  vi.stubEnv("NODE_ENV", "production");
+  vi.stubEnv("PROCEDURE_SAFETY_ENABLED", undefined);
+  const quota = vi.spyOn(db, "$queryRaw");
+  const safety = vi.spyOn(db.procedureSafetyGuide, "findFirst");
+  expect((await call("rf-tightening")).status).toBe(503);
+  expect(quota).not.toHaveBeenCalled();
+  expect(safety).not.toHaveBeenCalled();
+  const parent = await db.medicalProcedure.findUniqueOrThrow({ where: { code: "P-RF" } });
+  const legacy = await call(parent.id);
+  expect(legacy.status).toBe(200);
+  expect((await legacy.json()).data.procedure).toMatchObject({ safetyDetailAvailable: false });
+});
 it("returns safety, post care, questions and existing price evidence for all ten public slugs", async () => {
   for (const route of procedureSafetyRoutes) {
     const response = await call(route.slug);

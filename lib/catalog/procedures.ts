@@ -39,6 +39,7 @@ export const procedureViewSchema = z.object({
   principleDescription: z.string(),
   recommendedInterval: z.string(),
   sideEffectsWarning: z.string(),
+  safetyDetailAvailable: z.boolean().optional(),
   recoveryPeriod: z.string(),
   priceMinKrw: z.number().int().positive().nullable(),
   priceMaxKrw: z.number().int().positive().nullable(),

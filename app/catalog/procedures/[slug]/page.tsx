@@ -7,6 +7,7 @@ import { ProcedureSafetyCard } from "@/components/catalog/ProcedureSafetyCard";
 import { DefenseQuestionList } from "@/components/catalog/DefenseQuestionList";
 import { ProcedureSafetyUnavailable } from "@/components/catalog/ProcedureSafetyUnavailable";
 import { getProcedureSafetyGuide } from "@/lib/catalog/procedure-safety-service";
+import { isProcedureSafetyEnabled } from "@/lib/server-env";
 import {
   enforceSafetyRateLimit,
   SafetyRateLimitError,
@@ -24,6 +25,13 @@ export default async function ProcedureSafetyPage({
 }) {
   const { slug } = await params;
   if (!procedureSafetyRoutes.some((route) => route.slug === slug)) notFound();
+  if (!isProcedureSafetyEnabled())
+    return (
+      <div className="space-y-6 break-keep">
+        <ProcedureSafetyUnavailable message="시술 상세 안내를 준비하고 있습니다. 시술 목록의 기본 안내를 이용해 주세요." />
+        <MedicalDisclaimerNotice compact />
+      </div>
+    );
   let data: ProcedureSafetyView | null = null;
   let message: string | undefined;
   try {
