@@ -14,16 +14,21 @@ import {
 } from "@/lib/snapshot/client";
 import type { SnapshotView } from "@/lib/snapshot/types";
 import { TodayFeedbackCard } from "./TodayFeedbackCard";
+import { StreakBadge } from "./StreakBadge";
+import type { MilestoneSummary } from "@/lib/snapshot/milestone-types";
 export function DailySnapshotRecorder({
   initialSnapshot,
   initialError = false,
+  milestonesEnabled = false,
 }: {
   initialSnapshot: SnapshotView | null;
   initialError?: boolean;
+  milestonesEnabled?: boolean;
 }) {
   const router = useRouter();
   const { setBusy } = useUploadActivity();
   const [snapshot, setSnapshot] = useState(initialSnapshot);
+  const [milestone, setMilestone] = useState<MilestoneSummary | null>(null);
   const [failure, setFailure] = useState(
     initialError ? "기록을 불러오지 못했습니다. 다시 불러와주세요." : "",
   );
@@ -175,6 +180,7 @@ export function DailySnapshotRecorder({
           );
       if (work.current === controller) {
         setSnapshot(result);
+        setMilestone(result.milestone ?? null);
         router.refresh();
       }
     } catch (error) {
@@ -257,6 +263,13 @@ export function DailySnapshotRecorder({
   }
   return (
     <div className="space-y-5">
+      {milestonesEnabled && (
+        <StreakBadge
+          key={snapshot?.id ?? "new-snapshot"}
+          refreshKey={snapshot?.id}
+          celebration={milestone}
+        />
+      )}
       {snapshot ? (
         <TodayFeedbackCard
           key={snapshot.viewUrl}

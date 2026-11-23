@@ -10,6 +10,7 @@ import { getTodaySnapshot } from "@/lib/snapshot/service";
 import type { SnapshotView } from "@/lib/snapshot/types";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeading } from "@/components/ui/PageHeading";
+import { isSnapshotMilestonesEnabled } from "@/lib/server-env";
 export const dynamic = "force-dynamic";
 export default async function SnapshotPage() {
   const photoTest = isPhotoTestMode();
@@ -52,6 +53,7 @@ export default async function SnapshotPage() {
               <DailySnapshotRecorder
                 initialSnapshot={initialSnapshot}
                 initialError={initialError}
+                milestonesEnabled={isSnapshotMilestonesEnabled()}
               />
             </div>
           )}

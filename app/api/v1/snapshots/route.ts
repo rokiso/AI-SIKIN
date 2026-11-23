@@ -12,7 +12,10 @@ export async function POST(request: Request) {
     const result = await recordSnapshot(userId, input);
     const view = await snapshotView(result.row);
     return NextResponse.json(
-      { success: true, data: { ...view, userId, s3Key: result.row.s3Key } },
+      {
+        success: true,
+        data: { ...view, userId, s3Key: result.row.s3Key, milestone: result.milestone },
+      },
       { status: result.created ? 201 : 200, headers: privateHeaders },
     );
   } catch (error) {

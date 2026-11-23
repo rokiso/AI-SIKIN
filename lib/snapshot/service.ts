@@ -9,6 +9,8 @@ import type { UploadFile } from "@/lib/diagnostic/upload-validation";
 import { AuthError } from "@/lib/auth/response";
 import { recordSnapshotSchema, type SnapshotView } from "./types";
 import type { z } from "zod";
+import { isSnapshotMilestonesEnabled } from "@/lib/server-env";
+import { evaluateSnapshotMilestone, milestoneSummary } from "./milestone-issuance";
 const extensions = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 const conflict = () =>
   new AuthError(409, "ALREADY_RECORDED_TODAY", "오늘의 피부 스냅샷이 이미 기록되었습니다.");
@@ -98,6 +100,12 @@ export async function recordSnapshot(
   const recordDate = getKstRecordDate(now);
   return getPrisma().$transaction(
     async (tx) => {
+      // Adjacent KST dates can overlap while a provider call is in flight.
+      // Serialize milestone-enabled recordings across days before reading history.
+      if (isSnapshotMilestonesEnabled()) {
+        const milestoneLock = `snapshot-milestones:${userId}`;
+        await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${milestoneLock},0))::text`;
+      }
       const lock = `snapshot:${userId}:${getKstDate(now)}`;
       await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${lock},0))::text`;
       const replay = await tx.dailySnapshot.findUnique({
@@ -110,7 +118,16 @@ export async function recordSnapshot(
             "IDEMPOTENCY_CONFLICT",
             "다른 사진에 사용한 요청입니다. 사진을 다시 선택해주세요.",
           );
-        return { row: replay, created: false };
+        const previous = isSnapshotMilestonesEnabled()
+          ? await tx.snapshotMilestoneReport.findFirst({
+              where: { userId, achievedSnapshotId: replay.id },
+            })
+          : null;
+        return {
+          row: replay,
+          created: false,
+          milestone: previous ? milestoneSummary(previous) : null,
+        };
       }
       if (
         await tx.dailySnapshot.findUnique({
@@ -169,7 +186,10 @@ export async function recordSnapshot(
         where: { id: upload.id },
         data: { status: "UPLOADED", etag: input.etag },
       });
-      return { row, created: true };
+      const milestone = isSnapshotMilestonesEnabled()
+        ? await evaluateSnapshotMilestone(tx, userId, recordDate)
+        : null;
+      return { row, created: true, milestone };
     },
     { timeout: 15000 },
   );

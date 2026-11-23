@@ -5,7 +5,8 @@ import { MyHistory } from "@/components/mypage/MyHistory";
 import { PageHeading } from "@/components/ui/PageHeading";
 import { getAppUserSession } from "@/lib/session/server";
 import { AccountDeletionModal } from "@/components/mypage/AccountDeletionModal";
-import { isAccountDeletionEnabled } from "@/lib/server-env";
+import { isAccountDeletionEnabled, isSnapshotMilestonesEnabled } from "@/lib/server-env";
+import { StreakBadge } from "@/components/snapshot/StreakBadge";
 
 export default async function MyPage() {
   const session = await getAppUserSession();
@@ -35,6 +36,7 @@ export default async function MyPage() {
         {session.isAuthenticated ? <LogoutButton /> : <SocialAuthModal />}
       </section>
       <MyHistory />
+      {session.isAuthenticated && isSnapshotMilestonesEnabled() && <StreakBadge />}
       <Link href="/snapshot" className="button-secondary flex justify-between">
         데일리 기록 안내
         <ArrowRight aria-hidden="true" strokeWidth={1.75} className="h-4 w-4 shrink-0" />

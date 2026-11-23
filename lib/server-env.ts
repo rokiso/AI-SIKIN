@@ -15,6 +15,13 @@ export function isProcedureSafetyEnabled(): boolean {
   return process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1";
 }
 
+// New milestone tables must be migrated before enabling the production UI/writer.
+export function isSnapshotMilestonesEnabled(): boolean {
+  const value = process.env.SNAPSHOT_MILESTONES_ENABLED;
+  if (value) return value === "1";
+  return process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1";
+}
+
 export function getOptionalDatabaseUrl(): string | undefined {
   const value = process.env.DATABASE_URL;
   if (value === undefined || value === "") return undefined;

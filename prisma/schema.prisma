@@ -58,6 +58,7 @@ model User {
   sessions           AuthSession[]
   diagnosticSessions DiagnosticSession[]
   dailySnapshots     DailySnapshot[]
+  snapshotMilestones SnapshotMilestoneReport[]
   consentHistory     UserConsentHistory[]
   createdAt          DateTime             @default(now()) @db.Timestamptz @map("created_at")
   updatedAt          DateTime             @updatedAt @db.Timestamptz @map("updated_at")
@@ -433,11 +434,46 @@ model DailySnapshot {
   updatedAt       DateTime           @updatedAt @db.Timestamptz @map("updated_at")
 
   user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startedMilestones SnapshotMilestoneReport[] @relation("MilestoneStart")
+  achievedMilestones SnapshotMilestoneReport[] @relation("MilestoneAchieved")
 
   @@unique([userId, idempotencyKey], name: "uq_snapshot_idempotency")
   @@unique([userId, recordDate], name: "uq_user_daily_snapshot")
   @@index([userId, recordDate])
   @@map("daily_snapshots")
+}
+
+enum MilestoneType {
+  STREAK_3_DAYS
+  STREAK_7_DAYS
+}
+
+model SnapshotMilestoneReport {
+  id String @id @default(uuid())
+  userId String @map("user_id")
+  milestoneType MilestoneType @map("milestone_type")
+  achievedStreakDays Int @map("achieved_streak_days")
+  startDate DateTime @db.Date @map("start_date")
+  achievedDate DateTime @db.Date @map("achieved_date")
+  startSnapshotId String @map("start_snapshot_id")
+  achievedSnapshotId String @map("achieved_snapshot_id")
+  summaryComment String @db.Text @map("summary_comment")
+  // General-guidance snapshots have no measured or AI-classified levels.
+  initialHydration SkinConditionLevel? @map("initial_hydration")
+  currentHydration SkinConditionLevel? @map("current_hydration")
+  initialSoothing SkinConditionLevel? @map("initial_soothing")
+  currentSoothing SkinConditionLevel? @map("current_soothing")
+  initialSebum SkinConditionLevel? @map("initial_sebum")
+  currentSebum SkinConditionLevel? @map("current_sebum")
+  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startSnapshot DailySnapshot @relation("MilestoneStart", fields: [startSnapshotId], references: [id], onDelete: Cascade)
+  achievedSnapshot DailySnapshot @relation("MilestoneAchieved", fields: [achievedSnapshotId], references: [id], onDelete: Cascade)
+  @@unique([userId, milestoneType, achievedDate], name: "uq_user_milestone_date")
+  @@index([userId, achievedDate, id])
+  @@index([startSnapshotId])
+  @@index([achievedSnapshotId])
+  @@map("snapshot_milestone_reports")
 }
 
 // Short-lived one-use OAuth flow identifier; no provider token or profile is stored.

@@ -3,6 +3,7 @@ import type { ProcessedImageResult } from "@/lib/image/clientPreprocess";
 import { putImage } from "@/lib/api/diagnosticUploadClient";
 import { normalizeETag } from "@/lib/api/diagnosticUploadClient";
 import { snapshotKeySchema, snapshotSchema, todaySnapshotResponse } from "./types";
+import { milestoneSummarySchema } from "./milestone-types";
 export class SnapshotClientError extends Error {
   constructor(
     public code: string,
@@ -58,7 +59,10 @@ export interface SnapshotReceipt {
 }
 export async function finishSnapshot(receipt: SnapshotReceipt, signal: AbortSignal) {
   const parsed = z
-    .object({ success: z.literal(true), data: snapshotSchema })
+    .object({
+      success: z.literal(true),
+      data: snapshotSchema.extend({ milestone: milestoneSummarySchema.nullish() }),
+    })
     .safeParse(await snapshotRequest("/api/v1/snapshots", signal, receipt));
   if (!parsed.success)
     throw new SnapshotClientError(

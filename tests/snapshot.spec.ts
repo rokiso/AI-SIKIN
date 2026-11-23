@@ -4,6 +4,7 @@ import { writeFileSync, unlinkSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
 import { test, expect, type Page } from "@playwright/test";
 import { z } from "zod";
+import { milestoneSummarySchema } from "../lib/snapshot/milestone-types";
 test.use({ trace: "off" });
 const key = `daily-snapshots/snp-${randomUUID()}.jpg`;
 const etag = '"0123456789abcdef0123456789abcdef"';
@@ -71,8 +72,9 @@ const recordedSchema = z.object({
   recordDate: z.string(),
   createdAt: z.string(),
   feedbackComment: z.string(),
+  milestone: milestoneSummarySchema.nullish(),
 });
-async function mocks(page: Page, image: Buffer) {
+async function mocks(page: Page, image: Buffer, milestone = false) {
   const cors = {
     "access-control-allow-origin": "http://127.0.0.1:3000",
     "access-control-allow-methods": "PUT,OPTIONS",
@@ -115,7 +117,9 @@ async function mocks(page: Page, image: Buffer) {
     expect(body.s3Key).toBe(key);
     const payloadPath = `${fixturePath}.payload`;
     writeFileSync(payloadPath, JSON.stringify(body), { mode: 0o600 });
-    const saved = recordedSchema.parse(fixture("record", payloadPath));
+    const saved = recordedSchema.parse(
+      fixture(milestone ? "record-milestone" : "record", payloadPath),
+    );
     unlinkSync(payloadPath);
     await route.fulfill({
       status: 201,
@@ -124,8 +128,10 @@ async function mocks(page: Page, image: Buffer) {
         data: {
           ...saved,
           viewUrl: "https://test-sikin-snapshots.s3.ap-northeast-2.amazonaws.com/preview.jpg",
-          feedbackSource: "GENERAL_GUIDANCE",
-          conditions: null,
+          feedbackSource: milestone ? "AI" : "GENERAL_GUIDANCE",
+          conditions: milestone
+            ? { hydrationLevel: "BALANCED", soothingLevel: "BALANCED", sebumLevel: "BALANCED" }
+            : null,
         },
       },
     });
@@ -254,3 +260,131 @@ test("synthetic camera capture records a snapshot and releases its video track",
     ),
   ).toBe("ended");
 });
+
+for (const width of [320, 390, 1280])
+  for (const days of [3, 7]) {
+    test(`milestone ${days} day recording opens a private comparison and remains in mypage at ${width}px`, async ({
+      page,
+    }, info) => {
+      await page.setViewportSize({ width, height: 900 });
+      fixture("prepare-milestone", String(days));
+      await page.goto("/snapshot");
+      const badge = page.getByRole("region", { name: "연속 기록과 달성 리포트" });
+      await expect(badge.getByRole("status")).toContainText(`현재 ${days - 1}일`);
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+      const image = await photo(page);
+      await mocks(page, image.buffer, true);
+      const chooser = page.waitForEvent("filechooser");
+      await page.getByRole("button", { name: "앨범에서 선택하기" }).click();
+      await (await chooser).setFiles(image);
+      const dialog = page.getByRole("dialog");
+      await expect(
+        dialog.getByRole("heading", { name: `${days}일 연속 기록 달성!` }),
+      ).toBeVisible();
+      await expect(dialog.getByRole("img", { name: "시작일 피부 기록 사진" })).toBeVisible();
+      await expect(dialog.getByRole("img", { name: "달성일 피부 기록 사진" })).toBeVisible();
+      await expect(dialog.getByRole("region", { name: "보습 참고 분류 비교" })).toContainText(
+        "시작일 · 낮음",
+      );
+      await expect(
+        dialog.getByText("의료 진단이나 치료를 대신하지 않습니다.", { exact: false }),
+      ).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      );
+      expect(
+        (
+          await new AxeBuilder({ page })
+            .include("dialog")
+            .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+            .analyze()
+        ).violations,
+      ).toEqual([]);
+      await page.screenshot({ path: info.outputPath(`milestone-${days}-${width}.png`) });
+      await page.keyboard.press("Escape");
+      await expect(dialog).toHaveCount(0);
+      await page.goto("/mypage");
+      await page.getByRole("button", { name: `${days}일 달성 리포트 보기`, exact: true }).click();
+      await expect(
+        dialog.getByRole("heading", { name: `${days}일 연속 기록 달성!` }),
+      ).toBeVisible();
+      await dialog.getByRole("button", { name: "리포트 닫기" }).click();
+      await expect(
+        page.getByRole("button", { name: `${days}일 달성 리포트 보기`, exact: true }),
+      ).toBeFocused();
+      await page.getByRole("button", { name: "연속 기록 리포트 보관함" }).click();
+      await expect(
+        page
+          .getByRole("group", { name: "달성 리포트 목록" })
+          .getByRole("button", { name: new RegExp(`^${days}일 달성 `) }),
+      ).toBeVisible();
+    });
+  }
+for (const width of [320, 1280]) {
+  test(`milestone loading failure retry empty history and missing classification at ${width}px`, async ({
+    page,
+  }, info) => {
+    await page.setViewportSize({ width, height: 900 });
+    let release: (() => void) | undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let calls = 0;
+    await page.route("**/api/v1/snapshots/streak", async (route) => {
+      calls++;
+      if (calls === 1) {
+        await gate;
+        return route.fulfill({
+          status: 503,
+          json: { success: false, error: { code: "UNAVAILABLE" } },
+        });
+      }
+      return route.continue();
+    });
+    await page.goto("/snapshot");
+    const badge = page.getByRole("region", { name: "연속 기록과 달성 리포트" });
+    await expect(badge.getByRole("status")).toContainText("불러오고 있어요");
+    release?.();
+    await expect(badge.getByRole("alert")).toBeVisible();
+    await badge.getByRole("button", { name: "연속 기록 다시 시도" }).click();
+    await expect(badge.getByRole("status")).toContainText("현재 0일");
+    await badge.getByRole("button", { name: "연속 기록 리포트 보관함" }).click();
+    await expect(badge.getByText("아직 달성 리포트가 없어요.", { exact: false })).toBeVisible();
+    await page.screenshot({
+      path: info.outputPath(`milestone-empty-${width}.png`),
+      fullPage: true,
+    });
+    fixture("prepare-milestone", "3-general");
+    let releaseDetail: (() => void) | undefined;
+    const detailGate = new Promise<void>((resolve) => {
+      releaseDetail = resolve;
+    });
+    await page.route("**/api/v1/snapshots/milestones/*", async (route) => {
+      await detailGate;
+      return route.continue();
+    });
+    await page.reload();
+    const image = await photo(page);
+    await mocks(page, image.buffer, true);
+    const chooser = page.waitForEvent("filechooser");
+    await page.getByRole("button", { name: "앨범에서 선택하기" }).click();
+    await (await chooser).setFiles(image);
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByRole("status")).toContainText("리포트를 불러오고 있어요.");
+    await page.screenshot({ path: info.outputPath(`milestone-loading-${width}.png`) });
+    releaseDetail?.();
+    await expect(dialog.getByRole("heading", { name: "3일 연속 기록 달성!" })).toBeVisible();
+    await expect(dialog.getByRole("region", { name: "보습 참고 분류 비교" })).toContainText(
+      "비교 자료 없음",
+    );
+    await page.route("**/api/v1/snapshots/milestones/*", (route) =>
+      route.fulfill({ status: 503, json: { success: false, error: { code: "UNAVAILABLE" } } }),
+    );
+    await dialog.getByRole("button", { name: "사진·리포트 다시 불러오기" }).click();
+    await expect(dialog.getByRole("alert")).toBeVisible();
+    await page.screenshot({ path: info.outputPath(`milestone-error-${width}.png`) });
+    await page.unroute("**/api/v1/snapshots/milestones/*");
+    await dialog.getByRole("button", { name: "다시 시도", exact: true }).click();
+    await expect(dialog.getByRole("heading", { name: "3일 연속 기록 달성!" })).toBeVisible();
+  });
+}
