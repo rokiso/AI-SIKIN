@@ -20,7 +20,10 @@ export function DiagnosticReportCard({
             new Date(report.createdAt),
           )}
         </p>
-        <div className="rounded-xl border border-primary-200 bg-primary-50 p-4 text-sm leading-relaxed text-primary-800">
+        <div
+          role={report.fallbackNotice ? "status" : undefined}
+          className="rounded-xl border border-primary-200 bg-primary-50 p-4 text-sm leading-relaxed text-primary-800"
+        >
           <p className="font-semibold">
             {report.source === "QUESTIONNAIRE"
               ? "문진 기반 참고 리포트"
@@ -30,7 +33,8 @@ export function DiagnosticReportCard({
           </p>
           <p className="mt-2">
             {report.source === "QUESTIONNAIRE"
-              ? "사진 AI 분석을 적용하지 않았습니다. 저장된 12문항 응답만으로 계산했어요. 사진 분석이 필요하다면 이용 가능 여부를 확인한 뒤 새 문진을 시작해 주세요."
+              ? (report.fallbackNotice ??
+                "사진 AI 분석을 적용하지 않았습니다. 저장된 12문항 응답만으로 계산했어요. 사진 분석이 필요하다면 이용 가능 여부를 확인한 뒤 새 문진을 시작해 주세요.")
               : report.source === "AI_ASSISTED"
                 ? "문진을 최소 60% 반영하고 사진의 외관 정보를 보조적으로 사용했어요. 실제 피부 상태의 측정값이나 의료 진단은 아닙니다."
                 : "분석 방법이 기록되지 않은 기존 결과입니다. 현재 피부 상태와 다를 수 있어요."}

@@ -54,7 +54,10 @@ export function matchProducts(
           b.targets.length - a.targets.length ||
           a.product.id.localeCompare(b.product.id),
       );
-    return { ...category, primary: sorted[0] ?? null, secondary: sorted[1] ?? null };
+    const [primary, ...alternatives] = sorted;
+    const secondary =
+      alternatives.find(({ product }) => product.status === "ACTIVE") ?? alternatives[0];
+    return { ...category, primary: primary ?? null, secondary: secondary ?? null };
   });
 }
 export function safeIngredientLabels(names: string[]): string[] {

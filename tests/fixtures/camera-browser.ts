@@ -1,3 +1,4 @@
+import { mockFaceDetector } from "./face-detector-browser";
 import type { Page } from "@playwright/test";
 declare global {
   interface Window {
@@ -6,9 +7,10 @@ declare global {
     cameraFacings?: string[];
   }
 }
-export async function syntheticCamera(page: Page, dark = false) {
+export async function syntheticCamera(page: Page, dark = false, defect?: "no-face" | "blur") {
+  await mockFaceDetector(page, defect !== "no-face");
   await page.addInitScript(
-    ({ dark }) => {
+    ({ dark, defect }) => {
       const cameraStreams: MediaStream[] = [],
         cameraRevoked: string[] = [],
         cameraFacings: string[] = [];
@@ -46,14 +48,19 @@ export async function syntheticCamera(page: Page, dark = false) {
             data.data[i + 2] = ((seed >>> 16) & 255) % (dark ? 60 : 256);
             data.data[i + 3] = 255;
           }
-          context.putImageData(data, 0, 0);
+          if (defect === "blur") {
+            context.fillStyle = "#9c7966";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+          } else {
+            context.putImageData(data, 0, 0);
+          }
           const stream = canvas.captureStream(10);
           cameraStreams.push(stream);
           return stream;
         },
       });
     },
-    { dark },
+    { dark, defect },
   );
 }
 export async function streamsStopped(page: Page) {

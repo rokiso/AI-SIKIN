@@ -20,7 +20,9 @@ import {
   invalidateProductCache,
   recordAffiliateRedirect,
 } from "../../lib/catalog/curationService";
-import { checkProductLinks } from "../../lib/catalog/linkHealthChecker";
+import { checkProductLinks } from "../../lib/catalog/affiliate-health-batch";
+import type { LinkProbe } from "../../lib/catalog/linkHealthChecker";
+import { POST as healthCheck } from "../../app/api/v1/catalog/health-check/route";
 import * as ingredientRepository from "../../lib/catalog/ingredient-repository";
 import { GET as recommendations } from "../../app/api/v1/catalog/products/recommendations/route";
 import { GET as redirect } from "../../app/api/v1/catalog/redirect/route";
@@ -40,6 +42,7 @@ beforeEach(() => {
 });
 afterEach(async () => {
   vi.restoreAllMocks();
+  await prisma.affiliateLinkHealthLog.deleteMany({ where: { productId: { in: products } } });
   await prisma.affiliateClickLog.deleteMany({ where: { productId: { in: products } } });
   await prisma.diagnosticSession.deleteMany({ where: { id: { in: sessions } } });
   await prisma.user.deleteMany({ where: { id: { in: users } } });
@@ -364,25 +367,162 @@ describe("catalog APIs against local PostgreSQL", () => {
     expect(JSON.stringify(await failed.json())).not.toContain("private-rule-store-failure");
     expect((await recommendations(recRequest(b.reportId))).status).toBe(200);
   });
-  it("counts consecutive link failures, disables at three, recovers healthy links and preserves stock decisions", async () => {
+  const healthy: LinkProbe = {
+    status: "HEALTHY",
+    httpStatusCode: 200,
+    responseTimeMs: 12,
+    errorMessage: null,
+  };
+  const dead: LinkProbe = {
+    ...healthy,
+    status: "UNHEALTHY",
+    httpStatusCode: 404,
+    errorMessage: "HTTP_FAILURE",
+  };
+
+  it("switches the current recommendation and redirect after a 404, then recovers the primary", async () => {
     const f = await fixture();
+    const primary = f.catalog[0];
+    const alternate = f.catalog[4];
+    const input = { targetProductId: primary.id };
+    const old = await getProductRecommendations(f.reportId, f.identity);
+    expect(old.categories[0].primaryProduct?.id).toBe(primary.id);
+    const probe = async (url: string) => (url === primary.affiliateBaseUrl ? dead : healthy);
+    const dry = await checkProductLinks({ ...input, dryRun: true }, probe);
+    expect(dry).toMatchObject({ checkedCount: 1, switchedCount: 0 });
+    expect(await prisma.affiliateLinkHealthLog.count({ where: { productId: primary.id } })).toBe(0);
+    const result = await checkProductLinks(input, probe);
+    expect(result).toMatchObject({ checkedCount: 1, switchedCount: 1 });
+    expect(await prisma.product.findUnique({ where: { id: primary.id } })).toMatchObject({
+      status: "UNAVAILABLE",
+      isActive: true,
+      healthCheckFailCount: 1,
+    });
+    expect(
+      await prisma.affiliateLinkHealthLog.findFirst({ where: { productId: primary.id } }),
+    ).toMatchObject({
+      httpStatusCode: 404,
+      fallbackProductId: alternate.id,
+      actionTaken: "SWITCHED_TO_FALLBACK",
+      checkedUrl: primary.affiliateBaseUrl.split("?")[0],
+    });
+    const target = await recordAffiliateRedirect(
+      { reportId: f.reportId, productId: primary.id, tier: "PRIMARY" },
+      f.identity,
+      null,
+    );
+    expect(new URL(target).pathname).toBe(new URL(alternate.affiliateBaseUrl).pathname);
+    const refreshed = await getProductRecommendations(f.reportId, f.identity);
+    expect(refreshed.categories[0]).toMatchObject({
+      isFallbackActive: true,
+      secondaryProduct: { id: alternate.id },
+    });
+    await checkProductLinks(input, async () => healthy);
+    expect(await prisma.product.findUnique({ where: { id: primary.id } })).toMatchObject({
+      status: "ACTIVE",
+      healthCheckFailCount: 0,
+    });
+  });
+
+  it("does not route a targeted check to a failed alternate", async () => {
+    const f = await fixture();
+    const primary = f.catalog[0];
+    const alternate = f.catalog[4];
+    await getProductRecommendations(f.reportId, f.identity);
+    const result = await checkProductLinks({ targetProductId: primary.id }, async () => dead);
+    expect(result.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ productId: primary.id, actionTaken: "FALLBACK_FAILED" }),
+        expect.objectContaining({ productId: alternate.id, status: "UNHEALTHY" }),
+      ]),
+    );
+    const refreshed = await getProductRecommendations(f.reportId, f.identity);
+    expect(refreshed.categories[0].isFallbackActive).toBe(false);
+    await expect(
+      recordAffiliateRedirect(
+        { reportId: f.reportId, productId: primary.id, tier: "PRIMARY" },
+        f.identity,
+        null,
+      ),
+    ).rejects.toMatchObject({ code: "PRODUCT_UNAVAILABLE" });
+  });
+
+  it("preserves the catalog when no affiliate hosts are configured", async () => {
+    const { catalog } = await fixture();
+    vi.stubEnv("CATALOG_AFFILIATE_HOSTS", "");
+    await expect(checkProductLinks({ targetProductId: catalog[0].id })).rejects.toThrow(
+      "Affiliate host configuration is missing",
+    );
+    expect(await prisma.product.findUnique({ where: { id: catalog[0].id } })).toMatchObject({
+      status: "ACTIVE",
+      healthCheckFailCount: 0,
+    });
+  });
+
+  it("isolates a timeout without activating an unapproved alternate and preserves stock decisions", async () => {
+    const f = await fixture();
+    const primary = f.catalog[0];
+    await prisma.product.update({ where: { id: f.catalog[4].id }, data: { isActive: false } });
     await prisma.product.update({
       where: { id: f.catalog[1].id },
       data: { status: "OUT_OF_STOCK" },
     });
-    for (let n = 0; n < 3; n++) await checkProductLinks(async () => false);
-    expect(await prisma.product.findUnique({ where: { id: f.catalog[0].id } })).toMatchObject({
-      status: "UNAVAILABLE",
-      healthCheckFailCount: 3,
-    });
-    await checkProductLinks(async () => true);
-    expect(await prisma.product.findUnique({ where: { id: f.catalog[0].id } })).toMatchObject({
-      status: "ACTIVE",
-      healthCheckFailCount: 0,
+    const probe = vi.fn(async (url: string): Promise<LinkProbe> =>
+      url === primary.affiliateBaseUrl
+        ? { ...dead, status: "TIMEOUT", httpStatusCode: null, errorMessage: "DEADLINE_EXCEEDED" }
+        : healthy,
+    );
+    const result = await checkProductLinks({}, probe);
+    expect(result.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          productId: primary.id,
+          status: "TIMEOUT",
+          actionTaken: "FALLBACK_FAILED",
+        }),
+        expect.objectContaining({ productId: f.catalog[1].id, errorMessage: "OUT_OF_STOCK" }),
+        expect.objectContaining({ productId: f.catalog[2].id, status: "HEALTHY" }),
+      ]),
+    );
+    expect(probe).not.toHaveBeenCalledWith(f.catalog[4].affiliateBaseUrl);
+    expect(await prisma.product.findUnique({ where: { id: f.catalog[4].id } })).toMatchObject({
+      isActive: false,
     });
     expect(await prisma.product.findUnique({ where: { id: f.catalog[1].id } })).toMatchObject({
       status: "OUT_OF_STOCK",
-      healthCheckFailCount: 0,
     });
+  });
+
+  it("authenticates the scheduler, validates its body and shares the quota across calls", async () => {
+    const now = Date.now();
+    vi.spyOn(Date, "now").mockReturnValue(now);
+    vi.stubEnv("CRON_SECRET_TOKEN", "local-vitest-cron-token");
+    await prisma.affiliateLinkHealthQuota.deleteMany();
+    const request = (token?: string, body: unknown = { targetProductId: randomUUID() }) =>
+      new Request("http://localhost/api/v1/catalog/health-check", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          ...(token && { authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify(body),
+      });
+    try {
+      expect((await healthCheck(request())).status).toBe(401);
+      expect((await healthCheck(request("wrong"))).status).toBe(401);
+      expect(
+        (await healthCheck(request("local-vitest-cron-token", { targetProductId: "bad" }))).status,
+      ).toBe(400);
+      const responses = await Promise.all(
+        Array.from({ length: 3 }, () => healthCheck(request("local-vitest-cron-token"))),
+      );
+      expect(responses.map((r) => r.status).sort()).toEqual([200, 200, 429]);
+      expect(await responses.find((r) => r.ok)?.json()).toMatchObject({
+        success: true,
+        data: { checkedCount: 0 },
+      });
+    } finally {
+      await prisma.affiliateLinkHealthQuota.deleteMany();
+    }
   });
 });

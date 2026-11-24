@@ -123,6 +123,18 @@ describe("diagnostic progress stream client", () => {
     expect(result.current.phase).toBe("ERROR");
     expect(router.replace).not.toHaveBeenCalled();
   });
+  it("asks for a new questionnaire when the saved answers are incomplete", async () => {
+    markAnalysisIntent(sessionId);
+    vi.mocked(fetch).mockResolvedValue(
+      Response.json({ error: { code: "INCOMPLETE_SURVEY_DATA" } }, { status: 400 }),
+    );
+    const { result } = renderHook(() => useDiagnosticProgress(sessionId));
+    await act(async () => Source.instances[0].open());
+    expect(result.current.phase).toBe("RESTART_REQUIRED");
+    expect(result.current.error).toContain("문진을 다시 진행");
+    expect(Source.instances[0].close).toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
+  });
   it("exposes a safe POST failure and allows retry to the same saved session", async () => {
     markAnalysisIntent(sessionId);
     vi.mocked(fetch).mockResolvedValue(Response.json({ success: false }, { status: 503 }));

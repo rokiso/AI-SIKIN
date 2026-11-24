@@ -16,6 +16,7 @@ export function ownerWhere(owner: UploadOwner) {
 export function assertReportOwner(
   owner: UploadOwner,
   session: { userId: string | null; guestDeviceId: string | null },
+  scope: "report" | "session" = "report",
 ) {
   if (
     owner.kind === "member"
@@ -24,15 +25,23 @@ export function assertReportOwner(
   )
     throw new AuthError(
       403,
-      "FORBIDDEN_REPORT_ACCESS",
+      scope === "session" ? "FORBIDDEN_SESSION_ACCESS" : "FORBIDDEN_REPORT_ACCESS",
       "본인의 문진과 리포트만 확인할 수 있습니다.",
     );
 }
 export function projectReport(row: DiagnosticReport) {
   const metadata = z
-    .object({ source: z.enum(["QUESTIONNAIRE", "AI_ASSISTED"]), isFallback: z.boolean() })
+    .object({
+      source: z.enum(["QUESTIONNAIRE", "AI_ASSISTED"]),
+      isFallback: z.boolean(),
+      reason: z.string().optional(),
+    })
     .safeParse(row.aiAuditMetadata);
   const type = baumannTypeSchema.parse(row.baumannType);
+  const reason = metadata.data?.reason;
+  const showFallbackNotice =
+    row.fallbackReason ||
+    (metadata.data?.isFallback && reason && !["AI_DISABLED", "NO_PHOTO"].includes(reason));
   return reportSchema.parse({
     reportId: row.id,
     sessionId: row.sessionId,
@@ -49,7 +58,10 @@ export function projectReport(row: DiagnosticReport) {
     recommendedIngredients: row.recommendedIngredients,
     cautionIngredients: row.cautionIngredients,
     source: metadata.success ? metadata.data.source : "LEGACY",
-    isFallback: metadata.success ? metadata.data.isFallback : false,
+    isFallback: row.isFallback || (metadata.data?.isFallback ?? false),
+    fallbackNotice: showFallbackNotice
+      ? "사진 AI 분석을 완료하지 못해 바우만 피부 문진 12문항 응답으로 참고 리포트를 만들었어요."
+      : undefined,
     createdAt: row.createdAt.toISOString(),
   });
 }

@@ -1,13 +1,35 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
+import type { QualityFailureReason } from "@/lib/image/faceQualityValidator";
+
+const guidance = {
+  FACE_NOT_FOUND: {
+    title: "얼굴을 찾을 수 없어요",
+    description: "얼굴 전체가 가이드 안에 오도록 정면에서 찍은 사진을 사용해 주세요.",
+  },
+  LOW_LIGHT: {
+    title: "주변이 너무 어두워요",
+    description: "밝은 곳으로 이동해 얼굴에 빛이 고르게 닿도록 해 주세요.",
+  },
+  BLURRY: {
+    title: "초점이 흔들렸어요",
+    description: "카메라를 양손으로 고정하고 얼굴에 초점이 맞은 뒤 촬영해 주세요.",
+  },
+} satisfies Record<QualityFailureReason, { title: string; description: string }>;
+
 export function QualityWarningModal({
+  reason,
   onRetry,
-  onProceed,
+  onDismiss,
+  onAlbum,
 }: {
+  reason: QualityFailureReason;
   onRetry: () => void;
-  onProceed: () => void;
+  onDismiss: () => void;
+  onAlbum?: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const id = useId();
   useEffect(() => {
     const dialog = ref.current;
     dialog?.showModal();
@@ -20,19 +42,20 @@ export function QualityWarningModal({
   return (
     <dialog
       ref={ref}
-      aria-labelledby="camera-quality-title"
-      className="fixed inset-0 m-auto max-h-[85dvh] w-[calc(100%-2rem)] max-w-sm space-y-4 overflow-y-auto rounded-2xl border border-neutral-200 bg-surface p-5 text-neutral-900 backdrop:bg-neutral-900/40"
-      onCancel={(e) => {
-        e.preventDefault();
-        action(onProceed);
+      aria-modal="true"
+      aria-labelledby={`${id}-title`}
+      aria-describedby={`${id}-description`}
+      className="fixed inset-0 m-auto max-h-[85dvh] w-[calc(100%-2rem)] max-w-sm space-y-4 overflow-y-auto break-keep rounded-2xl border border-neutral-200 bg-surface p-5 text-neutral-900 backdrop:bg-neutral-900/40 [overflow-wrap:break-word]"
+      onCancel={(event) => {
+        event.preventDefault();
+        action(onDismiss);
       }}
     >
-      <h3 id="camera-quality-title" className="text-lg font-semibold">
-        조명이 너무 어둡거나 화면이 흐릿합니다
+      <h3 id={`${id}-title`} className="text-lg font-semibold">
+        {guidance[reason].title}
       </h3>
-      <p className="text-sm leading-relaxed text-neutral-700">
-        밝은 조명이나 자연광을 정면으로 바라보고 다시 촬영해 보세요. 간이 화질 검사여서 피부톤이나
-        주변 환경에 따라 다르게 안내될 수 있어요.
+      <p id={`${id}-description`} className="text-sm leading-relaxed text-neutral-700">
+        {guidance[reason].description}
       </p>
       <button
         autoFocus
@@ -40,11 +63,13 @@ export function QualityWarningModal({
         onClick={() => action(onRetry)}
         className="button-primary w-full"
       >
-        다시 촬영하기
+        {onAlbum ? "다시 촬영하기" : "다른 사진 선택하기"}
       </button>
-      <button type="button" onClick={() => action(onProceed)} className="button-secondary w-full">
-        그대로 진행하기
-      </button>
+      {onAlbum && (
+        <button type="button" onClick={() => action(onAlbum)} className="button-secondary w-full">
+          앨범에서 선택하기
+        </button>
+      )}
     </dialog>
   );
 }

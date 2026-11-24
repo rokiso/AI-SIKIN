@@ -12,11 +12,13 @@ import {
   type OnUploadCompletePayload,
   type UploadPhase,
 } from "@/lib/api/diagnosticUploadClient";
+import { PhotoQualityError, type QualityFailureReason } from "@/lib/image/faceQualityValidator";
+import { QualityWarningModal } from "./QualityWarningModal";
 import { useUploadActivity } from "./UploadActivity";
 type Phase = "idle" | "prepare" | UploadPhase | "success" | "failure";
 const phaseLabels = {
   idle: "사진을 선택해 주세요.",
-  prepare: "사진을 최적화하고 있어요.",
+  prepare: "사진 품질을 확인하고 있어요…",
   link: "보안 업로드 링크를 준비하고 있어요.",
   transfer: "사진을 안전하게 전송하고 있어요.",
   confirm: "사진 업로드를 검증하고 있어요.",
@@ -30,6 +32,7 @@ export function AlbumImageUploader({
   onUploadComplete: (payload: OnUploadCompletePayload | null) => void;
   requestConsent?: () => Promise<boolean>;
 }) {
+  const chooseButton = useRef<HTMLButtonElement>(null);
   const input = useRef<HTMLInputElement>(null);
   const running = useRef<AbortController | null>(null);
   const original = useRef<File | null>(null);
@@ -38,6 +41,7 @@ export function AlbumImageUploader({
   const [phase, setPhase] = useState<Phase>("idle");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
+  const [warning, setWarning] = useState<QualityFailureReason | null>(null);
   const [canRetry, setCanRetry] = useState(false);
   const { setBusy } = useUploadActivity();
   const pending = ["prepare", "link", "transfer", "confirm"].includes(phase);
@@ -77,7 +81,7 @@ export function AlbumImageUploader({
       setPhase("prepare");
       let image = processed.current;
       if (!image) {
-        image = await preprocessAlbumImage(file, controller.signal);
+        image = await preprocessAlbumImage(file, controller.signal, { requireFaceQuality: true });
         if (running.current !== controller) {
           URL.revokeObjectURL(image.previewUrl);
           return;
@@ -96,6 +100,12 @@ export function AlbumImageUploader({
       onUploadComplete(result);
     } catch (failure) {
       if (running.current !== controller) return;
+      if (failure instanceof PhotoQualityError) {
+        discard();
+        setPhase("idle");
+        setWarning(failure.reason);
+        return;
+      }
       setPhase("failure");
       setError(
         failure instanceof Error
@@ -180,6 +190,7 @@ export function AlbumImageUploader({
       )}
       <button
         type="button"
+        ref={chooseButton}
         disabled={pending}
         onClick={() => input.current?.click()}
         className="button-primary w-full"
@@ -212,6 +223,20 @@ export function AlbumImageUploader({
             <p className="mt-1 text-right text-xs tabular-nums text-neutral-600">{progress}%</p>
           )}
         </div>
+      )}
+      {warning && (
+        <QualityWarningModal
+          reason={warning}
+          onDismiss={() => {
+            setWarning(null);
+            chooseButton.current?.focus();
+          }}
+          onRetry={() => {
+            setWarning(null);
+            chooseButton.current?.focus();
+            input.current?.click();
+          }}
+        />
       )}
       {error && (
         <div

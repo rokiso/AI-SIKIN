@@ -53,12 +53,16 @@ afterEach(() => {
   mock.address = "8.8.8.8";
   mock.lookup = null;
   vi.unstubAllEnvs();
+  vi.useRealTimers();
 });
 describe("bounded affiliate health requests without external network", () => {
   it("falls back from unsupported HEAD to bounded GET", async () => {
     vi.stubEnv("CATALOG_AFFILIATE_HOSTS", "shop.example.com");
     mock.replies.push({ status: 405 }, { status: 200 });
-    expect(await probeAffiliateLink("https://shop.example.com/item")).toBe(true);
+    expect(await probeAffiliateLink("https://shop.example.com/item")).toMatchObject({
+      status: "HEALTHY",
+      httpStatusCode: 200,
+    });
     expect(mock.methods).toEqual(["HEAD", "GET"]);
     expect(mock.lookup).not.toBeNull();
     mock.address = "127.0.0.1";
@@ -73,13 +77,38 @@ describe("bounded affiliate health requests without external network", () => {
   it("never follows an unapproved redirect", async () => {
     vi.stubEnv("CATALOG_AFFILIATE_HOSTS", "shop.example.com");
     mock.replies.push({ status: 302, location: "http://169.254.169.254/metadata" });
-    expect(await probeAffiliateLink("https://shop.example.com/item")).toBe(false);
+    expect(await probeAffiliateLink("https://shop.example.com/item")).toMatchObject({
+      status: "UNHEALTHY",
+      httpStatusCode: 302,
+    });
     expect(mock.methods).toEqual(["HEAD"]);
   });
-  it("aborts a stalled probe within the three second deadline", async () => {
+  it.each([404, 500])("reports HTTP %i as unhealthy", async (status) => {
     vi.stubEnv("CATALOG_AFFILIATE_HOSTS", "shop.example.com");
-    const start = performance.now();
-    expect(await probeAffiliateLink("https://shop.example.com/stall")).toBe(false);
-    expect(performance.now() - start).toBeLessThan(3500);
+    mock.replies.push({ status });
+    expect(await probeAffiliateLink("https://shop.example.com/item")).toMatchObject({
+      status: "UNHEALTHY",
+      httpStatusCode: status,
+      errorMessage: "HTTP_FAILURE",
+    });
+  });
+  it("keeps a denied HEAD/GET separate from a dead link and detects redirect loops", async () => {
+    vi.stubEnv("CATALOG_AFFILIATE_HOSTS", "shop.example.com");
+    mock.replies.push({ status: 403 }, { status: 403 });
+    expect(await probeAffiliateLink("https://shop.example.com/item")).toMatchObject({
+      status: "UNHEALTHY",
+      errorMessage: "ACCESS_DENIED",
+    });
+    mock.replies.push({ status: 302, location: "/item" });
+    expect(await probeAffiliateLink("https://shop.example.com/item")).toMatchObject({
+      status: "REDIRECT_LOOP",
+    });
+  });
+  it("aborts the full probe at five seconds", async () => {
+    vi.stubEnv("CATALOG_AFFILIATE_HOSTS", "shop.example.com");
+    vi.useFakeTimers();
+    const pending = probeAffiliateLink("https://shop.example.com/stall");
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(await pending).toMatchObject({ status: "TIMEOUT", httpStatusCode: null });
   });
 });

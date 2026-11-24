@@ -1,3 +1,5 @@
+import publicExamples from "@/data/procedure-prices/2026-11-23/public-examples.json";
+import publicEvidence from "@/data/procedure-prices/2026-11-23/public-examples-evidence.json";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -71,4 +73,37 @@ describe("collected procedure price provenance", () => {
     expect(totalSamples).toBeLessThan(totalSources);
     expect([...platforms].sort()).toEqual(["BABITALK", "GANGNAMUNNI", "YEOSHIN"]);
   });
+});
+
+it("matches each public option to its evidence and tax treatment", () => {
+  expect(publicExamples.observedOn).toBe(publicEvidence.observedOn);
+  expect(Object.keys(publicExamples.procedures).sort()).toEqual(
+    readdirSync(directory)
+      .filter((name) => /^P-.*\.json$/.test(name))
+      .map((name) => name.slice(0, -5))
+      .sort(),
+  );
+  let total = 0;
+  for (const [code, pricing] of Object.entries(publicExamples.procedures)) {
+    for (const option of pricing.examples) {
+      const observations = publicEvidence.observations.filter(
+        (item) => item.procedureCode === code && item.option === option.option,
+      );
+      const amounts = observations.map((item) => {
+        expect(new URL(item.sourceUrl).protocol).toBe("https:");
+        const expected =
+          item.vat === "excluded" ? Math.round((item.listedKrw * 110) / 100) : item.listedKrw;
+        expect(item.displayKrw).toBe(expected);
+        expect(item.vat === "unknown").toBe("taxUnconfirmed" in option);
+        expect("offerEndsOn" in item ? item.offerEndsOn : undefined).toBe(
+          "offerEndsOn" in option ? option.offerEndsOn : undefined,
+        );
+        return expected;
+      });
+      expect(amounts.sort((a, b) => a - b)).toEqual(option.amountsKrw);
+      total += amounts.length;
+    }
+  }
+  expect(total).toBe(publicEvidence.observations.length);
+  expect(JSON.stringify(publicExamples)).not.toContain("https://");
 });

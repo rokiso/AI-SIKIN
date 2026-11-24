@@ -1,3 +1,4 @@
+import { mockFaceDetector } from "./fixtures/face-detector-browser";
 import { existsSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
@@ -80,6 +81,7 @@ for (const width of [320, 375, 1280])
     browser,
   }, info) => {
     test.setTimeout(180000);
+    await mockFaceDetector(page);
     const base = baseURL!;
     await page.setViewportSize({ width, height: 900 });
     const cdp = await context.newCDPSession(page);

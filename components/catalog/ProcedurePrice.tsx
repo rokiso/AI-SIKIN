@@ -1,15 +1,35 @@
 "use client";
 import { useId, useState } from "react";
+import priceExamples from "@/data/procedure-prices/2026-11-23/public-examples.json";
 import {
   formatPriceMean,
   formatProcedurePrice,
   type ProcedureView,
 } from "@/lib/catalog/procedures";
+type PriceExample = {
+  option: string;
+  amountsKrw: number[];
+  offerEndsOn?: string;
+  taxUnconfirmed?: boolean;
+};
+
+const examplesByCode: Record<
+  string,
+  { comparisonNote: string; examples: PriceExample[] } | undefined
+> = priceExamples.procedures;
+
+function formatExample(example: PriceExample) {
+  const min = Math.min(...example.amountsKrw);
+  const max = Math.max(...example.amountsKrw);
+  return min === max ? formatPriceMean(min) : `${formatPriceMean(min)} ~ ${formatPriceMean(max)}`;
+}
+
 export function ProcedurePrice({
   procedure,
   detail = false,
 }: {
-  procedure: Pick<ProcedureView, "priceMinKrw" | "priceMaxKrw" | "priceSummary" | "priceOptions">;
+  procedure: Pick<ProcedureView, "priceMinKrw" | "priceMaxKrw" | "priceSummary" | "priceOptions"> &
+    Partial<Pick<ProcedureView, "code">>;
   detail?: boolean;
 }) {
   const selectId = useId();
@@ -21,6 +41,8 @@ export function ProcedurePrice({
       : procedure;
   const summary = active.priceSummary;
   const options = procedure.priceOptions ?? [];
+  const pricing = procedure.code ? examplesByCode[procedure.code] : undefined;
+  const previewExample = pricing?.examples[0];
   return (
     <div className="space-y-1">
       {detail && options.length > 1 && (
@@ -87,6 +109,57 @@ export function ProcedurePrice({
         <p className="text-xs text-primary-800">
           가격 비교 조건 {options.length}종 · 상세에서 확인
         </p>
+      )}
+      {pricing && previewExample && (
+        <div className="mt-3 space-y-2 border-t border-neutral-200 pt-3">
+          <p className="text-sm font-semibold text-neutral-900">옵션별 공개 가격 예시</p>
+          {detail ? (
+            <>
+              <p className="text-xs leading-relaxed text-neutral-600">
+                {priceExamples.observedOn} 확인 · 세금 표기가 있는 항목은 부가세 포함 금액입니다.
+                공개 가격표와 행사의 별도 참고 예시로, 위 표본 통계에는 포함하지 않습니다. 적용
+                조건과 추가비용은 달라질 수 있어요.
+              </p>
+              <dl className="divide-y divide-neutral-200">
+                {pricing.examples.map((example) => (
+                  <div
+                    key={example.option}
+                    className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2"
+                  >
+                    <dt className="text-sm text-neutral-700">
+                      {example.option}
+                      {example.offerEndsOn && (
+                        <span className="block text-xs">행사 종료일 {example.offerEndsOn}</span>
+                      )}
+                    </dt>
+                    <dd className="text-sm font-semibold tabular-nums text-neutral-900">
+                      {formatExample(example)}
+                      {example.amountsKrw.length > 1 && (
+                        <span className="ml-1 text-xs font-normal text-neutral-600">
+                          ({example.amountsKrw.length}건)
+                        </span>
+                      )}
+                      {example.taxUnconfirmed && (
+                        <span className="block text-xs font-normal text-neutral-600">
+                          부가세 확인 필요
+                        </span>
+                      )}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="text-xs leading-relaxed text-neutral-700">{pricing.comparisonNote}</p>
+            </>
+          ) : (
+            <div className="space-y-1 text-xs leading-relaxed text-neutral-700">
+              <p>
+                {previewExample.option} ·{" "}
+                <span className="font-semibold">{formatExample(previewExample)}</span>
+              </p>
+              <p>상세에서 가격 옵션 {pricing.examples.length}개 비교</p>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

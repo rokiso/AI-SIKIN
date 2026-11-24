@@ -117,26 +117,64 @@ test("permission denial offers album fallback", async ({ page }) => {
   await page.getByRole("button", { name: "앨범에서 사진 선택하기" }).click();
   await expect(page.getByRole("button", { name: "앨범에서 사진 선택", exact: true })).toBeVisible();
 });
-test("dark frame warning permits retake or proceed, and navigation stops camera", async ({
-  page,
-}) => {
-  await syntheticCamera(page, true);
-  await openCamera(page);
-  await page.getByRole("button", { name: "촬영", exact: true }).click();
-  const dialog = page.getByRole("dialog");
-  await expect(dialog).toBeVisible();
-  await dialog.getByRole("button", { name: "다시 촬영하기" }).click();
-  await expect(page.getByRole("button", { name: "촬영", exact: true })).toBeEnabled();
-  await page.getByRole("button", { name: "촬영", exact: true }).click();
-  await expect(dialog).toBeVisible();
-  await dialog.getByRole("button", { name: "그대로 진행하기" }).click();
-  await expect(dialog).toHaveCount(0);
-  await page.getByRole("button", { name: "다시 촬영", exact: true }).click();
-  await expect(page.getByRole("button", { name: "촬영", exact: true })).toBeEnabled();
-  await page
-    .getByRole("navigation", { name: "주요 메뉴" })
-    .getByRole("link", { name: "화장품", exact: true })
-    .click();
-  await expect(page).toHaveURL(/\/catalog\/products$/);
-  await expect.poll(() => streamsStopped(page)).toBe(true);
-});
+for (const width of [320, 1280]) {
+  test(`dark frame blocks upload and returns to the live viewfinder at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await syntheticCamera(page, true);
+    let requests = 0;
+    await page.route("**/api/v1/diagnostics/upload-url", (route) => {
+      requests++;
+      return route.abort();
+    });
+    await openCamera(page);
+    const shutter = page.getByRole("button", { name: "촬영", exact: true });
+    await shutter.click();
+    const dialog = page.getByRole("dialog", { name: "주변이 너무 어두워요" });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText(/빛이 고르게/)).toBeVisible();
+    const retry = dialog.getByRole("button", { name: "다시 촬영하기" });
+    const box = await retry.boundingBox();
+    expect(box?.width).toBeGreaterThanOrEqual(44);
+    expect(box?.height).toBeGreaterThanOrEqual(44);
+    expect(await dialog.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
+      true,
+    );
+    await retry.click();
+    await expect(shutter).toBeFocused();
+    await expect(shutter).toBeEnabled();
+    await shutter.click();
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+    await expect(shutter).toBeFocused();
+    expect(requests).toBe(0);
+    expect(await page.evaluate(() => window.cameraStreams?.length)).toBe(1);
+    await page
+      .getByRole("navigation", { name: "주요 메뉴" })
+      .getByRole("link", { name: "화장품", exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/catalog\/products$/);
+    await expect.poll(() => streamsStopped(page)).toBe(true);
+  });
+}
+
+for (const [defect, title] of [
+  ["no-face", "얼굴을 찾을 수 없어요"],
+  ["blur", "초점이 흔들렸어요"],
+] as const) {
+  test(`camera blocks ${defect} and offers the album`, async ({ page }) => {
+    await syntheticCamera(page, false, defect);
+    await openCamera(page);
+    await page.getByRole("button", { name: "촬영", exact: true }).click();
+    const dialog = page.getByRole("dialog", { name: title });
+    await expect(dialog).toBeVisible();
+    await expect(page.getByAltText("촬영한 얼굴 사진 미리보기")).toHaveCount(0);
+    await dialog.getByRole("button", { name: "앨범에서 선택하기" }).click();
+    await expect(
+      page.getByRole("button", { name: "앨범에서 사진 선택", exact: true }),
+    ).toBeVisible();
+    expect(await streamsStopped(page)).toBe(true);
+  });
+}

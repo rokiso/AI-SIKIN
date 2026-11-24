@@ -24,7 +24,8 @@ export default async function ProcedureSafetyPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  if (!procedureSafetyRoutes.some((route) => route.slug === slug)) notFound();
+  const route = procedureSafetyRoutes.find((route) => route.slug === slug);
+  if (!route) notFound();
   if (!isProcedureSafetyEnabled())
     return (
       <div className="space-y-6 break-keep">
@@ -72,6 +73,7 @@ export default async function ProcedureSafetyPage({
         <ProcedurePrice
           detail
           procedure={{
+            code: route.code,
             priceMinKrw: data.marketPriceBand.minPrice,
             priceMaxKrw: data.marketPriceBand.maxPrice,
             priceSummary: data.priceSummary,
