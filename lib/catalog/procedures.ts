@@ -29,6 +29,11 @@ const priceSchema = z.object({
   observedThrough: z.string().nullable(),
   platforms: z.array(z.string()),
 });
+const priceOptionSchema = z.object({
+  priceMinKrw: z.number().int().positive().nullable(),
+  priceMaxKrw: z.number().int().positive().nullable(),
+  priceSummary: priceSchema,
+});
 export const procedureViewSchema = z.object({
   id: z.uuid(),
   code: z.string(),
@@ -44,6 +49,7 @@ export const procedureViewSchema = z.object({
   priceMinKrw: z.number().int().positive().nullable(),
   priceMaxKrw: z.number().int().positive().nullable(),
   priceSummary: priceSchema,
+  priceOptions: z.array(priceOptionSchema).max(100).optional(),
   checklistQuestions: z.array(z.string().trim().min(1)).length(3),
 });
 export type ProcedureView = z.infer<typeof procedureViewSchema>;

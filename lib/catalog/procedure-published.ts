@@ -1,15 +1,15 @@
 import "server-only";
 import { procedureGuides, procedureIntervalNote } from "@/prisma/seeds/procedures";
-import pico from "@/data/procedure-prices/2026-11-18/P-PICO.json";
-import fractional from "@/data/procedure-prices/2026-11-18/P-FRACTIONAL.json";
-import ldm from "@/data/procedure-prices/2026-11-18/P-LDM.json";
-import aqua from "@/data/procedure-prices/2026-11-18/P-AQUAPEEL.json";
-import hifu from "@/data/procedure-prices/2026-11-18/P-HIFU.json";
-import rf from "@/data/procedure-prices/2026-11-18/P-RF.json";
-import pn from "@/data/procedure-prices/2026-11-18/P-PN.json";
-import ha from "@/data/procedure-prices/2026-11-18/P-HA.json";
-import peel from "@/data/procedure-prices/2026-11-18/P-PEEL.json";
-import pdl from "@/data/procedure-prices/2026-11-18/P-PDL.json";
+import pico from "@/data/procedure-prices/2026-11-24/P-PICO.json";
+import fractional from "@/data/procedure-prices/2026-11-24/P-FRACTIONAL.json";
+import ldm from "@/data/procedure-prices/2026-11-24/P-LDM.json";
+import aqua from "@/data/procedure-prices/2026-11-24/P-AQUAPEEL.json";
+import hifu from "@/data/procedure-prices/2026-11-24/P-HIFU.json";
+import rf from "@/data/procedure-prices/2026-11-24/P-RF.json";
+import pn from "@/data/procedure-prices/2026-11-24/P-PN.json";
+import ha from "@/data/procedure-prices/2026-11-24/P-HA.json";
+import peel from "@/data/procedure-prices/2026-11-24/P-PEEL.json";
+import pdl from "@/data/procedure-prices/2026-11-24/P-PDL.json";
 import type { ProcedureView } from "./procedures";
 import { projectProcedure } from "./procedure-projection";
 

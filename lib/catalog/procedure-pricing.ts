@@ -90,3 +90,29 @@ export function summarizeProcedurePrices(
     },
   };
 }
+
+/** Keep distinct treatment units separate; never average across these groups. */
+export function summarizeProcedurePriceOptions(raw: unknown, basis: string | null, today?: string) {
+  const observations = z.array(observationSchema).max(500).parse(raw);
+  if (!observations.length)
+    return { ...summarizeProcedurePrices(observations, basis, today), priceOptions: [] };
+  const groups = new Map<string, PriceObservation[]>();
+  for (const observation of observations) {
+    const group = groups.get(observation.basis) ?? [];
+    group.push(observation);
+    groups.set(observation.basis, group);
+  }
+  if (!basis || !groups.has(basis) || groups.size > 100)
+    throw new Error("Missing primary price unit or too many price groups");
+  const priceOptions = [...groups].map(([groupBasis, rows]) =>
+    summarizeProcedurePrices(rows, groupBasis, today),
+  );
+  priceOptions.sort(
+    (a, b) =>
+      b.priceSummary.sampleCount - a.priceSummary.sampleCount ||
+      (a.priceSummary.basis ?? "").localeCompare(b.priceSummary.basis ?? "", "ko"),
+  );
+  const primary = priceOptions.find((option) => option.priceSummary.basis === basis);
+  if (!primary) throw new Error("Primary price unit missing");
+  return { ...primary, priceOptions };
+}

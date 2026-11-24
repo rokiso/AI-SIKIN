@@ -47,6 +47,7 @@ export const safetyResponseSchema = z.object({
       unit: z.string().nullable(),
     }),
     priceSummary: procedureViewSchema.shape.priceSummary,
+    priceOptions: procedureViewSchema.shape.priceOptions,
     safetyInfo: safetyContentSchema.omit({ defenseQuestions: true, disclaimerText: true }),
     defenseQuestions: z.array(safetyQuestionSchema).max(3),
     disclaimerText: z.string(),

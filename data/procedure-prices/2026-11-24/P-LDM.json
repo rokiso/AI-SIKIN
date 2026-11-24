@@ -1,0 +1,195 @@
+{
+  "code": "P-LDM",
+  "basis": "LDM(모델 미기재) · 12분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인",
+  "observations": [
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/38924",
+      "sampleKey": "42b37ad4bb42983d3d4cb3aa07059fea9d4150860f18d82d34be7a6d9a9f3cb0",
+      "amountKrw": 86900,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM 트리플 · 12분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/33287",
+      "sampleKey": "ffa21e72700e28d8d1ac12ec53fcca9bf5eef15c08f6ec3743e8a5e4839e6595",
+      "amountKrw": 50000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM 트리플 · 12분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/33287",
+      "sampleKey": "1429dd8d91782c5e0cc3b597e90829e63121cdc3f1575cfc3957936af66f375e",
+      "amountKrw": 70000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM 트리플 · 20분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/33287",
+      "sampleKey": "a45118d5e494fc00902fe4938b67b06bb12258e69eba3cd0871c89c0f3070f10",
+      "amountKrw": 30000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM 트리플 · 6분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "GANGNAMUNNI",
+      "sourceUrl": "https://unni.app/events/172121",
+      "sampleKey": "987b1687dfc81b231b09fbc54fe5afabab4b23937e3b2c187cdb34f8df10458f",
+      "amountKrw": 50000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 12분 · 부위 미기재 · 1회 · 강남언니 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "GANGNAMUNNI",
+      "sourceUrl": "https://unni.app/events/62696",
+      "sampleKey": "c1914a7f0c85d03108c8104ea35b06f71197eee07ec0368ded2da50bc5c7eb5d",
+      "amountKrw": 60000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 12분 · 부위 미기재 · 1회 · 강남언니 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/21231",
+      "sampleKey": "11aedd52c44896601f6af62d43679373413307f38fbc255cd54247cc1d46079b",
+      "amountKrw": 88000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 12분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/36337",
+      "sampleKey": "31aa6a0553b18284d3109aa1d218b64ccc2852afe0e0f642246c59cf9f359253",
+      "amountKrw": 50000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 12분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/25447",
+      "sampleKey": "6af747dd8dec8dc27540c0e019523b75fa9ddfb3605b3739d77bd7f68b4949a6",
+      "amountKrw": 66000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 12분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/24087",
+      "sampleKey": "8efe4a728e9f89c76eb652d5ad99aa7f5e89d673c6fb58be778bc1c2e7a336e0",
+      "amountKrw": 66000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 12분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/15240",
+      "sampleKey": "9844aa156ee366fbae7b4a9d3af71d22436b4d563ace19646cb972407061b7bf",
+      "amountKrw": 64900,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 12분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/38434",
+      "sampleKey": "b460e1db78011a79fd378a7c25791c043b68d482878a517ef14287a6abb9c954",
+      "amountKrw": 60000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 12분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/22859",
+      "sampleKey": "fc337c2d677c0e1e1783c3a2c5913c1963aead7fb8e0c417867540f45718dc30",
+      "amountKrw": 52800,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 12분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/22859",
+      "sampleKey": "c6fa4d16df8b122d59144fb8b92b4bdaeeb9c0b036030d2713c717a6ed454d6d",
+      "amountKrw": 64900,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 18분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "GANGNAMUNNI",
+      "sourceUrl": "https://unni.app/events/172121",
+      "sampleKey": "4ca52a60fef96e60a4b4845a4d4f0b12b9ab4a134f7291c05c226daf933895cc",
+      "amountKrw": 70000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 20분 · 부위 미기재 · 1회 · 강남언니 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/36337",
+      "sampleKey": "2da6c6e971ec1432370b3aaddaac6075ab45010801cbfec1d9e5d49ff30b4203",
+      "amountKrw": 70000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 20분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/22859",
+      "sampleKey": "f3c6db552a88bb025e14cee114c59a1565f8f04c4a5b31dbbd8534b9884df009",
+      "amountKrw": 86900,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 20분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/15240",
+      "sampleKey": "6dffedb5aaddf3d66aa76b117f31fc05753ad53b7c13fc3dcf7136c7ea4710c6",
+      "amountKrw": 108900,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 24분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/38434",
+      "sampleKey": "7841fea9a17fbfe207157fc28cf69ce4366b91f16c09ff7e82630c759d4bdb35",
+      "amountKrw": 30000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 6분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/35020",
+      "sampleKey": "b6493f954825bb2328f25bbcbcefe7d413be140508185cc4ed2db4e0d47b7a3e",
+      "amountKrw": 33000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 6분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/21231",
+      "sampleKey": "d871bee34e9f768582a318232a5a9d8178d4c61b48d577e3b5fcad16daee566e",
+      "amountKrw": 44000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "LDM(모델 미기재) · 6분 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    }
+  ]
+}

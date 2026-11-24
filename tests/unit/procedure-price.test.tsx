@@ -1,7 +1,10 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { afterEach, expect, it } from "vitest";
 import { ProcedurePrice } from "@/components/catalog/ProcedurePrice";
-import { summarizeProcedurePrices } from "@/lib/catalog/procedure-pricing";
+import {
+  summarizeProcedurePrices,
+  summarizeProcedurePriceOptions,
+} from "@/lib/catalog/procedure-pricing";
 afterEach(cleanup);
 const basis = "테스트 전용 동일 조건";
 const observation = {
@@ -13,6 +16,24 @@ const observation = {
   observedOn: "2026-11-18",
   basis,
 };
+it("switches detailed conditions without mixing prices and leaves the card's primary price unchanged", () => {
+  const alternate = "테스트 전용 20분";
+  const price = summarizeProcedurePriceOptions(
+    [
+      observation,
+      { ...observation, basis: alternate, sampleKey: "b".repeat(64), amountKrw: 100000 },
+    ],
+    basis,
+    "2026-11-19",
+  );
+  render(<ProcedurePrice procedure={price} detail />);
+  expect(screen.getByText("확인된 가격 50,000원")).toBeDefined();
+  fireEvent.change(screen.getByRole("combobox", { name: "가격 비교 조건" }), {
+    target: { value: alternate },
+  });
+  expect(screen.getByText("확인된 가격 100,000원")).toBeDefined();
+  expect(screen.queryByText(/수집 표본 평균/)).toBeNull();
+});
 it("labels a deduplicated single price honestly without a range or sample average", () => {
   const price = summarizeProcedurePrices([observation, observation], basis, "2026-11-19");
   render(<ProcedurePrice procedure={price} detail />);

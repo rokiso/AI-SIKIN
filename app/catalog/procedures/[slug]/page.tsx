@@ -75,6 +75,7 @@ export default async function ProcedureSafetyPage({
             priceMinKrw: data.marketPriceBand.minPrice,
             priceMaxKrw: data.marketPriceBand.maxPrice,
             priceSummary: data.priceSummary,
+            priceOptions: data.priceOptions,
           }}
         />
       </div>

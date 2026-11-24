@@ -1,0 +1,78 @@
+{
+  "code": "P-PDL",
+  "basis": "브이빔 퍼펙타 · 얼굴 전체 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인",
+  "observations": [
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/23175",
+      "sampleKey": "a44e64436a4fc6a1e40e3ac6368b1bf1648334990aaab16ccc61010c6b55c2c5",
+      "amountKrw": 132000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "브이빔 퍼펙타 · 40샷 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/23175",
+      "sampleKey": "ce1bd45448376548d932eb44bf75775417d9134e2ad541ef6c6a1be1d57919c2",
+      "amountKrw": 242000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "브이빔 퍼펙타 · 80샷 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/29829",
+      "sampleKey": "3cba89019ca239048de3615c930509c75cb1c1cb83faa2b0a3452d4325570881",
+      "amountKrw": 165000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "브이빔 퍼펙타 · 나비존 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "GANGNAMUNNI",
+      "sourceUrl": "https://unni.app/events/43159",
+      "sampleKey": "86e2b63854df8969d91ec143f437c6cd5dca3c0fcbd65372423a81d3666130ad",
+      "amountKrw": 110000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "브이빔 퍼펙타 · 부위 미기재 · 1회 · 강남언니 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/6032",
+      "sampleKey": "5de483723c9601db1120b035c1ec66dc32b9c6107f34fb83bc013760e059e7a2",
+      "amountKrw": 110000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "브이빔 퍼펙타 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "BABITALK",
+      "sourceUrl": "https://babitalk.com/events/72718",
+      "sampleKey": "cd1de9d0fb2bb1bd5f6cc53b935f85fb663293dc535495eadb588ab00017b66e",
+      "amountKrw": 110000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "브이빔 퍼펙타 · 부위 미기재 · 횟수 미기재 · 바비톡 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/29829",
+      "sampleKey": "166274166481b6b7a71c1c1ed018f65e5be6b6a9c1768acb8aa067b2dca51ea6",
+      "amountKrw": 220000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "브이빔 퍼펙타 · 얼굴 전체 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/25467",
+      "sampleKey": "f4543acd757ef27a5c0044ad582af0362d53d1a9dec7d5b8a1346a4e216dee89",
+      "amountKrw": 319000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "브이빔 퍼펙타 · 얼굴 전체 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    }
+  ]
+}

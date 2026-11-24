@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { summarizeProcedurePrices, type PriceObservation } from "@/lib/catalog/procedure-pricing";
+import {
+  summarizeProcedurePrices,
+  summarizeProcedurePriceOptions,
+  type PriceObservation,
+} from "@/lib/catalog/procedure-pricing";
 import { formatChecklist, formatProcedurePrice } from "@/lib/catalog/procedures";
 import { procedureGuides } from "../../prisma/seeds/procedures";
 // Synthetic arithmetic fixtures only, not collected market prices.
@@ -13,6 +17,49 @@ const sample: PriceObservation = {
   basis: "테스트: 동일 부위 1회",
 };
 const summary = (rows: unknown) => summarizeProcedurePrices(rows, sample.basis, "2026-11-18");
+describe("separate procedure price conditions", () => {
+  it("does not blend different durations, doses or devices into one average", () => {
+    const result = summarizeProcedurePriceOptions(
+      [
+        sample,
+        { ...sample, sampleKey: "b".repeat(64), amountKrw: 30000 },
+        { ...sample, basis: "별도 20분 단위", sampleKey: "c".repeat(64), amountKrw: 100000 },
+      ],
+      sample.basis,
+      "2026-11-18",
+    );
+    expect(result.priceSummary).toMatchObject({ meanKrw: 22000, sampleCount: 2 });
+    expect(result.priceOptions).toHaveLength(2);
+    expect(
+      result.priceOptions.find((row) => row.priceSummary.basis === "별도 20분 단위")?.priceSummary,
+    ).toMatchObject({ meanKrw: 110000, sampleCount: 1 });
+  });
+  it("retains duplicate/conflict and future-date checks inside each condition", () => {
+    const result = summarizeProcedurePriceOptions([sample, sample], sample.basis, "2026-11-18");
+    expect(result.priceSummary.sampleCount).toBe(1);
+    expect(() =>
+      summarizeProcedurePriceOptions(
+        [sample, { ...sample, amountKrw: 30000 }],
+        sample.basis,
+        "2026-11-18",
+      ),
+    ).toThrow("Conflicting");
+    expect(() =>
+      summarizeProcedurePriceOptions(
+        [sample, { ...sample, basis: "추가 조건", observedOn: "2026-11-19" }],
+        sample.basis,
+        "2026-11-18",
+      ),
+    ).toThrow();
+  });
+  it("fails a missing primary condition and preserves the empty legacy response", () => {
+    expect(() => summarizeProcedurePriceOptions([sample], "없는 조건", "2026-11-18")).toThrow();
+    expect(summarizeProcedurePriceOptions([], null, "2026-11-18")).toMatchObject({
+      priceOptions: [],
+      priceSummary: { status: "UNVERIFIED" },
+    });
+  });
+});
 describe("procedure observation statistics", () => {
   it("accepts the observed canonical Unni domain after the platform redirect", () => {
     expect(

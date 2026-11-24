@@ -194,9 +194,14 @@ for (const width of [320, 1280]) {
     try {
       await page.setViewportSize({ width, height: 900 });
       await page.goto("/catalog/procedures/pico-toning");
-      await expect(page.locator("main").getByRole("status")).toContainText(
-        "현재 해당 시술의 상세 가이드를 준비 중입니다.",
-      );
+      await expect(
+        page
+          .locator("main")
+          .getByRole("status")
+          .filter({
+            has: page.getByRole("heading", { name: "상세 가이드 준비 중", exact: true }),
+          }),
+      ).toContainText("현재 해당 시술의 상세 가이드를 준비 중입니다.");
       await expect(page.getByRole("button", { name: "상담 질문지 복사하기" })).toHaveCount(0);
       await expect(page.getByRole("link", { name: "다른 시술 가이드 보기" })).toBeVisible();
       await expect(page.getByRole("complementary", { name: "진단 전 안내" })).toBeVisible();

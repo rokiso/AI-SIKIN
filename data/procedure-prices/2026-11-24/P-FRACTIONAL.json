@@ -1,0 +1,276 @@
+{
+  "code": "P-FRACTIONAL",
+  "basis": "프락셔널 · 피코 · 얼굴 전체 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인",
+  "observations": [
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/35187",
+      "sampleKey": "dee70f69d762bbfe9e0945f2d15cf9b17d9f0a042d2ea55d2c4221a237133f84",
+      "amountKrw": 143000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · CO2 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/36491",
+      "sampleKey": "6f4a33c44039e1797699edcc4aa158f5662072e7b41d8c821f5c83a6cbfefec9",
+      "amountKrw": 120000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · CO2 · 얼굴 전체 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/2857",
+      "sampleKey": "43a04c2fa97d399f40c09264714bed7dc00c99b916c814061e3bce31ec5900d5",
+      "amountKrw": 149000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 듀얼 · 얼굴 전체 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/12519",
+      "sampleKey": "15565f8906ef7feaed3ed7f096b5d50a5d45ca1e5626506da5fb6d0e7a367baf",
+      "amountKrw": 99000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 장비 미기재 · 나비존 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/21261",
+      "sampleKey": "f90647cc8c1a7e27e6dbf9061c1a0f954208a335f0a8dc7984901e77f466f49c",
+      "amountKrw": 50000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 장비 미기재 · 나비존 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/38911",
+      "sampleKey": "226bd6eefe03718f3a6a6b0bfbbbad48cd44e83b5c63b014daaba4692b80b305",
+      "amountKrw": 77000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 장비 미기재 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/33593",
+      "sampleKey": "a450b89a9d40fe478179e82625d1d3c9750e34aadef3232b90e52396240aa8b1",
+      "amountKrw": 80000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 장비 미기재 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "BABITALK",
+      "sourceUrl": "https://babitalk.com/events/74739",
+      "sampleKey": "6642fa7047e4c9ad81a318ca5874140dce302216d84ee19019839c3fbb1a435f",
+      "amountKrw": 108900,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 장비 미기재 · 부위 미기재 · 횟수 미기재 · 바비톡 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "BABITALK",
+      "sourceUrl": "https://babitalk.com/events/17669",
+      "sampleKey": "e24d0ba7676e01bc217a3846c96a8aa14e9102258ba813fa93a66bb67d8bb558",
+      "amountKrw": 52800,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 장비 미기재 · 부위 미기재 · 횟수 미기재 · 바비톡 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/35859",
+      "sampleKey": "3c7bdd7ccb6e62b9824b6a3903e2293a31b97547dcb4d3c1974f9dce9047885a",
+      "amountKrw": 60000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 장비 미기재 · 얼굴 전체 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/4915",
+      "sampleKey": "e0229840d3a4f78668355e34dbf0c64a5979886b6d15618c31268b546e3e3dcc",
+      "amountKrw": 69000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 장비 미기재 · 얼굴 전체 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/21261",
+      "sampleKey": "f3cc7b18f31d5a58d5d9e987f6be367c384637ef6a6d9069c4f00f727348ac2b",
+      "amountKrw": 120000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 장비 미기재 · 얼굴 전체 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/4915",
+      "sampleKey": "32f0be85cb24b30a29d719135874f1cef3137d1f51abc38ec00c72cdc3a09b66",
+      "amountKrw": 29000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 장비 미기재 · 코 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/12519",
+      "sampleKey": "3a32a83a15f68ce2ab467655c52cf13ae0b9329dd46c9ac1af3d6189baa1146a",
+      "amountKrw": 55000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 장비 미기재 · 코 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "GANGNAMUNNI",
+      "sourceUrl": "https://unni.app/events/55413",
+      "sampleKey": "c70440b199be13320c9962b52fb7b09a0e1c3d50a7d747c949b72fe5aa6bdd53",
+      "amountKrw": 30000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 피코 · 나비존 · 1회 · 강남언니 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/3157",
+      "sampleKey": "20b43f7cb86c8a12fd29e2c620fa986cdb93ce4cc276ded7ed3c03a2ca7d4382",
+      "amountKrw": 64900,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 피코 · 나비존 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/38380",
+      "sampleKey": "2c3ccdc0dffa80eebd5435d0024a2ea4e5bdd0e6822a5958b3f3c3e6a53db3b3",
+      "amountKrw": 55000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 피코 · 나비존 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/35271",
+      "sampleKey": "5cf14958ea1f0188e34b6e8291d7d4f270483168416d981bdaa704b429c77e0a",
+      "amountKrw": 64900,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 피코 · 나비존 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/37161",
+      "sampleKey": "91482d8ba6e0d232e425023c125085223729a8eba52c80550e1a829fea502553",
+      "amountKrw": 64900,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 피코 · 나비존 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/36188",
+      "sampleKey": "0d10a001ef07bf37c6aac498ace86144bf50cad32f5f9edf61560f8a3a81fd20",
+      "amountKrw": 150000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 피코 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/34570",
+      "sampleKey": "45de93d6286235047f04b90c3f8b7a7e9fce67d96f847a0d1b6c5d4b01103d17",
+      "amountKrw": 110000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 피코 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/36714",
+      "sampleKey": "5ffd796c56099911993fd8a02ec33fa27d5f1dbb90c146ba05181978dbcdde9f",
+      "amountKrw": 165000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 피코 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/33074",
+      "sampleKey": "84d01d4fca88d6c7b1a1ad516c629bc56685850be0f70c75d66387f16d229aa7",
+      "amountKrw": 77000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 피코 · 부위 미기재 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "BABITALK",
+      "sourceUrl": "https://babitalk.com/events/80177",
+      "sampleKey": "9b549f964e24c1d76733680f65b205706c624f0e01c8cb66bdd5a51d10b24287",
+      "amountKrw": 44000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 피코 · 부위 미기재 · 횟수 미기재 · 바비톡 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/38380",
+      "sampleKey": "0e5d86f7542ba2601afed94297757aad2f7d69215d76b91c20db6092e3576113",
+      "amountKrw": 88000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 피코 · 얼굴 전체 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/35271",
+      "sampleKey": "a22188fa9864d093c557b42b8de4b3f69333d4f70f22b577e32c1d557ddc06b3",
+      "amountKrw": 108900,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 피코 · 얼굴 전체 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/37161",
+      "sampleKey": "b4514a90cf46b13c8c49e5ddf860de356e0d417b23033128e5fe7afde743bddb",
+      "amountKrw": 108900,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 피코 · 얼굴 전체 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/3157",
+      "sampleKey": "c45b6e201a1c4960c427bd081017068b09fb46c98188b4a73c8868e72cf06d06",
+      "amountKrw": 108900,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 피코 · 얼굴 전체 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/29721",
+      "sampleKey": "f75f286193c297fa57c6aa87d042ebe6a35a4621e7ebeee3801cfa017d3623cc",
+      "amountKrw": 75000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 피코슈어 · 나비존 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    },
+    {
+      "platform": "YEOSHIN",
+      "sourceUrl": "https://www.yeoshin.co.kr/event/mobile/29721",
+      "sampleKey": "83279e5a4cd8069f04b1d3d8a8b698df95f77a11447cf4e3483bfee18ae7e404",
+      "amountKrw": 97000,
+      "vatIncluded": true,
+      "observedOn": "2026-11-24",
+      "basis": "프락셔널 · 피코슈어 · 얼굴 전체 · 1회 · 여신티켓 · 쿠폰·포인트 차감 전 공개가 · VAT 외 비용 별도 확인"
+    }
+  ]
+}

@@ -22,10 +22,20 @@ describe("published public procedure catalog", () => {
     expect(all.total).toBe(10);
     const pn = all.procedures.find((p) => p.code === "P-PN");
     expect(pn?.priceSummary).toMatchObject({
-      meanKrw: 246817,
-      sampleCount: 6,
-      platforms: ["강남언니", "바비톡", "여신티켓"],
+      meanKrw: 201850,
+      sampleCount: 8,
+      platforms: ["여신티켓"],
     });
+    expect(pn?.priceOptions?.length).toBeGreaterThan(5);
+    expect(
+      [
+        ...new Set(
+          all.procedures.flatMap(
+            (p) => p.priceOptions?.flatMap((o) => o.priceSummary.platforms) ?? [],
+          ),
+        ),
+      ].sort(),
+    ).toEqual(["강남언니", "바비톡", "여신티켓"]);
     expect((await getProcedures("PIGMENTATION")).total).toBe(1);
     expect(await getProcedure(all.procedures[0].id)).toEqual(all.procedures[0]);
     expect(await getProcedure("00000000-0000-4000-8000-999999999999")).toBeNull();

@@ -59,6 +59,7 @@ export async function getProcedureSafetyGuide(slug: string): Promise<ProcedureSa
         unit: procedure.priceSummary.basis,
       },
       priceSummary: procedure.priceSummary,
+      priceOptions: procedure.priceOptions,
       safetyInfo,
       defenseQuestions,
       disclaimerText,

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { getDatabaseUrl } from "../lib/server-env";
 import { assertLocalDevelopmentDatabase } from "../lib/database-development";
 import { getPrisma } from "../lib/prisma";
-import { summarizeProcedurePrices } from "../lib/catalog/procedure-pricing";
+import { summarizeProcedurePriceOptions } from "../lib/catalog/procedure-pricing";
 
 // Validate and preview first. This command never connects to a remote database.
 const args = process.argv.slice(2);
@@ -19,7 +19,7 @@ const input = z
   })
   .strict()
   .parse(JSON.parse(await readFile(args[0], "utf8")));
-const summary = summarizeProcedurePrices(input.observations, input.basis);
+const summary = summarizeProcedurePriceOptions(input.observations, input.basis);
 console.log(JSON.stringify({ code: input.code, ...summary }, null, 2));
 if (args[1] === "--apply") {
   const prisma = getPrisma();

@@ -182,7 +182,7 @@ test("detail loading and failure remain visible and retry recovers", async ({ pa
   await dialog.getByRole("button", { name: "다시 시도" }).click();
   await expect(dialog.getByRole("heading", { name: "피코레이저 토닝" })).toBeVisible();
 });
-test("collected PN unit prices show all three sources and disclose unconfirmed session counts", async ({
+test("collected PN prices separate source conditions and disclose unconfirmed session counts", async ({
   page,
 }, info) => {
   await page.setViewportSize({ width: 320, height: 900 });
@@ -192,7 +192,8 @@ test("collected PN unit prices show all three sources and disclose unconfirmed s
     .data.procedures.find((item) => item.code === "P-PN");
   if (!procedure || procedure.priceSummary.meanKrw === null)
     throw new Error("Import the committed PN price dataset before this integration check");
-  expect(procedure.priceSummary.platforms).toEqual(["강남언니", "바비톡", "여신티켓"]);
+  expect(procedure.priceSummary.platforms).toEqual(["여신티켓"]);
+  expect(procedure.priceOptions?.length).toBeGreaterThan(3);
   await page.goto("/catalog/procedures?concern=ELASTICITY");
   await page.getByRole("button", { name: `${procedure.nameKo} 상세 보기` }).click();
   const dialog = page.getByRole("dialog");
@@ -201,9 +202,18 @@ test("collected PN unit prices show all three sources and disclose unconfirmed s
       `수집 표본 평균 ${formatPriceMean(procedure.priceSummary.meanKrw)} · ${procedure.priceSummary.sampleCount}건`,
     ),
   ).toBeVisible();
-  await expect(dialog.getByText(/강남언니·바비톡·여신티켓 공개 자료/)).toBeVisible();
-  await expect(dialog.getByText(/횟수·주입 방식·추가비용 별도 확인/)).toBeVisible();
-  await page.screenshot({ path: info.outputPath("pn-three-platforms-320.png") });
+  const alternate = procedure.priceOptions?.find((option) =>
+    option.priceSummary.platforms.includes("바비톡"),
+  );
+  if (!alternate?.priceSummary.basis)
+    throw new Error("Collected alternate price condition missing");
+  await dialog
+    .getByRole("combobox", { name: "가격 비교 조건" })
+    .selectOption(alternate.priceSummary.basis);
+  await expect(dialog.getByText(formatProcedurePrice(alternate), { exact: true })).toBeVisible();
+  await expect(dialog.getByText(/바비톡 공개 자료/)).toBeVisible();
+  await expect(dialog.locator("p").filter({ hasText: /횟수 미기재.*바비톡/ })).toBeVisible();
+  await page.screenshot({ path: info.outputPath("pn-separate-conditions-320.png") });
   expect(await dialog.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
 });
 
@@ -221,3 +231,50 @@ test("public endpoints filter and reject writes and unknown inputs", async ({ re
   expect((await request.get("/api/v1/catalog/procedures/not-an-id")).status()).toBe(404);
   expect((await request.post("/api/v1/catalog/procedures", { data: {} })).status()).toBe(405);
 });
+
+for (const width of [320, 1280]) {
+  test(`expanded LDM and RF price conditions change only their own summary at ${width}px`, async ({
+    page,
+  }, info) => {
+    await page.setViewportSize({ width, height: 900 });
+    const response = await page.request.get("/api/v1/catalog/procedures");
+    const all = procedureListResponseSchema.parse(await response.json()).data.procedures;
+    await page.goto("/catalog/procedures");
+    for (const code of ["P-LDM", "P-RF"]) {
+      const procedure = all.find((row) => row.code === code);
+      if (!procedure?.priceOptions || procedure.priceOptions.length < 3)
+        throw Error("Expanded price conditions missing");
+      await page.getByRole("button", { name: `${procedure.nameKo} 상세 보기` }).click();
+      const dialog = page.getByRole("dialog");
+      const select = dialog.getByRole("combobox", { name: "가격 비교 조건" });
+      await expect(select).toBeVisible();
+      const alternate = procedure.priceOptions.find(
+        (option) =>
+          option.priceSummary.basis !== procedure.priceSummary.basis &&
+          option.priceSummary.basis?.includes(code === "P-LDM" ? "6분" : "100샷"),
+      );
+      if (!alternate?.priceSummary.basis) throw Error("Requested alternate unit missing");
+      await select.selectOption(alternate.priceSummary.basis);
+      await expect(
+        dialog.getByText(formatProcedurePrice(alternate), { exact: true }),
+      ).toBeVisible();
+      await expect(
+        dialog.getByText("장비·용량·샷 수·부위가 다른 가격은 따로 비교해요.", { exact: false }),
+      ).toBeVisible();
+      expect(await dialog.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      );
+      expect(
+        (
+          await new AxeBuilder({ page })
+            .include("dialog")
+            .withTags(["wcag2a", "wcag2aa", "wcag22aa"])
+            .analyze()
+        ).violations,
+      ).toEqual([]);
+      await page.screenshot({ path: info.outputPath(`price-options-${code}-${width}.png`) });
+      await page.keyboard.press("Escape");
+    }
+  });
+}
