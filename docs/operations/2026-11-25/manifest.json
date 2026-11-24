@@ -1,0 +1,94 @@
+{
+  "clientDate": "2026-11-25",
+  "codeSourceCommit": "988a1663a3369e5e0ff4c0f099db92be8273d720",
+  "migrationSource": "Canonical prisma/migrations files; original SQL and SHA-256 preserved",
+  "baselineCompletedMigrations": 4,
+  "targetCompletedMigrations": 16,
+  "migrations": [
+    {
+      "name": "20261110000000_init_core_schema",
+      "sha256": "556cad85b1fe4663c1caca601fdd55305ad34f987a78d319866c0fab4d3d4aee"
+    },
+    {
+      "name": "20261110000100_report_ingredients",
+      "sha256": "ee2e32055fea76f62f3b7b1aded0ba68c6651154f476d75847331949d4edfab2"
+    },
+    {
+      "name": "20261112000000_oauth_attempts",
+      "sha256": "b2ef9e407ab64ce01799495a781e20bf50746f1f474b7fb470b4ef9f424e41d4"
+    },
+    {
+      "name": "20261112000100_oauth_request_limits",
+      "sha256": "1b4364f57544c8bef413cb7b8bd58b29ab534b8a0cb1110ecefd86ced3b9489a"
+    },
+    {
+      "name": "20261115000000_snapshot_recording",
+      "sha256": "4a01d961023af50092e641814f724af4480bd97223cb0f2a4c8b44d67fba6799"
+    },
+    {
+      "name": "20261115010000_product_curation",
+      "sha256": "1bf8ef3d5bee41fb358396e561b23b0694492428e1b4f52440c617299e99ee81"
+    },
+    {
+      "name": "20261118000000_ai_inference_audit",
+      "sha256": "4b2c537e0bf8df82e3dda18606bcd5526993b42b0a5e42f225bb1fc900380ee1"
+    },
+    {
+      "name": "20261118000000_biometric_consent_versions",
+      "sha256": "9dc32b66e3eb149f4d0e3a15cf14f9aeb4a871116545e96dab629ef6601c9c81"
+    },
+    {
+      "name": "20261118010000_procedure_guides",
+      "sha256": "9fcfbddbab07a2ca522bf6c26884d76c03157a190633aab4a0d05e8553def06f"
+    },
+    {
+      "name": "20261119000000_account_deletion_audit",
+      "sha256": "aa909d1e43a6f1f5bad2994c7d346ce895edfaec0a4cdff75c8ce5f17d9e9bdb"
+    },
+    {
+      "name": "20261119010000_ingredient_caution_rules",
+      "sha256": "02acdbde9a790e2603a6f9cfe13c96a003b1afa318043dbe333d558824591e67"
+    },
+    {
+      "name": "20261119020000_procedure_safety_guides",
+      "sha256": "658b147aa5deeb4b5680c3e62578da8e2014b358cf0881f5354977bb68cc5f1c"
+    },
+    {
+      "name": "20261119030000_rf_microneedling_risk_note",
+      "sha256": "39dc41b7d6f416f1ce28d2d1c44775735c91cb97a826ca385c710179dd1eb6a7"
+    },
+    {
+      "name": "20261124000000_diagnostic_fallback",
+      "sha256": "44421554db61cb48a8fc1ccc170f9a9e987643bc14d60218bb5f2c7456e44816"
+    },
+    {
+      "name": "20261124000000_snapshot_milestones",
+      "sha256": "ae3fcfbdfd63695bc73f45761fd9f44f2b0061a325393275e16561524419036a"
+    },
+    {
+      "name": "20261124010000_affiliate_link_health",
+      "sha256": "bc2a8a969c56c5bbcfa9ecf58e605766a387ec80ed1589a12abab5a7b9ce5d35"
+    }
+  ],
+  "appliedSqlSha256": "6b34956acf38e2392c4618a9c320eae6ff717b6de7e73fc62e72f4d9f69ec6cd",
+  "rehearsedSqlSha256": "cc8913062bb0142ed705879484e6557ff694498dfd2ba1df273af9a69bb7b5fa",
+  "executableBodiesMatch": true,
+  "backupBranch": "backup-before-migration-2026-11-25",
+  "rehearsalBranch": "migration-test-2026-11-25",
+  "autoDelete": "Never",
+  "remoteMainApplicationEvidence": "User-provided Neon main console screenshots",
+  "remoteMainApplied": true,
+  "directAgentDatabaseConnection": false,
+  "effectiveProcedureSafetyEnabled": true,
+  "featureFlag": "PROCEDURE_SAFETY_ENABLED=1",
+  "environment": "Production",
+  "configurationChangeEvidence": "User-provided Vercel setting and redeployment screenshots, followed by public API verification",
+  "oldEnvironmentDeleted": false,
+  "original8b4c542Recovered": false,
+  "additionalFeatureActivationNotPerformed": [
+    "photo storage and milestone production verification",
+    "paid AI provider setup",
+    "approved affiliate purchase setup",
+    "account deletion or consent-terms publication"
+  ]
+}

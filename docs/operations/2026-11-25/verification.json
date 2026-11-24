@@ -1,0 +1,189 @@
+{
+  "clientDate": "2026-11-25",
+  "localRehearsal": {
+    "passed": true,
+    "sourceCommit": "988a1663a3369e5e0ff4c0f099db92be8273d720",
+    "checks": [
+      "Prisma migrate status accepts all 16 completed migrations after manual bundle",
+      "All 12 migrations apply and the complete schema matches Prisma migrate deploy",
+      "All existing rows and fields preserved; new catalog fields and tiers backfilled",
+      "16 exact checksums recorded; repeat application changes no history",
+      "Consent draft stays inactive; seven existing reviewed ingredient rules added",
+      "bad_checksum: rejected and all changes rolled back",
+      "duplicate_column: rejected and all changes rolled back",
+      "too_many_recommendations: rejected and all changes rolled back",
+      "null_ingredients: rejected and all changes rolled back",
+      "tampered_payload: rejected and all changes rolled back"
+    ],
+    "remoteDatabaseAccessed": false,
+    "backupBranchModified": false,
+    "localTemporaryDatabases": 8,
+    "sqlFile": "TEST-BRANCH-ONLY-COMPACT.sql",
+    "sqlSha256": "cc8913062bb0142ed705879484e6557ff694498dfd2ba1df273af9a69bb7b5fa",
+    "lineCount": 78
+  },
+  "publicApiAndPages": {
+    "origin": "https://miruvia.vercel.app",
+    "checks": [
+      {
+        "code": "P-PICO",
+        "slug": "pico-toning",
+        "apiStatus": 200,
+        "pageStatus": 200,
+        "readiness": "READY",
+        "questions": 3,
+        "safetySectionsPresent": true
+      },
+      {
+        "code": "P-FRACTIONAL",
+        "slug": "fractional-laser",
+        "apiStatus": 200,
+        "pageStatus": 200,
+        "readiness": "READY",
+        "questions": 3,
+        "safetySectionsPresent": true
+      },
+      {
+        "code": "P-LDM",
+        "slug": "ldm-ultrasound",
+        "apiStatus": 200,
+        "pageStatus": 200,
+        "readiness": "READY",
+        "questions": 3,
+        "safetySectionsPresent": true
+      },
+      {
+        "code": "P-AQUAPEEL",
+        "slug": "aquapeel",
+        "apiStatus": 200,
+        "pageStatus": 200,
+        "readiness": "READY",
+        "questions": 3,
+        "safetySectionsPresent": true
+      },
+      {
+        "code": "P-HIFU",
+        "slug": "hifu-lifting",
+        "apiStatus": 200,
+        "pageStatus": 200,
+        "readiness": "READY",
+        "questions": 3,
+        "safetySectionsPresent": true
+      },
+      {
+        "code": "P-RF",
+        "slug": "rf-tightening",
+        "apiStatus": 200,
+        "pageStatus": 200,
+        "readiness": "READY",
+        "questions": 3,
+        "safetySectionsPresent": true
+      },
+      {
+        "code": "P-PN",
+        "slug": "pn-skinbooster",
+        "apiStatus": 200,
+        "pageStatus": 200,
+        "readiness": "READY",
+        "questions": 3,
+        "safetySectionsPresent": true
+      },
+      {
+        "code": "P-HA",
+        "slug": "ha-skinbooster",
+        "apiStatus": 200,
+        "pageStatus": 200,
+        "readiness": "READY",
+        "questions": 3,
+        "safetySectionsPresent": true
+      },
+      {
+        "code": "P-PEEL",
+        "slug": "peeling",
+        "apiStatus": 200,
+        "pageStatus": 200,
+        "readiness": "READY",
+        "questions": 3,
+        "safetySectionsPresent": true
+      },
+      {
+        "code": "P-PDL",
+        "slug": "vascular-laser",
+        "apiStatus": 200,
+        "pageStatus": 200,
+        "readiness": "READY",
+        "questions": 3,
+        "safetySectionsPresent": true
+      },
+      {
+        "path": "/api/v1/catalog/procedures",
+        "status": 200,
+        "procedures": 10,
+        "safetyLinksAvailable": true,
+        "priceConditions": 102,
+        "priceSamples": 260
+      },
+      {
+        "path": "/",
+        "status": 200
+      },
+      {
+        "path": "/diagnostic",
+        "status": 200
+      },
+      {
+        "path": "/catalog/procedures",
+        "status": 200
+      },
+      {
+        "path": "/snapshot",
+        "status": 200
+      },
+      {
+        "path": "/mypage",
+        "status": 200
+      },
+      {
+        "path": "/api/v1/health",
+        "status": 200
+      }
+    ],
+    "productionMigrationEvidence": "User screenshots: 16 completed migrations on main",
+    "backupBranchPreserved": "backup-before-migration-2026-11-25",
+    "requestedFeatureFlag": "PROCEDURE_SAFETY_ENABLED=1 (Production)",
+    "vercelConsoleReadyVerifiedByAgent": false,
+    "passed": true,
+    "checkedAt": "2026-11-24T16:03:48.624209+00:00"
+  },
+  "publicBrowser": {
+    "passed": true,
+    "checks": [
+      {
+        "width": 320,
+        "listLinks": 10,
+        "ldmPage": 200,
+        "rfPage": 200,
+        "nativeClipboardCopy": true,
+        "allThreeQuestionsCopied": true,
+        "rfModeWarningPresent": true,
+        "horizontalOverflow": false,
+        "axeMainViolations": 0,
+        "pageErrors": []
+      },
+      {
+        "width": 1280,
+        "listLinks": 10,
+        "ldmPage": 200,
+        "rfPage": 200,
+        "nativeClipboardCopy": true,
+        "allThreeQuestionsCopied": true,
+        "rfModeWarningPresent": true,
+        "horizontalOverflow": false,
+        "axeMainViolations": 0,
+        "pageErrors": []
+      }
+    ],
+    "tlsTransport": "Unmodified public responses via Node HTTPS with managed CA; certificate verification enabled.",
+    "actualExternalMedicalReview": false
+  }
+}
