@@ -336,6 +336,42 @@ describe("local diagnostic orchestrator and protected report API", () => {
     expect(stored).toMatchObject({ isFallback: true, fallbackReason: "UPSTREAM_5XX" });
     expect((await (await get(data.reportId)).json()).data.fallbackNotice).toBe(data.fallbackNotice);
   });
+  it.each([false, true])(
+    "preserves JSON-only reports and replay when column storage is off (photo=%s)",
+    async (photo) => {
+      vi.stubEnv("DIAGNOSTIC_FALLBACK_STORAGE_ENABLED", "0");
+      if (photo) {
+        vi.stubEnv("AI_LIVE_ENABLED", "1");
+        mockProvider(async () => new Response(null, { status: 503 }));
+      }
+      const session = await createSession(photo);
+      const response = await analyze(session.id);
+      expect(response.status).toBe(200);
+      const { data } = await response.json();
+      expect(data).toMatchObject({
+        source: "QUESTIONNAIRE",
+        isFallback: true,
+        baumannType: "DRNT",
+      });
+      if (photo) expect(data.fallbackNotice).toContain("12문항");
+      const stored = await db.diagnosticReport.findUniqueOrThrow({
+        where: { sessionId: session.id },
+      });
+      expect(stored).toMatchObject({
+        isFallback: false,
+        fallbackReason: null,
+        aiAuditMetadata: { source: "QUESTIONNAIRE", isFallback: true },
+      });
+      expect(stored.recommendedIngredients).toEqual(data.recommendedIngredients);
+      expect(stored.cautionIngredients).toEqual(data.cautionIngredients);
+      const replay = await analyze(session.id);
+      expect(replay.status).toBe(200);
+      expect((await replay.json()).data).toEqual(data);
+      const saved = await get(data.reportId);
+      expect(saved.status).toBe(200);
+      expect((await saved.json()).data.isFallback).toBe(true);
+    },
+  );
   it("rejects incomplete survey data before attempting photo analysis", async () => {
     const session = await db.diagnosticSession.create({
       data: { guestDeviceId: guestId, surveyAnswers: answers.slice(0, 11), axisScores: {} },

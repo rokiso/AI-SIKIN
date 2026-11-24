@@ -118,8 +118,10 @@ describe("consultation clipboard", () => {
       expect(field).toBeInstanceOf(HTMLTextAreaElement);
       if (!(field instanceof HTMLTextAreaElement)) throw new Error("Textarea missing");
       expect(field.value).toBe(questions.join("\n"));
-      expect(field.selectionStart).toBe(0);
-      expect(field.selectionEnd).toBe(field.value.length);
+      await waitFor(() => {
+        expect(field.selectionStart).toBe(0);
+        expect(field.selectionEnd).toBe(field.value.length);
+      });
       expect(screen.queryByRole("button", { name: "복사 완료" })).toBeNull();
     },
   );

@@ -2,6 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { getPrisma } from "@/lib/prisma";
 import { AuthError } from "@/lib/auth/response";
+import { isDiagnosticFallbackStorageEnabled } from "@/lib/server-env";
 import type { DiagnosticReport } from "@/generated/prisma/client";
 import type { UploadOwner } from "./upload-session";
 import { describeBaumannType } from "./baumannMapping";
@@ -29,7 +30,30 @@ export function assertReportOwner(
       "본인의 문진과 리포트만 확인할 수 있습니다.",
     );
 }
-export function projectReport(row: DiagnosticReport) {
+// Explicit selection prevents Prisma from reading columns absent from a pre-migration DB.
+export function diagnosticReportSelect() {
+  const enabled = isDiagnosticFallbackStorageEnabled();
+  return {
+    id: true,
+    sessionId: true,
+    baumannType: true,
+    oilinessScore: true,
+    sensitivityScore: true,
+    pigmentationScore: true,
+    elasticityScore: true,
+    summaryText: true,
+    recommendedIngredients: true,
+    cautionIngredients: true,
+    aiAuditMetadata: true,
+    createdAt: true,
+    isFallback: enabled,
+    fallbackReason: enabled,
+  } as const;
+}
+
+type StoredReport = Omit<DiagnosticReport, "isFallback" | "fallbackReason"> &
+  Partial<Pick<DiagnosticReport, "isFallback" | "fallbackReason">>;
+export function projectReport(row: StoredReport) {
   const metadata = z
     .object({
       source: z.enum(["QUESTIONNAIRE", "AI_ASSISTED"]),
@@ -70,7 +94,10 @@ export async function getDiagnosticReport(owner: UploadOwner, id: string) {
     throw new AuthError(400, "INVALID_REPORT_ID", "리포트 주소를 확인해 주세요.");
   const row = await getPrisma().diagnosticReport.findUnique({
     where: { id },
-    include: { session: { select: { userId: true, guestDeviceId: true } } },
+    select: {
+      ...diagnosticReportSelect(),
+      session: { select: { userId: true, guestDeviceId: true } },
+    },
   });
   if (!row)
     throw new AuthError(

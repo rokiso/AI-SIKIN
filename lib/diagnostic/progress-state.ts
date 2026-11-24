@@ -4,7 +4,7 @@ import { getPrisma } from "@/lib/prisma";
 import { AuthError } from "@/lib/auth/response";
 import { resolveRequestIdentity } from "@/lib/session/identity";
 import type { SessionCookieValues } from "@/lib/session/identity-types";
-import { assertReportOwner, projectReport } from "./report-store";
+import { assertReportOwner, projectReport, diagnosticReportSelect } from "./report-store";
 
 export async function readProgressState(values: SessionCookieValues, sessionId: string) {
   const identity = await resolveRequestIdentity(values);
@@ -16,7 +16,7 @@ export async function readProgressState(values: SessionCookieValues, sessionId: 
     );
   const session = await getPrisma().diagnosticSession.findUnique({
     where: { id: sessionId },
-    include: { report: true },
+    include: { report: { select: diagnosticReportSelect() } },
   });
   if (!session) throw new AuthError(404, "SESSION_NOT_FOUND", "저장된 문진을 찾을 수 없습니다.");
   assertReportOwner(identity, session);

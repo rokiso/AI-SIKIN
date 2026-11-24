@@ -1,18 +1,24 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import { after } from "next/server";
 import { publishProgress } from "./progressEmitter";
 import { requireBiometricConsent } from "@/lib/consent/service";
 import { UploadError } from "./upload-types";
 import { getPrisma } from "@/lib/prisma";
 import { AuthError } from "@/lib/auth/response";
-import { isAiLiveEnabled } from "@/lib/server-env";
+import { isAiLiveEnabled, isDiagnosticFallbackStorageEnabled } from "@/lib/server-env";
 import { callMultimodalAiWithTimeout, AiGatewayError, RetryableAiError } from "@/lib/ai/multimodal";
 import { readImageMetadata, signImageView } from "@/lib/storage/s3-vault";
 import { uploadEtagSchema, uploadFileSchema } from "./upload-validation";
 import type { UploadOwner } from "./upload-session";
 import { scoreBaumannAnswers, surveyAnswersSchema } from "./baumannScoring";
 import { ruleBasedEvaluator, combineVisionScores } from "./ruleBasedEvaluator";
-import { assertReportOwner, ownerWhere, projectReport } from "./report-store";
+import {
+  assertReportOwner,
+  ownerWhere,
+  projectReport,
+  diagnosticReportSelect,
+} from "./report-store";
 import { analyzeInputSchema } from "./report-types";
 
 const fallbackReasons: Readonly<Record<string, string | undefined>> = {
@@ -36,7 +42,7 @@ export async function analyzeSession(owner: UploadOwner, input: { sessionId: str
     await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${key}, 0))::text`;
     const session = await tx.diagnosticSession.findUnique({
       where: { id: sessionId },
-      include: { report: true, uploadSession: true },
+      include: { report: { select: diagnosticReportSelect() }, uploadSession: true },
     });
     if (!session)
       throw new AuthError(
@@ -225,7 +231,7 @@ export async function analyzeSession(owner: UploadOwner, input: { sessionId: str
   return db.$transaction(async (tx) => {
     const session = await tx.diagnosticSession.findUniqueOrThrow({
       where: { id: sessionId },
-      include: { report: true },
+      include: { report: { select: diagnosticReportSelect() } },
     });
     assertReportOwner(owner, session, "session");
     if (session.report) return completed(projectReport(session.report));
@@ -240,29 +246,50 @@ export async function analyzeSession(owner: UploadOwner, input: { sessionId: str
       data: { status: "COMPLETED" },
     });
     if (changed.count !== 1) return pending(sessionId);
-    const report = await tx.diagnosticReport.create({
-      data: {
-        sessionId,
-        baumannType: result.baumannType,
-        oilinessScore: result.axisScores.oiliness,
-        sensitivityScore: result.axisScores.sensitivity,
-        pigmentationScore: result.axisScores.pigmentation,
-        elasticityScore: result.axisScores.elasticity,
-        summaryText: result.summary,
-        recommendedIngredients: result.recommendedIngredients,
-        cautionIngredients: result.cautionIngredients,
+    const data = {
+      sessionId,
+      baumannType: result.baumannType,
+      oilinessScore: result.axisScores.oiliness,
+      sensitivityScore: result.axisScores.sensitivity,
+      pigmentationScore: result.axisScores.pigmentation,
+      elasticityScore: result.axisScores.elasticity,
+      summaryText: result.summary,
+      recommendedIngredients: result.recommendedIngredients,
+      cautionIngredients: result.cautionIngredients,
+      aiAuditMetadata: {
+        version: 1,
+        source,
         isFallback: source === "QUESTIONNAIRE",
-        fallbackReason,
-        aiAuditMetadata: {
-          version: 1,
-          source,
-          isFallback: source === "QUESTIONNAIRE",
-          reason,
-          visualWeight,
-          ...(auditLogId ? { auditLogId, auditStatus: "PENDING" } : {}),
-        },
+        reason,
+        visualWeight,
+        ...(auditLogId ? { auditLogId, auditStatus: "PENDING" } : {}),
       },
-    });
+    };
+    let report;
+    if (isDiagnosticFallbackStorageEnabled()) {
+      report = await tx.diagnosticReport.create({
+        select: diagnosticReportSelect(),
+        data: { ...data, isFallback: source === "QUESTIONNAIRE", fallbackReason },
+      });
+    } else {
+      // Prisma supplies schema defaults on INSERT even when omitted from data.
+      // Write only legacy columns until the new fallback columns are migrated.
+      const id = randomUUID();
+      await tx.$executeRaw`
+        INSERT INTO diagnostic_reports
+          (id, session_id, baumann_type, oiliness_score, sensitivity_score,
+           pigmentation_score, elasticity_score, summary_text, recommended_ingredients,
+           caution_ingredients, ai_audit_metadata)
+        VALUES
+          (${id}, ${sessionId}, ${data.baumannType}, ${data.oilinessScore}, ${data.sensitivityScore},
+           ${data.pigmentationScore}, ${data.elasticityScore}, ${data.summaryText},
+           ${data.recommendedIngredients}::text[], ${data.cautionIngredients}::text[],
+           ${JSON.stringify(data.aiAuditMetadata)}::jsonb)`;
+      report = await tx.diagnosticReport.findUniqueOrThrow({
+        where: { id },
+        select: diagnosticReportSelect(),
+      });
+    }
     return completed(projectReport(report));
   });
 }

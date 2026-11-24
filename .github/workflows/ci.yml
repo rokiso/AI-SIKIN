@@ -23,7 +23,7 @@ jobs:
       - name: Prepare reviewed procedure catalog in the isolated local database
         run: |
           npm run procedures:seed
-          for price_file in data/procedure-prices/2026-11-18/P-*.json; do
+          for price_file in data/procedure-prices/2026-11-24/P-*.json; do
             npm run procedures:prices -- "$price_file" --apply
           done
       - run: npx playwright install --with-deps chromium

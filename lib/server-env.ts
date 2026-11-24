@@ -22,6 +22,13 @@ export function isSnapshotMilestonesEnabled(): boolean {
   return process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1";
 }
 
+// Enable only after the diagnostic fallback columns are migrated. JSON metadata stays compatible.
+export function isDiagnosticFallbackStorageEnabled(): boolean {
+  const value = process.env.DIAGNOSTIC_FALLBACK_STORAGE_ENABLED;
+  if (value) return value === "1";
+  return process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1";
+}
+
 export function getOptionalDatabaseUrl(): string | undefined {
   const value = process.env.DATABASE_URL;
   if (value === undefined || value === "") return undefined;
