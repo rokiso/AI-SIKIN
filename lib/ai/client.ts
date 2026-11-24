@@ -95,7 +95,11 @@ export async function loadImageData(imageUrl: string, mimeType: string, signal: 
   return `data:${mimeType};base64,${bytes.toString("base64")}`;
 }
 
-export class RetryableAiError extends Error {}
+export class RetryableAiError extends AiGatewayError {
+  constructor(readonly upstreamStatus: number) {
+    super();
+  }
+}
 
 export async function callAiProvider(
   config: AiClientConfig,
@@ -167,7 +171,8 @@ export async function callAiProvider(
   });
   if (!response.ok) {
     await response.body?.cancel();
-    if (response.status === 429 || response.status >= 500) throw new RetryableAiError();
+    if (response.status === 429 || response.status >= 500)
+      throw new RetryableAiError(response.status);
     throw new AiGatewayError();
   }
   const raw = (await readBoundedBody(response, 256 * 1024)).toString("utf8");

@@ -194,7 +194,7 @@ describe("local diagnostic orchestrator and protected report API", () => {
       (await POST(request({ sessionId: randomUUID(), padding: "x".repeat(9000) }))).status,
     ).toBe(400);
     expect((await POST(request({}, { origin: "https://evil.test" }))).status).toBe(403);
-    expect((await analyze(randomUUID())).status).toBe(400);
+    expect((await analyze(randomUUID())).status).toBe(404);
     expect((await get(randomUUID())).status).toBe(404);
     mocks.jar.clear();
     expect(
@@ -207,7 +207,9 @@ describe("local diagnostic orchestrator and protected report API", () => {
     const result = await (await analyze(session.id)).json();
     const original = new Map(mocks.jar);
     guest();
-    expect((await analyze(session.id)).status).toBe(403);
+    const forbidden = await analyze(session.id);
+    expect(forbidden.status).toBe(403);
+    expect((await forbidden.json()).error.code).toBe("FORBIDDEN_SESSION_ACCESS");
     expect((await get(result.data.reportId)).status).toBe(403);
     mocks.jar.clear();
     original.forEach((v, k) => mocks.jar.set(k, v));
@@ -222,6 +224,14 @@ describe("local diagnostic orchestrator and protected report API", () => {
     });
     mocks.jar.set("app_session_token", token);
     expect((await get(result.data.reportId)).status).toBe(200);
+    const memberSession = await db.diagnosticSession.create({
+      data: { userId: user.id, surveyAnswers: answers, axisScores: {} },
+    });
+    const memberReport = await analyze(memberSession.id);
+    expect(memberReport.status).toBe(200);
+    const { data } = await memberReport.json();
+    expect(data).toMatchObject({ source: "QUESTIONNAIRE", isFallback: true });
+    expect((await get(data.reportId)).status).toBe(200);
     await db.authSession.deleteMany({ where: { userId: user.id } });
     expect((await get(result.data.reportId)).status).toBe(403);
   });
@@ -300,8 +310,42 @@ describe("local diagnostic orchestrator and protected report API", () => {
         isFallback: true,
       });
       expect(body.data.summary).not.toContain("치료");
+      if (mode === "malformed") {
+        const stored = await db.diagnosticReport.findUniqueOrThrow({ where: { sessionId: s.id } });
+        expect(stored).toMatchObject({ isFallback: true, fallbackReason: "PARSE_ERROR" });
+      }
     },
   );
+  it.each([500, 502, 503, 504])("stores the fallback after one upstream %i", async (status) => {
+    vi.stubEnv("AI_LIVE_ENABLED", "1");
+    const provider = vi.fn(async () => new Response(null, { status }));
+    mockProvider(provider);
+    const session = await createSession(true);
+    const response = await analyze(session.id);
+    expect(response.status).toBe(200);
+    const { data } = await response.json();
+    expect(data).toMatchObject({
+      baumannType: "DRNT",
+      isFallback: true,
+      fallbackNotice: expect.stringContaining("12문항"),
+    });
+    expect(provider).toHaveBeenCalledOnce();
+    const stored = await db.diagnosticReport.findUniqueOrThrow({
+      where: { sessionId: session.id },
+    });
+    expect(stored).toMatchObject({ isFallback: true, fallbackReason: "UPSTREAM_5XX" });
+    expect((await (await get(data.reportId)).json()).data.fallbackNotice).toBe(data.fallbackNotice);
+  });
+  it("rejects incomplete survey data before attempting photo analysis", async () => {
+    const session = await db.diagnosticSession.create({
+      data: { guestDeviceId: guestId, surveyAnswers: answers.slice(0, 11), axisScores: {} },
+    });
+    const response = await analyze(session.id);
+    expect(response.status).toBe(400);
+    expect((await response.json()).error.code).toBe("INCOMPLETE_SURVEY_DATA");
+    expect(await db.diagnosticReport.count({ where: { sessionId: session.id } })).toBe(0);
+    expect(mocks.metadata).not.toHaveBeenCalled();
+  });
   it("never sends an overwritten or unverified photo to a provider", async () => {
     vi.stubEnv("AI_LIVE_ENABLED", "1");
     mockProvider();
@@ -418,6 +462,7 @@ describe("local diagnostic orchestrator and protected report API", () => {
       expect(elapsed).toBeGreaterThan(7900);
       expect(elapsed).toBeLessThan(10000);
       const report = await db.diagnosticReport.findUniqueOrThrow({ where: { sessionId: s.id } });
+      expect(report).toMatchObject({ isFallback: true, fallbackReason: "TIMEOUT_EXCEEDED" });
       expect(report.aiAuditMetadata).toMatchObject({ reason: "AI_GATEWAY_TIMEOUT" });
       const text = await reading;
       expect(text).toContain("event: fallback");

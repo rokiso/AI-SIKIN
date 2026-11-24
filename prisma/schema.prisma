@@ -223,6 +223,8 @@ model DiagnosticReport {
   summaryText             String                  @db.Text @map("summary_text")
   recommendedIngredients  String[]                @default([]) @map("recommended_ingredients")
   cautionIngredients      String[]                @default([]) @map("caution_ingredients")
+  isFallback              Boolean                 @default(false) @map("is_fallback")
+  fallbackReason          String?                 @map("fallback_reason")
   aiAuditMetadata         Json                    @map("ai_audit_metadata")
   createdAt               DateTime                @default(now()) @db.Timestamptz @map("created_at")
 
@@ -494,4 +496,43 @@ model AffiliateClickLog {
   @@index([userId])
   @@index([guestDeviceId])
   @@map("affiliate_click_logs")
+}
+
+enum LinkHealthStatus {
+  HEALTHY
+  UNHEALTHY
+  TIMEOUT
+  REDIRECT_LOOP
+}
+
+enum LinkActionTaken {
+  NONE
+  SWITCHED_TO_FALLBACK
+  FALLBACK_FAILED
+  MANUAL_ATTENTION_REQUIRED
+}
+
+model AffiliateLinkHealthLog {
+  id                String           @id @default(uuid())
+  productId         String           @map("product_id")
+  checkedUrl        String           @map("checked_url") @db.Text
+  httpStatusCode    Int?             @map("http_status_code")
+  responseTimeMs    Int              @map("response_time_ms")
+  status            LinkHealthStatus
+  errorMessage      String?          @map("error_message") @db.Text
+  actionTaken        LinkActionTaken  @default(NONE) @map("action_taken")
+  fallbackProductId String?          @map("fallback_product_id")
+  checkedAt         DateTime         @default(now()) @map("checked_at") @db.Timestamptz
+
+  @@index([productId, checkedAt])
+  @@index([status, checkedAt])
+  @@map("affiliate_link_health_logs")
+}
+
+model AffiliateLinkHealthQuota {
+  id           Int @id
+  minute       Int
+  requestCount Int @map("request_count")
+
+  @@map("affiliate_link_health_quota")
 }

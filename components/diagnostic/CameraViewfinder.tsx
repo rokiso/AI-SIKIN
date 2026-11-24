@@ -6,6 +6,7 @@ import {
   captureViewfinder,
   type OnCameraCaptureCompletePayload,
 } from "@/lib/image/viewfinderCapture";
+import { PhotoQualityError, type QualityFailureReason } from "@/lib/image/faceQualityValidator";
 import { uploadFileSchema } from "@/lib/diagnostic/upload-validation";
 import {
   uploadDiagnosticImage,
@@ -31,7 +32,7 @@ export function CameraViewfinder({
 }) {
   const { stream, status, start: openCamera, stop: stopCamera } = useCameraStream();
   const video = useRef<HTMLVideoElement>(null);
-  const confirmButton = useRef<HTMLButtonElement>(null);
+  const shutter = useRef<HTMLButtonElement>(null);
   const image = useRef<Capture | null>(null);
   const running = useRef<AbortController | null>(null);
   const captureToken = useRef(0);
@@ -39,7 +40,7 @@ export function CameraViewfinder({
   const maskId = useId();
   const [facing, setFacing] = useState<"user" | "environment">("user");
   const [draft, setDraft] = useState<Capture | null>(null);
-  const [warning, setWarning] = useState(false);
+  const [warning, setWarning] = useState<QualityFailureReason | null>(null);
   const [ready, setReady] = useState(false);
   const [capturing, setCapturing] = useState(false);
   const [error, setError] = useState("");
@@ -77,7 +78,7 @@ export function CameraViewfinder({
     if (image.current) URL.revokeObjectURL(image.current.processedImage.previewUrl);
     image.current = null;
     setDraft(null);
-    setWarning(false);
+    setWarning(null);
     setError("");
     setComplete(false);
     onUploadComplete?.(null);
@@ -110,16 +111,16 @@ export function CameraViewfinder({
       stopCamera();
       image.current = result;
       setDraft(result);
-      setWarning(!result.qualityMetrics.isValidQuality);
-    } catch {
-      if (token === captureToken.current)
-        setError("사진을 촬영하지 못했습니다. 카메라 화면이 준비되면 다시 시도해주세요.");
+    } catch (failure) {
+      if (token !== captureToken.current) return;
+      if (failure instanceof PhotoQualityError) setWarning(failure.reason);
+      else setError("사진을 촬영하지 못했습니다. 카메라 화면이 준비되면 다시 시도해주세요.");
     } finally {
       if (token === captureToken.current) setCapturing(false);
     }
   }
   async function confirm() {
-    if (!draft || running.current) return;
+    if (!draft?.qualityMetrics.isValidQuality || running.current) return;
     setError("");
     if (previewOnly) {
       onCaptureComplete?.(draft);
@@ -173,6 +174,10 @@ export function CameraViewfinder({
         setBusy(false);
       }
     }
+  }
+  function dismissWarning() {
+    setWarning(null);
+    shutter.current?.focus();
   }
   const pending = phase !== null;
   return (
@@ -243,7 +248,7 @@ export function CameraViewfinder({
             {status === "requesting"
               ? "카메라를 준비하고 있습니다..."
               : capturing
-                ? "사진을 준비하고 있습니다..."
+                ? "사진 품질을 확인하고 있어요…"
                 : status === "active"
                   ? "카메라가 켜져 있습니다."
                   : "촬영을 시작하려면 카메라를 켜주세요."}
@@ -271,6 +276,7 @@ export function CameraViewfinder({
             <div className="flex items-center justify-center gap-4">
               <button
                 type="button"
+                ref={shutter}
                 disabled={!ready || capturing}
                 onClick={() => void shoot()}
                 className="button-primary min-h-16 min-w-16 rounded-full"
@@ -291,6 +297,7 @@ export function CameraViewfinder({
           {(status === "active" || status === "requesting") && (
             <button
               type="button"
+              disabled={capturing}
               onClick={() => {
                 setReady(false);
                 stopCamera();
@@ -310,9 +317,13 @@ export function CameraViewfinder({
             alt="촬영한 얼굴 사진 미리보기"
             className="max-h-80 w-full rounded-xl object-contain"
           />
+          {!pending && !complete && (
+            <p role="status" className="text-sm text-primary-800">
+              사진 품질 확인 완료
+            </p>
+          )}
           <button
             type="button"
-            ref={confirmButton}
             disabled={pending || complete}
             onClick={() => void confirm()}
             className="button-primary w-full"
@@ -389,10 +400,13 @@ export function CameraViewfinder({
       </button>
       {warning && (
         <QualityWarningModal
-          onRetry={() => start()}
-          onProceed={() => {
-            setWarning(false);
-            confirmButton.current?.focus();
+          reason={warning}
+          onRetry={dismissWarning}
+          onDismiss={dismissWarning}
+          onAlbum={() => {
+            stopCamera();
+            discard();
+            onAlbum();
           }}
         />
       )}

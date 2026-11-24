@@ -298,3 +298,7 @@ export function getConsentTrustedIpHeader() {
   if (!result.success) throw new Error("CONSENT_TRUSTED_IP_HEADER configuration is invalid");
   return result.data;
 }
+
+export function getCatalogCronSecret(): string | undefined {
+  return process.env.CRON_SECRET_TOKEN || undefined;
+}

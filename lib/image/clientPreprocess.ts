@@ -1,3 +1,4 @@
+import { validateFaceQuality } from "./faceQualityValidator";
 import { uploadFileSchema } from "@/lib/diagnostic/upload-validation";
 export interface ProcessedImageResult {
   blob: Blob;
@@ -86,6 +87,7 @@ function encode(canvas: HTMLCanvasElement, type: string): Promise<Blob> {
 export async function preprocessAlbumImage(
   file: File,
   signal?: AbortSignal,
+  { requireFaceQuality = false } = {},
 ): Promise<ProcessedImageResult> {
   validateAlbumFile(file);
   ensureActive(signal);
@@ -103,6 +105,10 @@ export async function preprocessAlbumImage(
   const canvas = document.createElement("canvas");
   try {
     ensureActive(signal);
+    if (requireFaceQuality) {
+      await validateFaceQuality(decoded.source, decoded.width, decoded.height);
+      ensureActive(signal);
+    }
     const { width, height } = resizedDimensions(decoded.width, decoded.height);
     canvas.width = width;
     canvas.height = height;

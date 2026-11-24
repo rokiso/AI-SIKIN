@@ -2,9 +2,7 @@ import "server-only";
 import { request } from "node:https";
 import { lookup } from "node:dns";
 import type { LookupFunction } from "node:net";
-import { getPrisma } from "@/lib/prisma";
 import { safeAffiliateUrl } from "./affiliate-url";
-import { invalidateProductCache } from "./curationService";
 
 // Reject non-public addresses, including mapped IPv4 and IPv6 local ranges.
 export function isPublicAddress(address: string): boolean {
@@ -69,54 +67,46 @@ async function checkUrl(
     req.end();
   });
 }
-export async function probeAffiliateLink(value: string): Promise<boolean> {
-  const signal = AbortSignal.timeout(3000);
+export type LinkProbe = {
+  status: "HEALTHY" | "UNHEALTHY" | "TIMEOUT" | "REDIRECT_LOOP";
+  httpStatusCode: number | null;
+  responseTimeMs: number;
+  errorMessage: string | null;
+};
+
+export async function probeAffiliateLink(value: string): Promise<LinkProbe> {
+  const start = performance.now();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5_000);
+  let httpStatusCode: number | null = null;
+  const result = (status: LinkProbe["status"], errorMessage: string | null = null): LinkProbe => ({
+    status,
+    httpStatusCode,
+    responseTimeMs: Math.round(performance.now() - start),
+    errorMessage,
+  });
   try {
     let current = safeAffiliateUrl(value).href;
-    for (let redirects = 0; redirects <= 3; redirects++) {
-      let response = await checkUrl(current, "HEAD", signal);
-      if ([405, 501].includes(response.status)) response = await checkUrl(current, "GET", signal);
-      if (response.status >= 200 && response.status < 300) return true;
-      if (response.status >= 300 && response.status < 400 && response.location) {
-        current = safeAffiliateUrl(new URL(response.location, current).href).href;
-      } else return false;
-    }
-    return false;
-  } catch {
-    return false;
-  }
-}
-export async function checkProductLinks(
-  probe: (url: string) => Promise<boolean> = probeAffiliateLink,
-) {
-  const prisma = getPrisma();
-  const products = await prisma.product.findMany({
-    where: { isActive: true, status: { in: ["ACTIVE", "UNAVAILABLE"] } },
-    take: 2048,
-    orderBy: { id: "asc" },
-  });
-  let checked = 0;
-  let unavailable = 0;
-  for (const product of products) {
-    const healthy = await probe(product.affiliateBaseUrl);
-    await prisma.$transaction(async (tx) => {
-      const updated = await tx.product.updateMany({
-        where: { id: product.id, isActive: true, updatedAt: product.updatedAt },
-        data: healthy
-          ? { healthCheckFailCount: 0, lastCheckedAt: new Date(), status: "ACTIVE" }
-          : { healthCheckFailCount: { increment: 1 }, lastCheckedAt: new Date() },
-      });
-      if (!updated.count) return;
-      if (!healthy) {
-        const disabled = await tx.product.updateMany({
-          where: { id: product.id, healthCheckFailCount: { gte: 3 }, status: "ACTIVE" },
-          data: { status: "UNAVAILABLE" },
-        });
-        unavailable += disabled.count;
+    const visited = new Set<string>();
+    while (visited.size < 4 && !visited.has(current)) {
+      visited.add(current);
+      let response = await checkUrl(current, "HEAD", controller.signal);
+      httpStatusCode = response.status || null;
+      if ([403, 405, 501].includes(response.status)) {
+        response = await checkUrl(current, "GET", controller.signal);
+        httpStatusCode = response.status || null;
       }
-      checked++;
-    });
+      if (response.status >= 200 && response.status < 300) return result("HEALTHY");
+      if (response.status < 300 || response.status >= 400 || !response.location)
+        return result("UNHEALTHY", response.status === 403 ? "ACCESS_DENIED" : "HTTP_FAILURE");
+      current = safeAffiliateUrl(new URL(response.location, current).href).href;
+    }
+    return result("REDIRECT_LOOP", "REDIRECT_LIMIT");
+  } catch {
+    return controller.signal.aborted
+      ? result("TIMEOUT", "DEADLINE_EXCEEDED")
+      : result("UNHEALTHY", "REQUEST_OR_DESTINATION_REJECTED");
+  } finally {
+    clearTimeout(timer);
   }
-  invalidateProductCache();
-  return { checked, unavailable };
 }

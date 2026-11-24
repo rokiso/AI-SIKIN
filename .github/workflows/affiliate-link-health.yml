@@ -1,0 +1,38 @@
+name: Affiliate link health
+on:
+  schedule:
+    - cron: "20 19 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Check links without updating the catalog"
+        type: boolean
+        default: true
+
+permissions: {}
+concurrency:
+  group: affiliate-link-health
+  cancel-in-progress: false
+
+jobs:
+  check:
+    if: vars.CATALOG_HEALTH_CHECK_URL != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check affiliate links
+        env:
+          CHECK_URL: ${{ vars.CATALOG_HEALTH_CHECK_URL }}
+          CHECK_TOKEN: ${{ secrets.CRON_SECRET_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run || false }}
+        run: |
+          test -n "$CHECK_TOKEN"
+          response=$(mktemp)
+          trap 'rm -f "$response"' EXIT
+          status=$(curl --silent --show-error --fail --proto '=https' --max-time 2400 \
+            --output "$response" --write-out '%{http_code}' \
+            --header "Authorization: Bearer $CHECK_TOKEN" \
+            --header 'Content-Type: application/json' \
+            --data "{\"dryRun\":$DRY_RUN}" "$CHECK_URL") || exit 1
+          test "$status" = 200
+          jq -e '.success == true and .data.failedCount == 0' "$response" >/dev/null

@@ -11,6 +11,7 @@ export const reportSchema = z.object({
   recommendedIngredients: z.array(z.string()),
   cautionIngredients: z.array(z.string()),
   isFallback: z.boolean(),
+  fallbackNotice: z.string().optional(),
   source: z.enum(["QUESTIONNAIRE", "AI_ASSISTED", "LEGACY"]),
   createdAt: z.iso.datetime(),
 });

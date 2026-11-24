@@ -33,7 +33,9 @@ describe("approved affiliate destinations", () => {
       "https://shop.example.com/#private",
     ])
       expect(isAffiliateUrlAllowed(value)).toBe(false);
-    expect(await probeAffiliateLink("http://127.0.0.1/private")).toBe(false);
+    expect(await probeAffiliateLink("http://127.0.0.1/private")).toMatchObject({
+      status: "UNHEALTHY",
+    });
     vi.stubEnv("CATALOG_AFFILIATE_HOSTS", "");
     expect(isAffiliateUrlAllowed("https://shop.example.com/")).toBe(false);
   });

@@ -23,6 +23,7 @@ for (const width of [320, 1280]) {
     });
     await page.goto("/catalog/procedures");
     await expect(page.getByRole("button", { name: /상세 보기$/ })).toHaveCount(10);
+    await expect(page.getByText("옵션별 공개 가격 예시", { exact: true })).toHaveCount(10);
     const catalogResponse = await page.request.get("/api/v1/catalog/procedures");
     expect(catalogResponse.status()).toBe(200);
     const catalog = procedureListResponseSchema.parse(await catalogResponse.json()).data.procedures;
@@ -51,6 +52,12 @@ for (const width of [320, 1280]) {
       const detail = page.getByRole("dialog");
       await expect(detail.getByText("공개 가격 자료 1건", { exact: true })).toBeVisible();
       await expect(detail.getByText(/수집 표본 평균/)).toHaveCount(0);
+      await expect(detail.getByText("77,000원 ~ 110,000원")).toBeVisible();
+      expect(
+        await detail
+          .locator("dl")
+          .evaluate((element) => element.scrollWidth <= element.clientWidth),
+      ).toBe(true);
       await detail.getByText("공개 가격 자료 1건", { exact: true }).scrollIntoViewIfNeeded();
       await page.screenshot({ path: info.outputPath(`ldm-single-price-${width}.png`) });
       await detail.getByRole("button", { name: "시술 상세 닫기" }).click();
@@ -220,4 +227,13 @@ test("public endpoints filter and reject writes and unknown inputs", async ({ re
   expect((await request.get("/api/v1/catalog/procedures?concern=INVALID")).status()).toBe(400);
   expect((await request.get("/api/v1/catalog/procedures/not-an-id")).status()).toBe(404);
   expect((await request.post("/api/v1/catalog/procedures", { data: {} })).status()).toBe(405);
+});
+
+test("the LDM safety page shows the expanded cost options", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  await page.goto("/catalog/procedures/ldm-ultrasound");
+  await expect(page.getByText("옵션별 공개 가격 예시", { exact: true })).toBeVisible();
+  await expect(page.getByText("77,000원 ~ 110,000원")).toBeVisible();
+  await expect(page.getByText("LDM 12분 + 보습·진정 + 모델링팩 1회")).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

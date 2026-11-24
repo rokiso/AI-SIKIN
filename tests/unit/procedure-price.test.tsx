@@ -43,3 +43,12 @@ it("retains actual collected ranges and sample arithmetic for different prices",
   expect(screen.getByText("50,000원 ~ 70,000원")).toBeDefined();
   expect(screen.getByText("수집 표본 평균 60,000원 · 2건")).toBeDefined();
 });
+
+it("shows the 12-minute LDM examples independently of the platform estimate", () => {
+  const price = summarizeProcedurePrices([observation], basis, "2026-11-19");
+  render(<ProcedurePrice procedure={{ ...price, code: "P-LDM" }} detail />);
+  expect(screen.getByText("확인된 가격 50,000원")).toBeDefined();
+  expect(screen.getByText("LDM 12분 1회 · 장비 모델 확인 필요")).toBeDefined();
+  expect(screen.getByText("77,000원 ~ 110,000원")).toBeDefined();
+  expect(screen.getByText("옵션별 공개 가격 예시")).toBeDefined();
+});

@@ -6,14 +6,20 @@ import { UploadError } from "./upload-types";
 import { getPrisma } from "@/lib/prisma";
 import { AuthError } from "@/lib/auth/response";
 import { isAiLiveEnabled } from "@/lib/server-env";
-import { callMultimodalAiWithTimeout, AiGatewayError } from "@/lib/ai/multimodal";
+import { callMultimodalAiWithTimeout, AiGatewayError, RetryableAiError } from "@/lib/ai/multimodal";
 import { readImageMetadata, signImageView } from "@/lib/storage/s3-vault";
 import { uploadEtagSchema, uploadFileSchema } from "./upload-validation";
 import type { UploadOwner } from "./upload-session";
-import { scoreBaumannAnswers } from "./baumannScoring";
+import { scoreBaumannAnswers, surveyAnswersSchema } from "./baumannScoring";
 import { ruleBasedEvaluator, combineVisionScores } from "./ruleBasedEvaluator";
 import { assertReportOwner, ownerWhere, projectReport } from "./report-store";
 import { analyzeInputSchema } from "./report-types";
+
+const fallbackReasons: Readonly<Record<string, string | undefined>> = {
+  AI_GATEWAY_TIMEOUT: "TIMEOUT_EXCEEDED",
+  AI_UPSTREAM_5XX: "UPSTREAM_5XX",
+  AI_INVALID_RESPONSE: "PARSE_ERROR",
+};
 
 const pending = (sessionId: string) => ({ status: "ANALYSIS_PENDING" as const, sessionId });
 const completed = (report: ReturnType<typeof projectReport>) => ({
@@ -34,11 +40,11 @@ export async function analyzeSession(owner: UploadOwner, input: { sessionId: str
     });
     if (!session)
       throw new AuthError(
-        400,
+        404,
         "SESSION_NOT_FOUND",
         "문진 정보를 찾을 수 없습니다. 문진을 다시 시작해 주세요.",
       );
-    assertReportOwner(owner, session);
+    assertReportOwner(owner, session, "session");
     if (session.report)
       return { kind: "completed" as const, report: projectReport(session.report) };
     const now = new Date();
@@ -47,7 +53,14 @@ export async function analyzeSession(owner: UploadOwner, input: { sessionId: str
       now.getTime() - session.updatedAt.getTime() < 30_000
     )
       return { kind: "pending" as const };
-    const scores = scoreBaumannAnswers(session.surveyAnswers).axisScores;
+    const answers = surveyAnswersSchema.safeParse(session.surveyAnswers);
+    if (!answers.success)
+      throw new AuthError(
+        400,
+        "INCOMPLETE_SURVEY_DATA",
+        "피부 문진 응답을 확인할 수 없습니다. 문진을 다시 진행해 주세요.",
+      );
+    const scores = scoreBaumannAnswers(answers.data).axisScores;
     if (session.status !== "ANALYSIS_PENDING") {
       const count = await tx.diagnosticSession.count({
         where: {
@@ -110,7 +123,7 @@ export async function analyzeSession(owner: UploadOwner, input: { sessionId: str
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 8_000);
     try {
-      assertReportOwner(owner, claim.upload);
+      assertReportOwner(owner, claim.upload, "session");
       await db.$transaction((tx) => requireBiometricConsent(owner, tx));
       const file = uploadFileSchema.safeParse({
         mimeType: claim.upload.mimeType,
@@ -131,15 +144,18 @@ export async function analyzeSession(owner: UploadOwner, input: { sessionId: str
       const imageUrl = await signImageView(claim.upload.s3Key);
       const remaining = Math.floor(8_000 - (performance.now() - started));
       if (remaining <= 0) throw new AiGatewayError("AI_GATEWAY_TIMEOUT");
-      const ai = await callMultimodalAiWithTimeout({
-        sessionId,
-        imageUrl,
-        mimeType: file.data.mimeType,
-        surveyScores: claim.scores,
-        timeoutMs: remaining,
-        systemInstruction:
-          "문진 점수 비중은 최소 60%입니다. 사진 정보는 참고용입니다. 질병·의학적 진단, 치료, 완치, 처방 표현을 출력하지 마세요.",
-      });
+      const ai = await callMultimodalAiWithTimeout(
+        {
+          sessionId,
+          imageUrl,
+          mimeType: file.data.mimeType,
+          surveyScores: claim.scores,
+          timeoutMs: remaining,
+          systemInstruction:
+            "문진 점수 비중은 최소 60%입니다. 사진 정보는 참고용입니다. 질병·의학적 진단, 치료, 완치, 처방 표현을 출력하지 마세요.",
+        },
+        { retry: false },
+      );
       auditLogId = ai.auditLogId;
       after(async () => {
         await ai.auditWrite;
@@ -167,7 +183,10 @@ export async function analyzeSession(owner: UploadOwner, input: { sessionId: str
       if (error instanceof AuthError) throw error;
       if (error instanceof UploadError) reason = "CONSENT_REQUIRED";
       else if (error instanceof AiGatewayError) {
-        reason = error.code;
+        reason =
+          error instanceof RetryableAiError && error.upstreamStatus >= 500
+            ? "AI_UPSTREAM_5XX"
+            : error.code;
         auditLogId = error.auditLogId;
         const write = error.auditWrite;
         if (write)
@@ -202,12 +221,13 @@ export async function analyzeSession(owner: UploadOwner, input: { sessionId: str
     skipped: false,
     message: "리포트와 성분 안내를 저장하고 있어요.",
   });
+  const fallbackReason = fallbackReasons[reason] ?? null;
   return db.$transaction(async (tx) => {
     const session = await tx.diagnosticSession.findUniqueOrThrow({
       where: { id: sessionId },
       include: { report: true },
     });
-    assertReportOwner(owner, session);
+    assertReportOwner(owner, session, "session");
     if (session.report) return completed(projectReport(session.report));
     // A recovered claim fences off a late worker. Owner transfer must also invalidate it.
     const changed = await tx.diagnosticSession.updateMany({
@@ -231,6 +251,8 @@ export async function analyzeSession(owner: UploadOwner, input: { sessionId: str
         summaryText: result.summary,
         recommendedIngredients: result.recommendedIngredients,
         cautionIngredients: result.cautionIngredients,
+        isFallback: source === "QUESTIONNAIRE",
+        fallbackReason,
         aiAuditMetadata: {
           version: 1,
           source,

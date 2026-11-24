@@ -1,0 +1,359 @@
+{
+  "observedOn": "2026-11-23",
+  "observations": [
+    {
+      "procedureCode": "P-PICO",
+      "option": "피코케이 토닝 1회",
+      "listedKrw": 49000,
+      "vat": "excluded",
+      "displayKrw": 53900,
+      "sourceUrl": "https://onze.co.kr/fees"
+    },
+    {
+      "procedureCode": "P-PICO",
+      "option": "피코케이 듀얼토닝 1회",
+      "listedKrw": 79000,
+      "vat": "excluded",
+      "displayKrw": 86900,
+      "sourceUrl": "https://onze.co.kr/fees"
+    },
+    {
+      "procedureCode": "P-PICO",
+      "option": "피코케이 줌패스 얼굴 전체 1회",
+      "listedKrw": 149000,
+      "vat": "excluded",
+      "displayKrw": 163900,
+      "sourceUrl": "https://onze.co.kr/fees"
+    },
+    {
+      "procedureCode": "P-FRACTIONAL",
+      "option": "멀티셀 포어 나비존 1회",
+      "listedKrw": 79000,
+      "vat": "excluded",
+      "displayKrw": 86900,
+      "sourceUrl": "https://onze.co.kr/fees"
+    },
+    {
+      "procedureCode": "P-FRACTIONAL",
+      "option": "멀티셀 포어 얼굴 전체 1회",
+      "listedKrw": 129000,
+      "vat": "excluded",
+      "displayKrw": 141900,
+      "sourceUrl": "https://onze.co.kr/fees"
+    },
+    {
+      "procedureCode": "P-FRACTIONAL",
+      "option": "피코프락셀 얼굴 전체 1회",
+      "listedKrw": 89000,
+      "vat": "excluded",
+      "displayKrw": 97900,
+      "sourceUrl": "https://selenaskin.com/prices"
+    },
+    {
+      "procedureCode": "P-LDM",
+      "option": "LDM 6분 1회",
+      "listedKrw": 60000,
+      "vat": "excluded",
+      "displayKrw": 66000,
+      "sourceUrl": "https://barabomskin.com/npay/"
+    },
+    {
+      "procedureCode": "P-LDM",
+      "option": "LDM 12분 1회 · 장비 모델 확인 필요",
+      "listedKrw": 70000,
+      "vat": "excluded",
+      "displayKrw": 77000,
+      "sourceUrl": "https://gwangju.museclinic.co.kr/index.php/price/price_view/?middleId=1079"
+    },
+    {
+      "procedureCode": "P-LDM",
+      "option": "LDM 12분 1회 · 장비 모델 확인 필요",
+      "listedKrw": 100000,
+      "vat": "excluded",
+      "displayKrw": 110000,
+      "sourceUrl": "https://barabomskin.com/npay/"
+    },
+    {
+      "procedureCode": "P-LDM",
+      "option": "LDM 12분 + 보습·진정 + 모델링팩 1회",
+      "listedKrw": 69000,
+      "vat": "excluded",
+      "displayKrw": 75900,
+      "sourceUrl": "https://onze.co.kr/fees"
+    },
+    {
+      "procedureCode": "P-LDM",
+      "option": "LDM 여드름·홍조 관리 16분 1회",
+      "listedKrw": 80000,
+      "vat": "excluded",
+      "displayKrw": 88000,
+      "sourceUrl": "https://gwangju.museclinic.co.kr/index.php/price/price_view/?middleId=1079"
+    },
+    {
+      "procedureCode": "P-AQUAPEEL",
+      "option": "아쿠아필 1회 · 공개 고지 시작가",
+      "listedKrw": 39000,
+      "vat": "excluded",
+      "displayKrw": 42900,
+      "sourceUrl": "https://nowon.cellinclinic.com/ko/non-covered-items"
+    },
+    {
+      "procedureCode": "P-AQUAPEEL",
+      "option": "아쿠아필 1회 · 공개 행사",
+      "listedKrw": 40000,
+      "vat": "excluded",
+      "displayKrw": 44000,
+      "sourceUrl": "https://daybeauclinic15.com/branch/event.php?uid=911"
+    },
+    {
+      "procedureCode": "P-AQUAPEEL",
+      "option": "아쿠아필 얼굴 1회",
+      "listedKrw": 80000,
+      "vat": "excluded",
+      "displayKrw": 88000,
+      "sourceUrl": "https://barabomskin.com/laser-procedure/acne/aqua-peel/"
+    },
+    {
+      "procedureCode": "P-AQUAPEEL",
+      "option": "아쿠아필 + 보습·진정 + LED + 모델링팩 1회",
+      "listedKrw": 69000,
+      "vat": "excluded",
+      "displayKrw": 75900,
+      "sourceUrl": "https://onze.co.kr/fees"
+    },
+    {
+      "procedureCode": "P-HIFU",
+      "option": "슈링크 유니버스 300샷 1회",
+      "listedKrw": 207900,
+      "vat": "included",
+      "displayKrw": 207900,
+      "sourceUrl": "https://beautystone1.com/lifting/shurink-universe"
+    },
+    {
+      "procedureCode": "P-HIFU",
+      "option": "슈링크 유니버스 300샷 1회",
+      "listedKrw": 249000,
+      "vat": "excluded",
+      "displayKrw": 273900,
+      "sourceUrl": "https://onze.co.kr/fees"
+    },
+    {
+      "procedureCode": "P-HIFU",
+      "option": "슈링크 유니버스 500샷 1회",
+      "listedKrw": 317900,
+      "vat": "included",
+      "displayKrw": 317900,
+      "sourceUrl": "https://beautystone1.com/lifting/shurink-universe"
+    },
+    {
+      "procedureCode": "P-HIFU",
+      "option": "슈링크 유니버스 600샷 1회",
+      "listedKrw": 394900,
+      "vat": "included",
+      "displayKrw": 394900,
+      "sourceUrl": "https://beautystone1.com/lifting/shurink-universe"
+    },
+    {
+      "procedureCode": "P-HIFU",
+      "option": "슈링크 유니버스 600샷 1회",
+      "listedKrw": 449000,
+      "vat": "excluded",
+      "displayKrw": 493900,
+      "sourceUrl": "https://onze.co.kr/fees"
+    },
+    {
+      "procedureCode": "P-RF",
+      "option": "올리지오 300샷 · 공개 상품",
+      "listedKrw": 420000,
+      "vat": "excluded",
+      "displayKrw": 462000,
+      "sourceUrl": "https://abijouonline.com/%EC%98%AC%EB%A6%AC%EC%A7%80%EC%98%A4-%EA%B0%80%EA%B2%A9"
+    },
+    {
+      "procedureCode": "P-RF",
+      "option": "올리지오 300샷 · 공개 상품",
+      "listedKrw": 850000,
+      "vat": "excluded",
+      "displayKrw": 935000,
+      "sourceUrl": "https://skin.thechaorum.com/price/detail/X0005?item=W0041"
+    },
+    {
+      "procedureCode": "P-RF",
+      "option": "올리지오 600샷 · 공개 상품",
+      "listedKrw": 720000,
+      "vat": "excluded",
+      "displayKrw": 792000,
+      "sourceUrl": "https://abijouonline.com/%EC%98%AC%EB%A6%AC%EC%A7%80%EC%98%A4-%EA%B0%80%EA%B2%A9"
+    },
+    {
+      "procedureCode": "P-RF",
+      "option": "올리지오 600샷 · 공개 상품",
+      "listedKrw": 1550000,
+      "vat": "excluded",
+      "displayKrw": 1705000,
+      "sourceUrl": "https://skin.thechaorum.com/price/detail/X0005?item=W0041"
+    },
+    {
+      "procedureCode": "P-RF",
+      "option": "써마지 FLX 300샷 1회",
+      "listedKrw": 1290000,
+      "vat": "excluded",
+      "displayKrw": 1419000,
+      "sourceUrl": "https://onze.co.kr/fees"
+    },
+    {
+      "procedureCode": "P-RF",
+      "option": "써마지 FLX 600샷 1회",
+      "listedKrw": 2190000,
+      "vat": "excluded",
+      "displayKrw": 2409000,
+      "sourceUrl": "https://onze.co.kr/fees"
+    },
+    {
+      "procedureCode": "P-PN",
+      "option": "리쥬란 힐러 2cc 1회",
+      "listedKrw": 275000,
+      "vat": "excluded",
+      "displayKrw": 302500,
+      "sourceUrl": "https://onze.co.kr/fees"
+    },
+    {
+      "procedureCode": "P-PN",
+      "option": "리쥬란 힐러 2cc 1회",
+      "listedKrw": 450000,
+      "vat": "excluded",
+      "displayKrw": 495000,
+      "sourceUrl": "https://barabomskin.com/npay/"
+    },
+    {
+      "procedureCode": "P-PN",
+      "option": "리쥬란 힐러 4cc 1회",
+      "listedKrw": 450000,
+      "vat": "excluded",
+      "displayKrw": 495000,
+      "sourceUrl": "https://onze.co.kr/fees"
+    },
+    {
+      "procedureCode": "P-PN",
+      "option": "리쥬란 힐러 4cc 1회",
+      "listedKrw": 760000,
+      "vat": "excluded",
+      "displayKrw": 836000,
+      "sourceUrl": "https://barabomskin.com/npay/"
+    },
+    {
+      "procedureCode": "P-PN",
+      "option": "리쥬란 HB 2cc 1회",
+      "listedKrw": 295000,
+      "vat": "excluded",
+      "displayKrw": 324500,
+      "sourceUrl": "https://onze.co.kr/fees"
+    },
+    {
+      "procedureCode": "P-PN",
+      "option": "리쥬란 아이 1cc 1회",
+      "listedKrw": 290000,
+      "vat": "excluded",
+      "displayKrw": 319000,
+      "sourceUrl": "https://barabomskin.com/npay/"
+    },
+    {
+      "procedureCode": "P-HA",
+      "option": "릴리이드M 1cc 1회",
+      "listedKrw": 22000,
+      "vat": "excluded",
+      "displayKrw": 24200,
+      "sourceUrl": "https://selenaskin.com/prices"
+    },
+    {
+      "procedureCode": "P-HA",
+      "option": "릴리이드M 5cc 1회",
+      "listedKrw": 110000,
+      "vat": "excluded",
+      "displayKrw": 121000,
+      "sourceUrl": "https://selenaskin.com/prices"
+    },
+    {
+      "procedureCode": "P-HA",
+      "option": "뉴라미스 스킨인핸서 2cc 1회",
+      "listedKrw": 370000,
+      "vat": "excluded",
+      "displayKrw": 407000,
+      "sourceUrl": "https://barabomskin.com/npay/"
+    },
+    {
+      "procedureCode": "P-HA",
+      "option": "뉴라미스 스킨인핸서 3cc 1회",
+      "listedKrw": 490000,
+      "vat": "excluded",
+      "displayKrw": 539000,
+      "sourceUrl": "https://barabomskin.com/npay/"
+    },
+    {
+      "procedureCode": "P-PEEL",
+      "option": "라라필 1회 · 공개 고지 시작가",
+      "listedKrw": 79000,
+      "vat": "excluded",
+      "displayKrw": 86900,
+      "sourceUrl": "https://nowon.cellinclinic.com/ko/non-covered-items"
+    },
+    {
+      "procedureCode": "P-PEEL",
+      "option": "라라필 1회 · 공개 행사",
+      "listedKrw": 50000,
+      "vat": "excluded",
+      "displayKrw": 55000,
+      "sourceUrl": "https://daybeauclinic15.com/branch/event.php?uid=911"
+    },
+    {
+      "procedureCode": "P-PEEL",
+      "option": "라라필 1회 · 고지 정상가",
+      "listedKrw": 130000,
+      "vat": "excluded",
+      "displayKrw": 143000,
+      "sourceUrl": "https://www.forenaclinic.com/ko/_files/ugd/f5252a_2cef5d6bc45f4838a5a7db1e90033565.pdf"
+    },
+    {
+      "procedureCode": "P-PEEL",
+      "option": "밀크필 1회 · 고지 정상가",
+      "listedKrw": 110000,
+      "vat": "excluded",
+      "displayKrw": 121000,
+      "sourceUrl": "https://www.forenaclinic.com/ko/_files/ugd/f5252a_2cef5d6bc45f4838a5a7db1e90033565.pdf"
+    },
+    {
+      "procedureCode": "P-PDL",
+      "option": "브이빔 퍼펙타 나비존·코 포함 1회 · 기간 한정",
+      "listedKrw": 109000,
+      "vat": "excluded",
+      "displayKrw": 119900,
+      "sourceUrl": "https://hongdae.cellinclinic.com/ko/events/203",
+      "offerEndsOn": "2026-12-31"
+    },
+    {
+      "procedureCode": "P-PDL",
+      "option": "브이빔 퍼펙타 얼굴 전체 1회 · 기간 한정",
+      "listedKrw": 199000,
+      "vat": "excluded",
+      "displayKrw": 218900,
+      "sourceUrl": "https://hongdae.cellinclinic.com/ko/events/203",
+      "offerEndsOn": "2026-12-31"
+    },
+    {
+      "procedureCode": "P-PDL",
+      "option": "브이빔 모세혈관확장증 코 1회 · 세금 확인 필요",
+      "listedKrw": 100000,
+      "vat": "unknown",
+      "displayKrw": 100000,
+      "sourceUrl": "https://barabomskin.com/npay/"
+    },
+    {
+      "procedureCode": "P-PDL",
+      "option": "브이빔 모세혈관확장증 얼굴 전체 1회 · 세금 확인 필요",
+      "listedKrw": 260000,
+      "vat": "unknown",
+      "displayKrw": 260000,
+      "sourceUrl": "https://barabomskin.com/npay/"
+    }
+  ]
+}

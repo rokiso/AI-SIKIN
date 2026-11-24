@@ -14,7 +14,9 @@ import { consumeAnalysisIntent } from "@/lib/api/diagnosticProgressIntent";
 export function useDiagnosticProgress(sessionId: string) {
   const router = useRouter();
   const [step, setStep] = useState<DiagnosticProgress | null>(null);
-  const [phase, setPhase] = useState<"CONNECTING" | "RUNNING" | "COMPLETE" | "ERROR">("CONNECTING");
+  const [phase, setPhase] = useState<
+    "CONNECTING" | "RUNNING" | "COMPLETE" | "ERROR" | "RESTART_REQUIRED"
+  >("CONNECTING");
   const [photoSkipped, setPhotoSkipped] = useState(false);
   const intent = useRef<{ sessionId: string; allowed: boolean } | null>(null);
   const [notice, setNotice] = useState("");
@@ -87,10 +89,25 @@ export function useDiagnosticProgress(sessionId: string) {
         if (disposed || completed) return;
         const result = analyzeResponseSchema.safeParse(raw);
         if (!response.ok || !result.success) {
+          if (response.status === 400 && raw && typeof raw === "object" && "error" in raw) {
+            const details = raw.error;
+            if (
+              details &&
+              typeof details === "object" &&
+              "code" in details &&
+              details.code === "INCOMPLETE_SURVEY_DATA"
+            ) {
+              stopStream();
+              setNotice("");
+              setPhase("RESTART_REQUIRED");
+              setError("피부 문진 응답을 확인할 수 없습니다. 문진을 다시 진행해 주세요.");
+              return;
+            }
+          }
           fail(
             response.status === 429
               ? "리포트는 1시간에 3회까지 만들 수 있습니다. 잠시 후 다시 시도해 주세요."
-              : response.status === 401 || response.status === 403
+              : [401, 403, 404].includes(response.status)
                 ? "문진 세션을 확인할 수 없습니다. 본인의 문진인지 확인하고 다시 시작해 주세요."
                 : "피부 분석을 완료하지 못했습니다. 문진 정보는 보관되어 있으니 다시 확인해 주세요.",
           );

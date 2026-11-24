@@ -1,8 +1,10 @@
+import { mockFaceDetector } from "./fixtures/face-detector-browser";
 import { consentedPhotoActor } from "./fixtures/consent-browser";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 test.beforeEach(async ({ page }) => {
   await consentedPhotoActor(page);
+  await mockFaceDetector(page);
 });
 test.use({ trace: "off" });
 const id = "12345678-1234-4234-8234-123456789012";
@@ -19,8 +21,8 @@ async function choosePhoto(page: Page, file: { name: string; mimeType: string; b
   await page.getByRole("button", { name: /앨범에서 사진 선택|사진 다시 선택/ }).click();
   await (await picker).setFiles(file);
 }
-async function jpeg(page: Page, orientation = false) {
-  const encoded = await page.evaluate(() => {
+async function jpeg(page: Page, orientation = false, dark = false) {
+  const encoded = await page.evaluate((lowLight) => {
     const canvas = document.createElement("canvas");
     canvas.width = 2000;
     canvas.height = 1000;
@@ -32,14 +34,14 @@ async function jpeg(page: Page, orientation = false) {
       seed ^= seed << 13;
       seed ^= seed >>> 17;
       seed ^= seed << 5;
-      pixels.data[i] = seed & 255;
-      pixels.data[i + 1] = (seed >>> 8) & 255;
-      pixels.data[i + 2] = (seed >>> 16) & 255;
+      pixels.data[i] = seed & (lowLight ? 63 : 255);
+      pixels.data[i + 1] = (seed >>> 8) & (lowLight ? 63 : 255);
+      pixels.data[i + 2] = (seed >>> 16) & (lowLight ? 63 : 255);
       pixels.data[i + 3] = 255;
     }
     ctx.putImageData(pixels, 0, 0);
     return canvas.toDataURL("image/jpeg", 0.9).split(",")[1];
-  });
+  }, dark);
   let buffer = Buffer.from(encoded, "base64");
   if (orientation) {
     // TIFF Orientation 6: stored 2000×1000 becomes displayed 1000×2000.
@@ -225,4 +227,22 @@ test("interrupted PUT offers retry without inventing confirmation", async ({ pag
   ).toBeVisible();
   await expect(page.getByRole("button", { name: "다시 시도", exact: true })).toBeEnabled();
   expect(confirmations).toBe(0);
+});
+
+test("dark album photo opens the same guidance and never requests an upload", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  let requests = 0;
+  await page.route("**/api/v1/diagnostics/upload-url", (route) => {
+    requests++;
+    return route.abort();
+  });
+  await page.goto("/diagnostic");
+  await choosePhoto(page, await jpeg(page, false, true));
+  const dialog = page.getByRole("dialog", { name: "주변이 너무 어두워요" });
+  await expect(dialog).toBeVisible();
+  await expect(page.getByAltText("선택한 정면 사진 미리보기")).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "앨범에서 사진 선택", exact: true })).toBeFocused();
+  expect(requests).toBe(0);
 });

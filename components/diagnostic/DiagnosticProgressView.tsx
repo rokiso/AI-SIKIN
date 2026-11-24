@@ -7,12 +7,16 @@ const steps = ["사진 참고 정보 확인", "문진 응답 정리·결합", "�
 export function DiagnosticProgressView({ sessionId }: { sessionId: string }) {
   const { step, phase, notice, error, busy, photoSkipped, checkStatus } =
     useDiagnosticProgress(sessionId);
+  const restartRequired = phase === "RESTART_REQUIRED";
+  const canCheck = phase !== "COMPLETE" && !restartRequired;
   const number = phase === "COMPLETE" ? 4 : (step?.stepNumber ?? 0);
   return (
     <div className="space-y-6 break-keep [overflow-wrap:anywhere]">
       <header className="space-y-3">
         <p className="text-sm font-medium text-primary-700">나의 피부 리포트</p>
-        <h1 className="text-2xl font-bold leading-snug">피부 리포트를 준비하고 있어요</h1>
+        <h1 className="text-2xl font-bold leading-snug">
+          {restartRequired ? "문진을 다시 진행해 주세요" : "피부 리포트를 준비하고 있어요"}
+        </h1>
         <p className="text-sm leading-relaxed text-neutral-600">
           서버에서 확인한 처리 단계를 안내합니다. 사진 AI를 이용할 수 없으면 문진 기반 결과로
           전환해요.
@@ -87,13 +91,15 @@ export function DiagnosticProgressView({ sessionId }: { sessionId: string }) {
           className="space-y-3 rounded-xl bg-status-danger-surface p-4 text-sm leading-relaxed text-status-danger"
         >
           <p>{error}</p>
-          <p>
-            리포트는 서버에서 계속 준비될 수 있어요. 같은 문진으로 다시 확인하면 이미 저장된 결과를
-            보여드립니다.
-          </p>
+          {!restartRequired && (
+            <p>
+              리포트는 서버에서 계속 준비될 수 있어요. 같은 문진으로 다시 확인하면 이미 저장된
+              결과를 보여드립니다.
+            </p>
+          )}
         </div>
       )}
-      {phase !== "COMPLETE" && (
+      {canCheck && (
         <button
           type="button"
           className="button-primary w-full"
@@ -103,13 +109,13 @@ export function DiagnosticProgressView({ sessionId }: { sessionId: string }) {
           {busy ? "리포트 준비 중…" : "리포트 생성 상태 확인하기"}
         </button>
       )}
-      {phase !== "COMPLETE" && (
+      {canCheck && (
         <p className="text-xs leading-relaxed text-neutral-600">
           저장된 결과가 있으면 다시 보여드리고, 없으면 이 문진으로 리포트를 준비합니다.
         </p>
       )}
       <Link href="/diagnostic" className="button-secondary w-full">
-        문진 화면으로
+        {restartRequired ? "문진 다시 시작하기" : "문진 화면으로"}
       </Link>
       <MedicalDisclaimerNotice compact />
     </div>

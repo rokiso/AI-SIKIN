@@ -9,6 +9,7 @@ import type { MultimodalVisionAnalysisRequest, VisionFeatures } from "./schema";
 export type { MultimodalVisionAnalysisRequest } from "./schema";
 export type { AiClientConfig } from "./client";
 export { AiGatewayError, AiTimeoutError } from "./errors";
+export { RetryableAiError } from "./client";
 
 export interface MultimodalVisionAnalysisResponse extends VisionFeatures {
   success: true;
@@ -38,6 +39,7 @@ function pause(signal: AbortSignal): Promise<void> {
 
 export async function callMultimodalAiWithTimeout(
   input: MultimodalVisionAnalysisRequest,
+  { retry = true } = {},
 ): Promise<MultimodalVisionAnalysisResponse> {
   const parsed = visionRequestSchema.safeParse(input);
   if (!parsed.success)
@@ -85,7 +87,7 @@ export async function callMultimodalAiWithTimeout(
           } catch (error) {
             if (controller.signal.aborted) throw new AiTimeoutError();
             const retryable = error instanceof RetryableAiError || error instanceof TypeError;
-            if (!retryable || attempt >= config.maxRetries) throw error;
+            if (!retry || !retryable || attempt >= config.maxRetries) throw error;
             await pause(controller.signal);
           }
         }
