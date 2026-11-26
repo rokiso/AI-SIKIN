@@ -22,8 +22,10 @@ export function QualityWarningModal({
   onRetry,
   onDismiss,
   onAlbum,
+  retryLabel,
 }: {
   reason: QualityFailureReason;
+  retryLabel?: string;
   onRetry: () => void;
   onDismiss: () => void;
   onAlbum?: () => void;
@@ -63,7 +65,7 @@ export function QualityWarningModal({
         onClick={() => action(onRetry)}
         className="button-primary w-full"
       >
-        {onAlbum ? "다시 촬영하기" : "다른 사진 선택하기"}
+        {retryLabel ?? (onAlbum ? "다시 촬영하기" : "다른 사진 선택하기")}
       </button>
       {onAlbum && (
         <button type="button" onClick={() => action(onAlbum)} className="button-secondary w-full">

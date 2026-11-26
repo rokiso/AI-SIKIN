@@ -11,6 +11,7 @@ export function DiagnosticPhotoStep() {
   const consent = useBiometricConsent();
   const [upload, setUpload] = useState<OnUploadCompletePayload | null>(null);
   const [showGuide, setShowGuide] = useState(false);
+  const [cameraMessage, setCameraMessage] = useState("");
   const [mode, setMode] = useState<"album" | "camera">("album");
   if (showGuide)
     return (
@@ -29,10 +30,38 @@ export function DiagnosticPhotoStep() {
       >
         문진 먼저 시작하기
       </button>
+      <div role="group" aria-label="사진 등록 방법" className="mt-5 flex gap-2">
+        {(["camera", "album"] as const).map((choice) => (
+          <button
+            key={choice}
+            type="button"
+            className="button-secondary min-h-11 flex-1"
+            aria-pressed={mode === choice}
+            disabled={busy || consent.checking}
+            onClick={() => {
+              if (mode === choice) return;
+              setUpload(null);
+              setCameraMessage("");
+              setMode(choice);
+            }}
+          >
+            {choice === "camera" ? "카메라로 촬영하기" : "앨범 사진 선택하기"}
+          </button>
+        ))}
+      </div>
+      {cameraMessage && (
+        <p role="status" className="mt-4 text-sm leading-relaxed">
+          {cameraMessage}
+        </p>
+      )}
       {mode === "camera" ? (
         <CameraViewfinder
           requestConsent={consent.requestConsent}
           onAlbum={() => setMode("album")}
+          onUnavailable={(message) => {
+            setCameraMessage(message);
+            setMode("album");
+          }}
           onUploadComplete={(result) => {
             setUpload(result);
             if (!result) setShowGuide(false);
@@ -40,19 +69,8 @@ export function DiagnosticPhotoStep() {
         />
       ) : (
         <>
-          <button
-            type="button"
-            className="button-secondary mt-5 w-full"
-            disabled={busy || consent.checking}
-            onClick={() => {
-              setUpload(null);
-              setShowGuide(false);
-              setMode("camera");
-            }}
-          >
-            카메라로 촬영하기
-          </button>
           <AlbumImageUploader
+            focusPicker={Boolean(cameraMessage)}
             requestConsent={consent.requestConsent}
             onUploadComplete={(result) => {
               setUpload(result);

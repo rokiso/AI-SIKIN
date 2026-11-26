@@ -183,6 +183,7 @@ for (const width of [320, 375, 1280])
     });
     await page.getByRole("dialog").getByRole("checkbox").check();
     await page.getByRole("button", { name: "동의하고 계속하기" }).click();
+    await page.getByRole("button", { name: "보정 완료 및 사진 확정", exact: true }).click();
     const completedUpload = await uploadResponse;
     expect(completedUpload.status(), JSON.stringify((await completedUpload.json()).error)).toBe(
       200,

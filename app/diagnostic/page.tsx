@@ -21,7 +21,8 @@ export default function DiagnosticPage() {
           title="사진 선택을 체험해 보세요"
           description="테스트 모드에서는 사진을 저장하거나 피부를 분석하지 않습니다."
         />
-        <LocalPhotoPreview />
+        <MedicalDisclaimerNotice compact />
+        <LocalPhotoPreview allowAdjustment />
         <SurveyEntry />
       </div>
     );

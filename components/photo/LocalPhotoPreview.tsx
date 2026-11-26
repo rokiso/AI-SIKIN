@@ -2,9 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CameraViewfinder } from "@/components/diagnostic/CameraViewfinder";
-import { preprocessAlbumImage } from "@/lib/image/clientPreprocess";
+import { ManualPhotoAdjuster } from "@/components/diagnostic/ManualPhotoAdjuster";
+import { adjustmentFileError } from "@/lib/image/canvasAdjuster";
+import { validateAlbumFile, preprocessAlbumImage } from "@/lib/image/clientPreprocess";
 
-export function LocalPhotoPreview() {
+export function LocalPhotoPreview({ allowAdjustment = false }: { allowAdjustment?: boolean }) {
+  const [editingFile, setEditingFile] = useState<File | null>(null);
+  const picker = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -24,6 +28,7 @@ export function LocalPhotoPreview() {
     controller.current = null;
     if (current.current) URL.revokeObjectURL(current.current);
     current.current = null;
+    setEditingFile(null);
     setPreview(null);
     setBusy(false);
     setMessage("");
@@ -32,6 +37,15 @@ export function LocalPhotoPreview() {
   async function select(file?: File) {
     if (!file) return;
     clear();
+    if (allowAdjustment) {
+      try {
+        validateAlbumFile(file);
+        setEditingFile(file);
+      } catch {
+        setMessage(adjustmentFileError);
+      }
+      return;
+    }
     const pending = new AbortController();
     controller.current = pending;
     setBusy(true);
@@ -55,7 +69,22 @@ export function LocalPhotoPreview() {
     }
   }
 
-  if (camera) return <CameraViewfinder previewOnly onAlbum={() => setCamera(false)} />;
+  if (camera)
+    return (
+      <CameraViewfinder
+        previewOnly
+        onAlbum={() => setCamera(false)}
+        onUnavailable={
+          allowAdjustment
+            ? (text) => {
+                setCamera(false);
+                setMessage(text);
+                requestAnimationFrame(() => picker.current?.focus());
+              }
+            : undefined
+        }
+      />
+    );
   return (
     <section
       className="space-y-4 rounded-2xl border border-primary-200 bg-primary-50 p-5"
@@ -82,6 +111,7 @@ export function LocalPhotoPreview() {
       <label className="button-primary flex min-h-12 cursor-pointer items-center justify-center">
         앨범에서 사진 선택
         <input
+          ref={picker}
           aria-label="앨범에서 사진 선택"
           className="sr-only"
           type="file"
@@ -112,7 +142,27 @@ export function LocalPhotoPreview() {
         촬영 버튼은 휴대폰에서 카메라를 열 수 있어요. PC에서는 파일 선택창이 열릴 수 있습니다.
         지원되지 않는 HEIC 사진은 JPG로 변환해 주세요.
       </p>
-      {busy && <p role="status">이 기기에서 사진을 준비하고 있어요…</p>}
+      {editingFile && (
+        <ManualPhotoAdjuster
+          key={`${editingFile.name}-${editingFile.lastModified}`}
+          file={editingFile}
+          previewOnly
+          onBusyChange={setBusy}
+          onChooseAnother={() => {
+            clear();
+            picker.current?.click();
+          }}
+          onConfirm={async (image) => {
+            if (current.current) URL.revokeObjectURL(current.current);
+            current.current = image.previewUrl;
+            setPreview(image.previewUrl);
+            setEditingFile(null);
+            setBusy(false);
+            setMessage("사진을 이 기기에서만 미리보고 있어요. 저장하거나 분석하지 않았습니다.");
+          }}
+        />
+      )}
+      {busy && !editingFile && <p role="status">이 기기에서 사진을 준비하고 있어요…</p>}
       {preview && (
         <div className="space-y-3">
           {/* The object URL exists only in this browser; no image request is made. */}

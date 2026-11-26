@@ -23,8 +23,10 @@ export function CameraViewfinder({
   onUploadComplete,
   onCaptureComplete,
   requestConsent,
+  onUnavailable,
 }: {
   previewOnly?: boolean;
+  onUnavailable?: (message: string) => void;
   requestConsent?: () => Promise<boolean>;
   onAlbum: () => void;
   onUploadComplete?: (payload: OnUploadCompletePayload | null) => void;
@@ -47,6 +49,16 @@ export function CameraViewfinder({
   const [phase, setPhase] = useState<UploadPhase | null>(null);
   const [progress, setProgress] = useState(0);
   const [complete, setComplete] = useState(false);
+  const unavailable = useRef(onUnavailable);
+  useEffect(() => {
+    unavailable.current = onUnavailable;
+  }, [onUnavailable]);
+  useEffect(() => {
+    if (status === "denied" || status === "unsupported")
+      unavailable.current?.(
+        "카메라를 사용할 수 없어 앨범으로 전환했어요. 정면 얼굴 사진을 선택해주세요.",
+      );
+  }, [status]);
   useEffect(() => {
     let active = true;
     const element = video.current;
@@ -58,6 +70,9 @@ export function CameraViewfinder({
         setReady(false);
         setError("카메라 영상을 재생하지 못했습니다. 카메라를 다시 켜거나 앨범을 이용해주세요.");
         stopCamera();
+        unavailable.current?.(
+          "카메라 영상을 재생할 수 없어 앨범으로 전환했어요. 사진을 선택해주세요.",
+        );
       });
     return () => {
       active = false;
@@ -114,7 +129,15 @@ export function CameraViewfinder({
     } catch (failure) {
       if (token !== captureToken.current) return;
       if (failure instanceof PhotoQualityError) setWarning(failure.reason);
-      else setError("사진을 촬영하지 못했습니다. 카메라 화면이 준비되면 다시 시도해주세요.");
+      else {
+        setError("사진을 촬영하지 못했습니다. 카메라 화면이 준비되면 다시 시도해주세요.");
+        if (unavailable.current) {
+          stopCamera();
+          unavailable.current(
+            "사진을 촬영할 수 없어 앨범으로 전환했어요. 정면 얼굴 사진을 선택해주세요.",
+          );
+        }
+      }
     } finally {
       if (token === captureToken.current) setCapturing(false);
     }

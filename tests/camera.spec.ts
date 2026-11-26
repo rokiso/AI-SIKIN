@@ -19,7 +19,9 @@ for (const width of [320, 1280])
     await expect(page.getByText(/얼굴을 타원형 가이드 안에 맞춰주세요/)).toBeVisible();
     await page.getByRole("button", { name: "전면/후면 카메라 전환" }).click();
     await expect(page.getByRole("button", { name: "촬영", exact: true })).toBeEnabled();
-    expect(await page.evaluate(() => window.cameraFacings)).toEqual(["user", "environment"]);
+    await expect
+      .poll(() => page.evaluate(() => window.cameraFacings))
+      .toEqual(["user", "environment"]);
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     await page.screenshot({ path: test.info().outputPath(`camera-${width}.png`), fullPage: true });
     await page.getByRole("button", { name: "촬영", exact: true }).click();
@@ -111,11 +113,8 @@ test("permission denial offers album fallback", async ({ page }) => {
   await page.goto("/diagnostic");
   await page.getByRole("button", { name: "카메라로 촬영하기" }).click();
   await page.getByRole("button", { name: "카메라 켜기" }).click();
-  await expect(
-    page.getByText(/카메라 접근 권한이 거부되었거나 지원되지 않는 기기입니다/),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "앨범에서 사진 선택하기" }).click();
-  await expect(page.getByRole("button", { name: "앨범에서 사진 선택", exact: true })).toBeVisible();
+  await expect(page.getByText(/카메라를 사용할 수 없어 앨범으로 전환했어요/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "앨범에서 사진 선택", exact: true })).toBeFocused();
 });
 for (const width of [320, 1280]) {
   test(`dark frame blocks upload and returns to the live viewfinder at ${width}px`, async ({

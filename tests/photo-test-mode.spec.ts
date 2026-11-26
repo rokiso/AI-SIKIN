@@ -1,7 +1,9 @@
+import { mockFaceDetector } from "./fixtures/face-detector-browser";
 import { expect, test } from "@playwright/test";
 
 for (const path of ["/diagnostic", "/snapshot"]) {
   test(`${path} previews locally without upload and forgets on reload`, async ({ page }) => {
+    if (path === "/diagnostic") await mockFaceDetector(page);
     await page.setViewportSize({ width: 320, height: 850 });
     const writes: string[] = [];
     page.on("request", (r) => {
@@ -29,6 +31,8 @@ for (const path of ["/diagnostic", "/snapshot"]) {
       mimeType: "image/jpeg",
       buffer: Buffer.from(image, "base64"),
     });
+    if (path === "/diagnostic")
+      await page.getByRole("button", { name: "보정한 사진 미리보기", exact: true }).click();
     const preview = page.getByAltText("이 기기에서 선택한 사진 미리보기");
     await expect(preview).toBeVisible();
     await expect(preview).toHaveAttribute("src", /^blob:/);
@@ -45,6 +49,8 @@ for (const path of ["/diagnostic", "/snapshot"]) {
       mimeType: "image/jpeg",
       buffer: Buffer.from(image, "base64"),
     });
+    if (path === "/diagnostic")
+      await page.getByRole("button", { name: "보정한 사진 미리보기", exact: true }).click();
     await expect(preview).toBeVisible();
     await page.reload();
     await expect(preview).toHaveCount(0);

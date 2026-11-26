@@ -1,3 +1,4 @@
+import { jpeg } from "./fixtures/album-browser";
 import { mockFaceDetector } from "./fixtures/face-detector-browser";
 import { consentedPhotoActor } from "./fixtures/consent-browser";
 import AxeBuilder from "@axe-core/playwright";
@@ -16,42 +17,16 @@ const cors = {
   "access-control-allow-headers": "content-type,x-amz-server-side-encryption",
   "access-control-expose-headers": "ETag",
 };
-async function choosePhoto(page: Page, file: { name: string; mimeType: string; buffer: Buffer }) {
+async function choosePhoto(
+  page: Page,
+  file: { name: string; mimeType: string; buffer: Buffer },
+  confirm = true,
+) {
   const picker = page.waitForEvent("filechooser");
   await page.getByRole("button", { name: /앨범에서 사진 선택|사진 다시 선택/ }).click();
   await (await picker).setFiles(file);
-}
-async function jpeg(page: Page, orientation = false, dark = false) {
-  const encoded = await page.evaluate((lowLight) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 2000;
-    canvas.height = 1000;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("Missing canvas");
-    const pixels = ctx.createImageData(canvas.width, canvas.height);
-    let seed = 123456;
-    for (let i = 0; i < pixels.data.length; i += 4) {
-      seed ^= seed << 13;
-      seed ^= seed >>> 17;
-      seed ^= seed << 5;
-      pixels.data[i] = seed & (lowLight ? 63 : 255);
-      pixels.data[i + 1] = (seed >>> 8) & (lowLight ? 63 : 255);
-      pixels.data[i + 2] = (seed >>> 16) & (lowLight ? 63 : 255);
-      pixels.data[i + 3] = 255;
-    }
-    ctx.putImageData(pixels, 0, 0);
-    return canvas.toDataURL("image/jpeg", 0.9).split(",")[1];
-  }, dark);
-  let buffer = Buffer.from(encoded, "base64");
-  if (orientation) {
-    // TIFF Orientation 6: stored 2000×1000 becomes displayed 1000×2000.
-    const exif = Buffer.from([
-      0xff, 0xe1, 0, 34, 0x45, 0x78, 0x69, 0x66, 0, 0, 0x49, 0x49, 42, 0, 8, 0, 0, 0, 1, 0, 0x12, 1,
-      3, 0, 1, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0,
-    ]);
-    buffer = Buffer.concat([buffer.subarray(0, 2), exif, buffer.subarray(2)]);
-  }
-  return { name: "synthetic-test.jpg", mimeType: "image/jpeg", buffer };
+  if (confirm)
+    await page.getByRole("button", { name: "보정 완료 및 사진 확정", exact: true }).click();
 }
 for (const width of [320, 1280]) {
   test(`album upload preprocesses EXIF and hands off confirmed session at ${width}px`, async ({
@@ -140,7 +115,7 @@ for (const width of [320, 1280]) {
           ? { width: node.naturalWidth, height: node.naturalHeight }
           : null,
       );
-    expect(dimensions).toEqual({ width: 640, height: 1280 });
+    expect(dimensions).toEqual({ width: 1280, height: 1280 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
@@ -159,6 +134,8 @@ for (const width of [320, 1280]) {
       path: testInfo.outputPath(`album-success-${width}.png`),
       fullPage: true,
     });
+    await page.getByRole("button", { name: "앨범 사진 선택하기", exact: true }).click();
+    await expect(page.getByRole("button", { name: "다음 단계로 이동" })).toBeVisible();
     await page.getByRole("button", { name: "다음 단계로 이동" }).click();
     await expect(
       page.getByRole("heading", {
@@ -188,7 +165,7 @@ test("invalid originals never reach APIs and rate limits are visible", async ({ 
     { name: "tiny.jpg", mimeType: "image/jpeg", buffer: Buffer.alloc(10239) },
     { name: "huge.jpg", mimeType: "image/jpeg", buffer: Buffer.alloc(10485761) },
   ]) {
-    await choosePhoto(page, item);
+    await choosePhoto(page, item, false);
     await expect(
       page.getByRole("alert").filter({ hasText: /JPG|너무 작아|10MB를 초과/ }),
     ).toBeVisible();
@@ -223,7 +200,9 @@ test("interrupted PUT offers retry without inventing confirmation", async ({ pag
   });
   await choosePhoto(page, await jpeg(page));
   await expect(
-    page.getByRole("alert").filter({ hasText: "사진 전송 중 네트워크 연결이 끊어졌습니다." }),
+    page.getByRole("alert").filter({
+      hasText: "사진 전송 중 오류가 발생했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.",
+    }),
   ).toBeVisible();
   await expect(page.getByRole("button", { name: "다시 시도", exact: true })).toBeEnabled();
   expect(confirmations).toBe(0);
@@ -243,6 +222,6 @@ test("dark album photo opens the same guidance and never requests an upload", as
   await expect(page.getByAltText("선택한 정면 사진 미리보기")).toHaveCount(0);
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "앨범에서 사진 선택", exact: true })).toBeFocused();
+  await expect(page.getByRole("slider", { name: "확대/축소" })).toBeFocused();
   expect(requests).toBe(0);
 });

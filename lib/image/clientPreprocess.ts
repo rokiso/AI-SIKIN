@@ -31,7 +31,7 @@ export function resizedDimensions(width: number, height: number) {
 function ensureActive(signal?: AbortSignal) {
   signal?.throwIfAborted();
 }
-async function decode(
+export async function decodeAlbumImage(
   file: File,
 ): Promise<{ source: CanvasImageSource; width: number; height: number; close: () => void }> {
   if (typeof createImageBitmap === "function") {
@@ -63,7 +63,7 @@ async function decode(
     throw new Error("사진을 읽을 수 없습니다. JPG 또는 PNG 사진을 다시 선택해주세요.");
   }
 }
-async function validSignature(file: File) {
+export async function validAlbumSignature(file: File) {
   const bytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
   return file.type === "image/jpeg"
     ? bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255
@@ -91,14 +91,14 @@ export async function preprocessAlbumImage(
 ): Promise<ProcessedImageResult> {
   validateAlbumFile(file);
   ensureActive(signal);
-  if (!(await validSignature(file)))
+  if (!(await validAlbumSignature(file)))
     throw new Error(
       "사진 파일을 읽을 수 없습니다. 정상적인 JPG, PNG 또는 WebP 사진을 선택해주세요.",
     );
   ensureActive(signal);
-  let decoded: Awaited<ReturnType<typeof decode>>;
+  let decoded: Awaited<ReturnType<typeof decodeAlbumImage>>;
   try {
-    decoded = await decode(file);
+    decoded = await decodeAlbumImage(file);
   } catch {
     throw new Error("사진을 읽을 수 없습니다. JPG 또는 PNG 사진을 다시 선택해주세요.");
   }
