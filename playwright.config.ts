@@ -16,6 +16,7 @@ export default defineConfig({
       name: "preview",
       testMatch: [
         "photo-test-mode.spec.ts",
+        "skincare-guide.spec.ts",
         "skin-shop.spec.ts",
         "procedures.spec.ts",
         "procedure-safety.spec.ts",

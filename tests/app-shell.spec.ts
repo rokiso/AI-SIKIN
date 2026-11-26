@@ -157,19 +157,22 @@ for (const width of [320, 1280]) {
     await page.keyboard.press("Tab");
     await expect(page.getByRole("link", { name: "무료 AI 피부 진단 시작하기", exact: true })).toBeFocused();
     await page.keyboard.press("Tab");
-    const nextLink = page.getByRole("navigation", { name: "맞춤 관리 바로가기" }).getByRole("link", { name: /맞춤 화장품 둘러보기/ });
-    await expect(nextLink).toBeFocused();
-    await expect.poll(() => nextLink.evaluate((link) => {
-      const bounds = link.getBoundingClientRect();
-      const navigation = document.querySelector('nav[aria-label="주요 메뉴"]');
-      const header = document.querySelector("header");
-      if (!navigation || !header) throw new Error("App navigation landmarks are missing");
-      return {
-        clearOfHeader: bounds.top - 6 >= header.getBoundingClientRect().bottom,
-        clearOfNavigation: bounds.bottom + 6 <= navigation.getBoundingClientRect().top,
-      };
-    })).toEqual({ clearOfHeader: true, clearOfNavigation: true });
-    await page.screenshot({ path: testInfo.outputPath(`keyboard-quicknav-focus-${width}.png`) });
+    for (const [index, label] of ["스킨케어가 처음이라면", "맞춤 화장품 둘러보기"].entries()) {
+      const nextLink = page.getByRole("navigation", { name: "맞춤 관리 바로가기" }).getByRole("link", { name: new RegExp(label) });
+      await expect(nextLink).toBeFocused();
+      await expect.poll(() => nextLink.evaluate((link) => {
+        const bounds = link.getBoundingClientRect();
+        const navigation = document.querySelector('nav[aria-label="주요 메뉴"]');
+        const header = document.querySelector("header");
+        if (!navigation || !header) throw new Error("App navigation landmarks are missing");
+        return {
+          clearOfHeader: bounds.top - 6 >= header.getBoundingClientRect().bottom,
+          clearOfNavigation: bounds.bottom + 6 <= navigation.getBoundingClientRect().top,
+        };
+      })).toEqual({ clearOfHeader: true, clearOfNavigation: true });
+      await page.screenshot({ path: testInfo.outputPath(`keyboard-quicknav-focus-${width}-${index}.png`) });
+      await page.keyboard.press("Tab");
+    }
   });
 }
 
